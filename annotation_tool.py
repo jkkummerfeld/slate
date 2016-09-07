@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import curses, sys, re
+from __future__ import print_function
+
+import curses, sys, re, glob
 
 # Usage:
 #   ./annotation_tool.py <filename>
@@ -8,17 +10,20 @@ import curses, sys, re
 #
 # You will be shown the first file in plain text. Commands are:
 #
-#  left arrow   - move to previous word
-#  right arrow  - move to next word
-#  up arrow     - move up a line
-#  down arrow   - move down a line
+#  left arrow   - move to previous word (+shift, go to first)
+#  right arrow  - move to next word (+shift, go to last)
+#  up arrow     - move up a line (+shift, go to top)
+#  down arrow   - move down a line (+shift, go to bottom)
 #  n            - move to next numerical value
 #  p            - move to previous numerical value
+#  r            - mark this token as ||
 #  s            - mark this token as {}
 #  b            - mark this token as []
-#  /            - save and go to next file
-#  u, b, s      - undo annotation on this token
+#  /  \         - save and go to next or previous file
+#  u, b, s, r   - undo annotation on this token
 #  q            - quit
+#  h            - toggle help info (default on)
+#
 #
 # The current token is blue, {} tokens are green and [] tokens are yellow. The
 # tokens are also modified to show the {} and [].  If a file is too long to
@@ -26,39 +31,50 @@ import curses, sys, re
 # so that the current token is always visible.
 
 # TODO:
-#  - add 'n'
+# - Previous files can not have annotations removed
+# - Option to output to standoff annotations instead
+# - adjustable keybinding
 
 def read_file(filename):
   data = open(filename).read()
   return [line.split() for line in data.split("\n")]
 
-def write_file(filename, data, markings):
-  out = open(filename + ".annotated", 'w')
+def write_file(filename, data, markings, overwrite):
+  out_filename = filename
+  if not overwrite:
+    out_filename += ".annotated"
+  out = open(out_filename, 'w')
   for line_no, line in enumerate(data):
+    if line_no != 0:
+      print("", file=out)
     for token_no, token in enumerate(line):
       key = (line_no, token_no)
+      ttoken = token
       if key in markings:
-        if markings[key] == 's':
-          print("{" + token +"}", end=" ", file=out)
-        elif markings[key] == 'b':
-          print("[" + token +"]", end=" ", file=out)
-      else:
-        print(token, end=" ", file=out)
-    print("", file=out)
+        if "s" in markings[key]:
+          ttoken = "{" + ttoken +"}"
+        if "b" in markings[key]:
+          ttoken = "[" + ttoken +"]"
+        if "r" in markings[key]:
+          ttoken = "|" + ttoken +"|"
+      print(ttoken, end=" ", file=out)
 
 class View:
-  def __init__(self, window, pos, marked, data):
+  def __init__(self, window, pos, marked, data, cnum, total_num):
     self.window = window
     self.pos = pos
     self.marked = marked
     self.data = data
     self.inst_lines = 3
     self.top = 0
+    self.show_help = True
+    self.progress = "done {} / {}".format(cnum, total_num)
 
   def do_contents(self, height, width, trial=False):
+    # TODO: for blank lines, print only one in a row
     seen = False
     cpos = 0
-    cline = self.inst_lines
+    cline = self.inst_lines if self.show_help else 0
     for line_no, line in enumerate(self.data):
       # If this line is above the top of what we are shwoing, skip it
       if line_no < self.top:
@@ -67,16 +83,21 @@ class View:
       for token_no, token in enumerate(line):
         cpair = (line_no, token_no)
         current = (tuple(self.pos) == cpair)
-        marked_sell = (cpair in self.marked and self.marked[cpair] == 's')
-        marked_buy = (cpair in self.marked and self.marked[cpair] == 'b')
+        marked_sell = (cpair in self.marked and 's' in self.marked[cpair])
+        marked_buy = (cpair in self.marked and 'b' in self.marked[cpair])
+        marked_rate = (cpair in self.marked and 'r' in self.marked[cpair])
 
         colour = 4
         if marked_sell: colour = 2
         if marked_buy: colour = 3
+        if marked_rate: colour = 7
+        if marked_sell and (marked_buy or marked_rate): colour = 6
+        if marked_buy and marked_rate: colour = 6
         if current: colour = 1
         ttoken = token
-        if marked_sell: ttoken = '{' + token + '}'
-        if marked_buy: ttoken = '[' + token + ']'
+        if marked_sell: ttoken = '{' + ttoken + '}'
+        if marked_buy: ttoken = '[' + ttoken + ']'
+        if marked_rate: ttoken = '|' + ttoken + '|'
 
         length = len(ttoken) + 1
         if cpos + length >= width:
@@ -100,10 +121,13 @@ class View:
     height, width = self.window.getmaxyx()
 
     # First, draw instructions
-    if height >= self.inst_lines:
-      self.window.addstr(0, 0, "Current token is blue, marked tokens are also coloured            ", curses.color_pair(5))
-      self.window.addstr(1, 0, "arrows (move one token)  n p (next and previous number, via regex)", curses.color_pair(5))
-      self.window.addstr(2, 0, "b (mark / unmark [])  / (next file)  q (quit)", curses.color_pair(5))
+    if height >= self.inst_lines and self.show_help:
+      line0 = self.progress + " Colours are blue-current green-sell yellow-buy cyan-both"
+      line1 = "arrows (move about), n p (next & previous number, via regex)" 
+      line2 = "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)"
+      self.window.addstr(0, 0, "{:<80}".format(line0), curses.color_pair(5))
+      self.window.addstr(1, 0, "{:<80}".format(line1), curses.color_pair(5))
+      self.window.addstr(2, 0, "{:<80}".format(line2), curses.color_pair(5))
 
     # Shift the top up if necessary
     if self.top > self.pos[0]:
@@ -116,12 +140,14 @@ class View:
     self.do_contents(height, width)
     self.window.refresh()
 
-def annotate(window):
-  filenames = [line.strip() for line in open(sys.argv[1]).readlines()]
-
+def annotate(window, filenames):
   out_filename = "files_still_to_do"
-  if len(sys.argv) > 2:
-    out_filename = sys.argv[2]
+  overwrite = False
+  for i in range(len(sys.argv)):
+    if sys.argv[i] == '-log' and len(sys.argv) > i + 1:
+      out_filename = sys.argv[i + 1]
+    if sys.argv[i] == '-overwrite':
+      overwrite = True
   out = open(out_filename, "w")
 
   # Set colour combinations
@@ -130,6 +156,8 @@ def annotate(window):
   curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
   curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)
   curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_WHITE)
+  curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
+  curses.init_pair(7, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
   curses.curs_set(0) # No blinking cursor
 
   cfilename = 0
@@ -137,8 +165,8 @@ def annotate(window):
 
   ctoken = [0, 0]
   marked = {}
-  view = View(window, ctoken, marked, data)
-  number_regex = re.compile('^[,0-9]*[.]?[0-9][,0-9]*[.]?[,0-9]*$')
+  view = View(window, ctoken, marked, data, cfilename, len(filenames))
+  number_regex = re.compile('^[,0-9k]*[.]?[0-9][,0-9k]*[.]?[,0-9k]*$')
   while True:
     # Draw screen
     view.render()
@@ -157,18 +185,21 @@ def annotate(window):
           if nline >= 0:
             ctoken[0] = nline
             ctoken[1] = len(data[ctoken[0]]) - 1
+    elif c == curses.KEY_SLEFT:
+      ctoken[1] = 0
     elif c == curses.KEY_RIGHT:
       ctoken[1] += 1
       if ctoken[1] >= len(data[ctoken[0]]):
-        if ctoken[0] == len(data) -1:
-          ctoken[1] -= 1
+        nline = ctoken[0] + 1
+        while nline < len(data) and len(data[nline]) == 0:
+          nline += 1
+        if nline < len(data):
+          ctoken[0] = nline
+          ctoken[1] = 0
         else:
-          nline = ctoken[0] + 1
-          while nline < len(data) and len(data[nline]) == 0:
-            nline += 1
-          if nline < len(data):
-            ctoken[0] = nline
-            ctoken[1] = 0
+          ctoken[1] = len(data[ctoken[0]]) - 1
+    elif c == curses.KEY_SRIGHT:
+      ctoken[1] = len(data[ctoken[0]]) - 1
     elif c == curses.KEY_UP:
       if ctoken[0] > 0:
         nline = ctoken[0] - 1
@@ -178,6 +209,13 @@ def annotate(window):
           ctoken[0] = nline
           if ctoken[1] >= len(data[ctoken[0]]):
             ctoken[1] = len(data[ctoken[0]]) - 1
+    elif c == 337:
+      for line_no in range(len(data)):
+        if len(data[line_no]) > 0:
+          ctoken[0] = line_no
+          if ctoken[1] >= len(data[ctoken[0]]):
+            ctoken[1] = len(data[ctoken[0]]) - 1
+          break
     elif c == curses.KEY_DOWN:
       if ctoken[0] < len(data) - 1:
         nline = ctoken[0] + 1
@@ -187,6 +225,13 @@ def annotate(window):
           ctoken[0] = nline
           if ctoken[1] >= len(data[ctoken[0]]):
             ctoken[1] = len(data[ctoken[0]]) - 1
+    elif c == 336: # Worked out on a Mac by hand...
+      for line_no in range(len(data) -1, -1, -1):
+        if len(data[line_no]) > 0:
+          ctoken[0] = line_no
+          if ctoken[1] >= len(data[ctoken[0]]):
+            ctoken[1] = len(data[ctoken[0]]) - 1
+          break
     elif c == ord("n"):
       # Find next position, use regex
       for line_no in range(ctoken[0], len(data)):
@@ -198,41 +243,58 @@ def annotate(window):
             done = True
             ctoken[0] = line_no
             ctoken[1] = token_no
+            break
         if done:
           break
+    elif c == ord("h"):
+      view.show_help = not view.show_help
     elif c == ord("p"):
       # Find next position, use regex
       for line_no in range(ctoken[0], -1, -1):
         done = False
-        for token_no in range(len(data[line_no]), -1, -1):
+        for token_no in range(len(data[line_no]) - 1, -1, -1):
           if line_no == ctoken[0] and token_no >= ctoken[1]:
             continue
           if number_regex.match(data[line_no][token_no]):
             done = True
             ctoken[0] = line_no
             ctoken[1] = token_no
+            break
         if done:
           break
-    elif c == ord("s"):
-      if (ctoken[0], ctoken[1]) in marked and marked[ctoken[0], ctoken[1]] == "s":
+    elif c in [ord('s'), ord('b'), ord('r')]:
+      symbol = chr(c)
+      if (ctoken[0], ctoken[1]) not in marked:
+        marked[ctoken[0], ctoken[1]] = {symbol}
+      elif symbol not in marked[ctoken[0], ctoken[1]]:
+        marked[ctoken[0], ctoken[1]].add(symbol)
+      elif len(marked[ctoken[0], ctoken[1]]) == 1:
         marked.pop((ctoken[0], ctoken[1]))
       else:
-        marked[ctoken[0], ctoken[1]] = "s"
-    elif c == ord("b"):
-      if (ctoken[0], ctoken[1]) in marked and marked[ctoken[0], ctoken[1]] == "b":
-        marked.pop((ctoken[0], ctoken[1]))
-      else:
-        marked[ctoken[0], ctoken[1]] = "b"
+        marked[ctoken[0], ctoken[1]].remove(symbol)
     elif c == ord("u"):
       if (ctoken[0], ctoken[1]) in marked:
         marked.pop((ctoken[0], ctoken[1]))
     elif c == ord("/"):
       # write out
-      write_file(filenames[cfilename], data, marked)
+      write_file(filenames[cfilename], data, marked, overwrite)
       # get next
       cfilename += 1
       if len(filenames) <= cfilename:
         break
+      data = read_file(filenames[cfilename])
+      view.data = data
+
+      # Reset, but do not rename as we want the view to have the same objects still
+      marked.clear()
+      ctoken[0] = 0
+      ctoken[1] = 0
+    elif c == ord("\\"):
+      # write out
+      write_file(filenames[cfilename], data, marked, overwrite)
+      # get previous
+      if cfilename > 0:
+        cfilename -= 1
       data = read_file(filenames[cfilename])
       view.data = data
 
@@ -248,9 +310,28 @@ def annotate(window):
   out.close()
 
 if len(sys.argv) < 2:
-  print("Usage:\n{} <file with a list of files to annotate> [<logging filename, default='files_still_to_do']".format(sys.argv[0]))
-  print("\nFor example:\n> find . | grep 'tok$' > filenames_todo\n> {} filenames_todo do_later\n... do some work, then quit, go away, come back...\n> {} do_later do_even_later\n".format(sys.argv[0], sys.argv[0]))
+  print("Usage:\n{} <file with a list of files to annotate>\nOptions:".format(sys.argv[0]))
+  print("  -log <filename>, default = 'files_still_to_do']")
+  print("  -overwrite t/f, default = false (will save annotations to a new file)")
+  print("\nFor example:")
+  print(">> find . | grep 'tok$' > filenames_todo")
+  print(">> {} filenames_todo -log do_later\n... do some work, then quit, go away, come back...".format(sys.argv[0]))
+  print(">> {} do_later -log do_even_later\n".format(sys.argv[0]))
   sys.exit(1)
 
-curses.wrapper(annotate)
+### Read filename info
+if len(glob.glob(sys.argv[1])) == 0:
+  print("Cannot open / find '{}'".format(sys.argv[1]))
+  sys.exit(1)
+filenames = [line.strip() for line in open(sys.argv[1]).readlines()]
+failed = False
+for filename in filenames:
+  if len(glob.glob(filename)) == 0:
+    print("Cannot open / find '{}' from the filenames list".format(filename))
+    failed = True
+if failed:
+  sys.exit(1)
+
+### Start interface
+curses.wrapper(annotate, filenames)
 
