@@ -76,6 +76,7 @@ Bugs:
  - Going backwards to files just annotated will either (1) show files without any annotations and overwrite the existing annotations, when creating <filename>.annotated files, (2) not allow existing annotations to be removed
 
 Features:
+ - Enable different scales of annotation (e.g. multiword span, or an entire sentence, or linking spans)
  - Space between token and label
  - For blank lines, print only one in a row
  - Variable location of instructions
