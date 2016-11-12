@@ -94,4 +94,3 @@ Features:
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
  - Nicer argument, error, and logging handling
- - Break down into smaller pieces (step 1, the main loop)
