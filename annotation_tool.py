@@ -144,7 +144,13 @@ class Datum(object):
             end = modifier.end('', config.unique_length)
             wrappers[start, end] = modifier
 
-        for line in open(filename):
+        tmp_filename = filename
+        if not config.overwrite:
+            alternative = filename + ".annotated"
+            if len(glob.glob(alternative)) > 0:
+                tmp_filename = alternative
+
+        for line in open(tmp_filename):
             self.tokens.append([])
             for token in line.split():
                 # TODO: Handle ordering issue better

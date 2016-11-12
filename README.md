@@ -32,6 +32,10 @@ Saving, exiting, etc:
  - q            - quit
  - h            - toggle help info (default on)
 
+Note, when moving to the next or previous file, the current state is saved.
+If annotations are being saved without overwriting raw data then the annotated version will be read in.
+For example, if a file is annotated, then '/\' is typed, the file will be showing again with the new annotations.
+
 Tokens are coloured as follows:
 
  - Blue on white, current token under consideration
@@ -72,9 +76,6 @@ A series of lines, each containing ([] are optional):
 
 # TODO:
 
-Bugs:
- - Going backwards to files just annotated will either (1) show files without any annotations and overwrite the existing annotations, when creating <filename>.annotated files, (2) not allow existing annotations to be removed
-
 Features:
  - Enable different scales of annotation (e.g. multiword span, or an entire sentence, or linking spans)
  - Space between token and label
@@ -88,6 +89,7 @@ Features:
  - Allow auto-search over labels (i.e. user types characters and we search over labels to get the right one as they type)
  - Allow definition of keys to jump to next match on a regex
  - Option to not save by default
+ - Add the option to read in the raw data when going back to a seen file
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
