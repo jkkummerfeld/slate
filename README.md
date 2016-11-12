@@ -87,6 +87,7 @@ Features:
  - Allow multi-key labels
  - Allow auto-search over labels (i.e. user types characters and we search over labels to get the right one as they type)
  - Allow definition of keys to jump to next match on a regex
+ - Option to not save by default
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)

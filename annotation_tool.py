@@ -375,6 +375,19 @@ class View(object):
         self.do_contents(height, width)
         self.window.refresh()
 
+    def render_edgecase(self, edge):
+        self.window.clear()
+        height, width = self.window.getmaxyx()
+        pos = int(height / 2)
+        line0 = "At "+ edge +" in the files."
+        dir_key = '/'
+        if edge == 'end':
+            dir_key = '\\'
+        line1 = "Type 'q' to quit, or '"+ dir_key+ "' to go back."
+        self.window.addstr(pos, 0, line0, curses.color_pair(HELP_COLOR))
+        self.window.addstr(pos + 1, 0, line1, curses.color_pair(DEFAULT_COLOR))
+        self.window.refresh()
+
 DEFAULT_CONFIG = Config(
     {
         's': KeyConfig('s', 'SELL', 2, '{', '}'),
@@ -421,50 +434,66 @@ def annotate(window, config, filenames):
     datum = Datum(filenames[cfilename], config)
     view = View(window, [0, 0], datum, config, cfilename, len(filenames))
 
+    at_end = None
     while True:
-        # Draw screen
-        view.render()
+        if at_end is None:
+            # Draw screen
+            view.render()
+            # Get input
+            user_input = window.getch()
 
-        # Get input
-        user_input = window.getch()
-        if user_input == curses.KEY_LEFT: view.move_left()
-        elif user_input == curses.KEY_SLEFT: view.move_to_start()
-        elif user_input == curses.KEY_RIGHT: view.move_right()
-        elif user_input == curses.KEY_SRIGHT: view.move_to_end()
-        elif user_input == curses.KEY_UP: view.move_up()
-        elif user_input == 337: view.move_to_top() # SHIFT + UP, Worked out on a Mac by hand...
-        elif user_input == curses.KEY_DOWN: view.move_down()
-        elif user_input == 336: view.move_to_bottom() # SHIFT + DOWN, Worked out on a Mac by hand...
-        elif user_input == ord("n"): view.next_number()
-        elif user_input == ord("h"): view.toggle_help()
-        elif user_input == ord("p"): view.next_number()
-        elif user_input == ord("u"): view.remove_annotation()
-        elif user_input == ord("/"):
-            datum.write_out()
-            # get next
-            cfilename += 1
-            if len(filenames) <= cfilename:
-                break
-            datum = Datum(filenames[cfilename], config)
-            view.datum = datum
+            if user_input == curses.KEY_LEFT: view.move_left()
+            elif user_input == curses.KEY_SLEFT: view.move_to_start()
+            elif user_input == curses.KEY_RIGHT: view.move_right()
+            elif user_input == curses.KEY_SRIGHT: view.move_to_end()
+            elif user_input == curses.KEY_UP: view.move_up()
+            elif user_input == 337: view.move_to_top() # SHIFT + UP, Worked out on a Mac by hand...
+            elif user_input == curses.KEY_DOWN: view.move_down()
+            elif user_input == 336: view.move_to_bottom() # SHIFT + DOWN, Worked out on a Mac by hand...
+            elif user_input == ord("n"): view.next_number()
+            elif user_input == ord("h"): view.toggle_help()
+            elif user_input == ord("p"): view.next_number()
+            elif user_input == ord("u"): view.remove_annotation()
+            elif user_input == ord("/"):
+                # If we can get another file, do
+                datum.write_out()
+                if cfilename < len(filenames) -1:
+                    cfilename += 1
+                    datum = Datum(filenames[cfilename], config)
+                    view.datum = datum
 
-            # Reset, but do not rename as we want the view to have the same
-            # objects still
-            view.pos = [0, 0]
-        elif user_input == ord("\\"):
-            datum.write_out()
-            # get previous
-            if cfilename > 0:
-                cfilename -= 1
-            datum = Datum(filenames[cfilename], config)
-            view.datum = datum
+                    # Reset, but do not rename as we want the view to have the same
+                    # objects still
+                    view.pos = [0, 0]
+                else:
+                    at_end = 'end'
+            elif user_input == ord("\\"):
+                # If we can go earlier, do
+                datum.write_out()
+                if cfilename > 0:
+                    cfilename -= 1
+                    datum = Datum(filenames[cfilename], config)
+                    view.datum = datum
 
-            # Reset, but do not rename as we want the view to have the same
-            # objects still
-            view.pos = [0, 0]
-        elif user_input == ord("q"): break
-        elif user_input in [ord('s'), ord('b'), ord('r')]:
-            view.modify_annotation(chr(user_input))
+                    # Reset, but do not rename as we want the view to have the same
+                    # objects still
+                    view.pos = [0, 0]
+                else:
+                    at_end = 'start'
+            elif user_input == ord("q"): break
+            elif user_input in [ord('s'), ord('b'), ord('r')]:
+                view.modify_annotation(chr(user_input))
+        else:
+            # Draw screen
+            view.render_edgecase(at_end)
+            # Get input
+            user_input = window.getch()
+            if at_end == 'start' and user_input == ord("/"):
+                at_end = None
+            elif at_end == 'end' and user_input == ord("\\"):
+                at_end = None
+            elif user_input == ord("q"): break
+
         window.clear()
 
     print('\n'.join(filenames[cfilename:]), file=out)
