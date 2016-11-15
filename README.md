@@ -4,33 +4,33 @@ A lightweight text annotation tool for use in a terminal
 
 # Usage:
 
-`./annotation_tool.py <file with a list of files to annotate>`
+```sh
+./annotation_tool.py <file with a list of files to annotate>
+```
 
 You will be shown files one at a time in plain text. Commands are:
 
-Type | Key | Affect
----- | --- | ------
-Movement | left arrow           | move to previous word
-         | left arrow + shift   | go to first word in line
-         | right arrow          | move to next word
-         | right arrow + shift  | go to last word in line
-         | up arrow             | move up a line
-         | up arrow + shift     | go to first line
-         | down arrow           | move down a line
-         | down arrow + shift   | go to last line
-         | n                    | move to next numerical value
-         | p                    | move to previous numerical value
----- | --- | ------
-Annotation | r            | [un]mark this token as ||
-           | s            | [un]mark this token as {}
-           | b            | [un]mark this token as []
-           | u            | undo annotation on this token
-           | TODO: (any) + shift | go into span mode, marking multiple tokens based on movement until <enter> is pressed
----- | --- | ------
-Saving, exiting, etc | /            | save and go to next file
-                     | \            | save and go to previous file
-                     | q            | quit
-                     | h            | toggle help info (default on)
+Type                 | Key                  | Affect
+-------------------- | -------------------- | ------
+Movement             | left arrow           | move to previous word
+                     | left arrow + shift   | go to first word in line
+                     | right arrow          | move to next word
+                     | right arrow + shift  | go to last word in line
+                     | up arrow             | move up a line
+                     | up arrow + shift     | go to first line
+                     | down arrow           | move down a line
+                     | down arrow + shift   | go to last line
+                     | n                    | move to next numerical value
+                     | p                    | move to previous numerical value
+Annotation           | r                    | [un]mark this token as ||
+                     | s                    | [un]mark this token as {}
+                     | b                    | [un]mark this token as []
+                     | u                    | undo annotation on this token
+                     | TODO: (any) + shift  | go into span mode, marking multiple tokens based on movement until <enter> is pressed
+Saving, exiting, etc | /                    | save and go to next file
+                     | \                    | save and go to previous file
+                     | q                    | quit
+                     | h                    | toggle help info (default on)
 
 Note, when moving to the next or previous file, the current state is saved.
 If annotations are being saved without overwriting raw data then the annotated version will be read in.
