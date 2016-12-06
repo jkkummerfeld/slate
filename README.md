@@ -77,7 +77,8 @@ A series of lines, each containing ([] are optional):
 # TODO:
 
 Features:
- - Enable different scales of annotation (e.g. multiword span, or an entire sentence, or linking spans)
+ - Enable different scales of annotation (e.g. multiword span, or an entire sentence)
+ - Enable linking items rather than labelling them
  - Space between token and label
  - For blank lines, print only one in a row
  - Variable location of instructions
