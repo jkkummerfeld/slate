@@ -1,6 +1,8 @@
 from __future__ import print_function
 
-import curses
+from enum import Enum
+
+import curses # Needed for colours
 
 class KeyConfig(object):
     def __init__(self, key, label, color=2, start='{', end='}'):
@@ -44,11 +46,28 @@ class KeyConfig(object):
         ans += self.end_mark
         return ans, self.color
 
+class AnnScope(Enum):
+    token = 0
+    line = 1
+    # TODO:
+    # span
+    # sentence
+    # paragraph
+    # character
+
+class AnnType(Enum):
+    categorical = 0
+    link = 1
+    text = 2
+
 class Config(object):
-    def __init__(self, keys, min_unique_length=-1, overwrite=False):
+    def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.categorical)):
         self.keys = keys
         self.unique_length = min_unique_length
         self.overwrite = overwrite
+        self.annotation = ann[0]
+        self.annotation_type = ann[1]
+        self.log = open("log.txt", "w")
 
     def set_by_file(self, filename):
         self.keys = {}

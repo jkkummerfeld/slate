@@ -18,16 +18,20 @@ class View(object):
         self.config = my_config
 
     def modify_annotation(self, symbol):
-        if (self.pos[0], self.pos[1]) not in self.datum.marked:
-            self.datum.marked[self.pos[0], self.pos[1]] = {symbol}
-        elif symbol not in self.datum.marked[self.pos[0], self.pos[1]]:
-            self.datum.marked[self.pos[0], self.pos[1]].add(symbol)
-        elif len(self.datum.marked[self.pos[0], self.pos[1]]) == 1:
+        key = (self.pos[0], self.pos[1])
+        if self.config.annotation == AnnScope.line:
+            key = self.pos[0]
+
+        if key not in self.datum.marked:
+            self.datum.marked[key] = {symbol}
+        elif symbol not in self.datum.marked[key]:
+            self.datum.marked[key].add(symbol)
+        elif len(self.datum.marked[key]) == 1:
             # Given the first two conditions, we know there is a single
             # mark and it is this symbol.
-            self.datum.marked.pop((self.pos[0], self.pos[1]))
+            self.datum.marked.pop(key)
         else:
-            self.datum.marked[self.pos[0], self.pos[1]].remove(symbol)
+            self.datum.marked[key].remove(symbol)
 
     def remove_annotation(self):
         if (self.pos[0], self.pos[1]) in self.datum.marked:
@@ -37,6 +41,8 @@ class View(object):
         self.show_help = not self.show_help
 
     def move_left(self):
+        if self.config.annotation == AnnScope.line:
+            return
         self.pos[1] -= 1
         if self.pos[1] < 0:
             if self.pos[0] == 0:
@@ -50,9 +56,13 @@ class View(object):
                     self.pos[1] = len(self.datum.tokens[self.pos[0]]) - 1
 
     def move_to_start(self):
+        if self.config.annotation == AnnScope.line:
+            return
         self.pos[1] = 0
 
     def move_right(self):
+        if self.config.annotation == AnnScope.line:
+            return
         self.pos[1] += 1
         if self.pos[1] >= len(self.datum.tokens[self.pos[0]]):
             nline = self.pos[0] + 1
@@ -65,6 +75,8 @@ class View(object):
                 self.pos[1] = len(self.datum.tokens[self.pos[0]]) - 1
 
     def move_to_end(self):
+        if self.config.annotation == AnnScope.line:
+            return
         self.pos[1] = len(self.datum.tokens[self.pos[0]]) - 1
 
     def move_up(self):
@@ -105,6 +117,8 @@ class View(object):
 
     # TODO: Combine these two
     def next_number(self):
+        if self.config.annotation == AnnScope.line:
+            return
         # Find next position, use regex
         for line_no in range(self.pos[0], len(self.datum.tokens)):
             done = False
@@ -118,6 +132,8 @@ class View(object):
             if done:
                 break
     def previous_number(self):
+        if self.config.annotation == AnnScope.line:
+            return
         # Find next position, use regex
         for line_no in range(self.pos[0], -1, -1):
             done = False
@@ -140,28 +156,50 @@ class View(object):
             if line_no < self.top:
                 continue
 
-            for token_no, token in enumerate(line):
-                cpair = (line_no, token_no)
-                current = (tuple(self.pos) == cpair)
+            line_color = DEFAULT_COLOR
+            space_color = DEFAULT_COLOR
+            current = False
 
-                # Determine color and annotations to show
-                color = DEFAULT_COLOR
-                if cpair in self.datum.marked:
-                    for key in self.datum.marked[cpair]:
+            line_start = ''
+            if self.config.annotation == AnnScope.line:
+                for key in self.datum.get_markings(line_no):
+                    modifier = self.config.keys[key]
+                    if line_color != DEFAULT_COLOR:
+                        line_color = OVERLAP_COLOR
+                    else:
+                        line_color = modifier.color
+                    line_start += key + " "
+                if len(line_start) > 0:
+                    line_start += "| "
+                # Always override if this is the cursor position
+                if self.pos[0] == line_no:
+                    current = True
+                    line_color = CURSOR_COLOR
+
+                # Set the space color to match
+                space_color = line_color
+
+            for token_no, token in enumerate(line):
+                if token_no == 0:
+                    token = line_start + token
+
+                text_color = line_color
+                if self.config.annotation == AnnScope.token:
+                    cpair = (line_no, token_no)
+                    current = (tuple(self.pos) == cpair)
+                    for key in self.datum.get_markings(cpair):
                         modifier = self.config.keys[key]
-                        if color != DEFAULT_COLOR:
-                            color = OVERLAP_COLOR
+                        if text_color != DEFAULT_COLOR:
+                            text_color = OVERLAP_COLOR
                         else:
-                            color = modifier.color
+                            text_color = modifier.color
                         token = modifier.start_and_end(token, 0)[0]
 
-                # Always override if this is the cursor position
-                if current: color = CURSOR_COLOR
-
-                if token_no > 0:
-                    token = ' '+ token
+                    # Always override if this is the cursor position
+                    if current: text_color = CURSOR_COLOR
 
                 length = len(token)
+                if token_no > 0 and cpos > 0: length += 1 # To cover the space
                 if cpos + length >= width:
                     cpos = 0
                     cline += 1
@@ -171,9 +209,19 @@ class View(object):
                     pass
                 else:
                     if not trial:
-                        self.window.addstr(cline, cpos, token, curses.color_pair(color))
+                        if token_no > 0 and cpos > 0:
+                            color = curses.color_pair(space_color)
+                            self.window.addstr(cline, cpos, " ", color)
+                            color = curses.color_pair(text_color)
+                            self.window.addstr(cline, cpos + 1, token, color)
+                        else:
+                            color = curses.color_pair(text_color)
+                            self.window.addstr(cline, cpos, token, color)
                     if current:
                         seen = True
+
+                if token_no > 0 and cpos > 0:
+                    cpos += 1
                 cpos += len(token)
             cline += 1
             cpos = 0
@@ -184,6 +232,7 @@ class View(object):
 
         # First, draw instructions
         if height >= self.inst_lines and self.show_help:
+            # TODO: Change to be nano-style across the full bottom
             line0 = self.progress + " Colors are blue-current green-sell yellow-buy cyan-both"
             line1 = "arrows (move about), n p (next & previous number, via regex)"
             line2 = "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)"

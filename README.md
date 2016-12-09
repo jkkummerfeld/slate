@@ -91,6 +91,8 @@ Features:
  - Allow definition of keys to jump to next match on a regex
  - Option to not save by default
  - Add the option to read in the raw data when going back to a seen file
+ - Option to load all at start
+ - Option to only save on exit (not when changing files)
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
