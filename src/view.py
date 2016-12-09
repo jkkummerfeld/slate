@@ -11,11 +11,17 @@ class View(object):
         self.window = window
         self.pos = pos
         self.datum = datum
-        self.inst_lines = 3
         self.top = 0
         self.show_help = True
         self.progress = "done {} / {}".format(cnum, total_num)
         self.config = my_config
+
+    def instructions(self):
+        return [
+            self.progress + " Colors are blue-current green-sell yellow-buy cyan-both",
+            "arrows (move about), n p (next & previous number, via regex)",
+            "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)",
+        ]
 
     def modify_annotation(self, symbol):
         key = (self.pos[0], self.pos[1])
@@ -150,7 +156,7 @@ class View(object):
     def do_contents(self, height, width, trial=False):
         seen = False
         cpos = 0
-        cline = self.inst_lines if self.show_help else 0
+        cline = 0
         for line_no, line in enumerate(self.datum.tokens):
             # If this line is above the top of what we are shwoing, skip it
             if line_no < self.top:
@@ -230,15 +236,11 @@ class View(object):
     def render(self):
         height, width = self.window.getmaxyx()
 
-        # First, draw instructions
-        if height >= self.inst_lines and self.show_help:
-            # TODO: Change to be nano-style across the full bottom
-            line0 = self.progress + " Colors are blue-current green-sell yellow-buy cyan-both"
-            line1 = "arrows (move about), n p (next & previous number, via regex)"
-            line2 = "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)"
-            self.window.addstr(0, 0, "{:<80}".format(line0), curses.color_pair(HELP_COLOR))
-            self.window.addstr(1, 0, "{:<80}".format(line1), curses.color_pair(HELP_COLOR))
-            self.window.addstr(2, 0, "{:<80}".format(line2), curses.color_pair(HELP_COLOR))
+        # First, plan instructions
+        main_height = height
+        inst = self.instructions()
+        if height >= len(inst) and self.show_help:
+            main_height -= len(inst) + 2
 
         # Shift the top up if necessary
         if self.top > self.pos[0]:
@@ -249,6 +251,15 @@ class View(object):
 
         # Next, draw contents
         self.do_contents(height, width)
+
+        # Last, draw instructions
+        if height >= len(inst) and self.show_help:
+            cur = main_height + 1
+            for line in inst:
+                fmt = "{:<"+ str(width) +"}"
+                self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR))
+                cur += 1
+
         self.window.refresh()
 
     def render_edgecase(self, edge):
