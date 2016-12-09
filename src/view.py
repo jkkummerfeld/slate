@@ -10,11 +10,15 @@ class View(object):
     def __init__(self, window, pos, datum, my_config, cnum, total_num):
         self.window = window
         self.pos = pos
+        self.ref = None
         self.datum = datum
         self.top = 0
         self.show_help = True
         self.progress = "done {} / {}".format(cnum, total_num)
         self.config = my_config
+
+        if self.config.annotation == AnnType.link:
+            pass
 
     def instructions(self):
         return [
@@ -22,26 +26,6 @@ class View(object):
             "arrows (move about), n p (next & previous number, via regex)",
             "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)",
         ]
-
-    def modify_annotation(self, symbol):
-        key = (self.pos[0], self.pos[1])
-        if self.config.annotation == AnnScope.line:
-            key = self.pos[0]
-
-        if key not in self.datum.marked:
-            self.datum.marked[key] = {symbol}
-        elif symbol not in self.datum.marked[key]:
-            self.datum.marked[key].add(symbol)
-        elif len(self.datum.marked[key]) == 1:
-            # Given the first two conditions, we know there is a single
-            # mark and it is this symbol.
-            self.datum.marked.pop(key)
-        else:
-            self.datum.marked[key].remove(symbol)
-
-    def remove_annotation(self):
-        if (self.pos[0], self.pos[1]) in self.datum.marked:
-            self.datum.marked.pop((self.pos[0], self.pos[1]))
 
     def toggle_help(self):
         self.show_help = not self.show_help

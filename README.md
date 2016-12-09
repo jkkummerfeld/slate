@@ -78,7 +78,7 @@ A series of lines, each containing ([] are optional):
 
 Features:
  - Enable different scales of annotation (e.g. multiword span, or an entire sentence)
- - Enable linking items rather than labelling them
+ - Enable linking items rather than labeling them (and labeled links)
  - Space between token and label
  - For blank lines, print only one in a row
  - Variable location of instructions
@@ -89,10 +89,10 @@ Features:
  - Allow multi-key labels
  - Allow auto-search over labels (i.e. user types characters and we search over labels to get the right one as they type)
  - Allow definition of keys to jump to next match on a regex
- - Option to not save by default
  - Add the option to read in the raw data when going back to a seen file
  - Option to load all at start
  - Option to only save on exit (not when changing files)
+ - Have instructions be a set of pieces that are adaptively arranged
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)

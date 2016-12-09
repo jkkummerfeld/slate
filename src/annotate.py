@@ -67,7 +67,10 @@ def annotate(window, config, filenames):
             elif user_input == ord("n"): view.next_number()
             elif user_input == ord("h"): view.toggle_help()
             elif user_input == ord("p"): view.next_number()
-            elif user_input == ord("u"): view.remove_annotation()
+            elif user_input == ord("u"):
+                datum.remove_annotation(view.pos, view.ref)
+            elif user_input in [ord('s'), ord('b'), ord('r')]:
+                datum.modify_annotation(view.pos, view.ref, chr(user_input))
             elif user_input == ord("/"):
                 # If we can get another file, do
                 datum.write_out()
@@ -76,8 +79,8 @@ def annotate(window, config, filenames):
                     datum = Datum(filenames[cfilename], config)
                     view.datum = datum
 
-                    # Reset, but do not rename as we want the view to have the same
-                    # objects still
+                    # Reset, but do not rename as we want the view to have the
+                    # same objects still
                     view.pos = [0, 0]
                 else:
                     at_end = 'end'
@@ -89,14 +92,12 @@ def annotate(window, config, filenames):
                     datum = Datum(filenames[cfilename], config)
                     view.datum = datum
 
-                    # Reset, but do not rename as we want the view to have the same
-                    # objects still
+                    # Reset, but do not rename as we want the view to have the
+                    # same objects still
                     view.pos = [0, 0]
                 else:
                     at_end = 'start'
             elif user_input == ord("q"): break
-            elif user_input in [ord('s'), ord('b'), ord('r')]:
-                view.modify_annotation(chr(user_input))
         else:
             # Draw screen
             view.render_edgecase(at_end)

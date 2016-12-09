@@ -98,6 +98,31 @@ class Datum(object):
     def annotation_filename(self):
         return self.filename + ".annotations"
 
+    def convert_to_key(self, pos, ref):
+        if self.config.annotation == AnnScope.line:
+            return pos[0]
+        else:
+            return (pos[0], pos[1])
+
+    def modify_annotation(self, pos, ref, symbol):
+        key = self.convert_to_key(pos)
+
+        if key not in self.marked:
+            self.marked[key] = {symbol}
+        elif symbol not in self.marked[key]:
+            self.marked[key].add(symbol)
+        elif len(self.marked[key]) == 1:
+            # Given the first two conditions, we know there is a single
+            # mark and it is this symbol.
+            self.marked.pop(key)
+        else:
+            self.marked[key].remove(symbol)
+
+    def remove_annotation(self, pos):
+        key = self.convert_to_key(pos)
+        if key in self.marked:
+            self.marked.pop(key)
+
     def write_out(self, filename=None):
         out_filename = self.annotation_filename()
         if filename is not None:
