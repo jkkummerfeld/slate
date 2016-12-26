@@ -3,29 +3,13 @@
 from __future__ import print_function
 
 import curses
+import argparse
+import logging
 import sys
 
 from data import *
 from config import *
 from view import *
-
-def print_usage(args):
-    lines = [
-        "Usage:",
-        "{} <file with a list of files to annotate>".format(args[0]),
-        "Options:",
-        "    -log <filename>, default = 'files_still_to_do']",
-        "    -output [overwrite, inline, standoff], default = standoff"
-        "",
-        "For further information, see README.md",
-        "",
-        "For example:",
-        ">> find . | grep 'tok$' > filenames_todo",
-        ">> {} filenames_todo -log do_later".format(args[0]),
-        "... do some work, then quit, go away, come back...",
-        ">> {} do_later -log do_even_later".format(args[0]),
-    ]
-    print('\n'.join(lines))
 
 def annotate(window, config, filenames):
     out_filename = "files_still_to_do"
@@ -115,13 +99,13 @@ def annotate(window, config, filenames):
     out.close()
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print_usage(sys.argv)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='A tool for annotating text data with extra information.')
+    parser.add_argument('data', help='File containing a list of files to annotate')
+    parser.add_argument('--output', help='File containing a list of files to annotate', choices=['overwrite', 'inline', 'standoff'], default="overwrite")
+    parser.add_argument('--log_prefix', help='Prefix for logging files (otherwise none)')
+    args = parser.parse_args()
 
     ### Start interface
-    filenames = read_filenames(sys.argv[1])
-    config = DEFAULT_CONFIG
-    if len(sys.argv) > 2:
-        config = read_config(sys.argv[2])
+    filenames = read_filenames(args.data)
+    config = get_default_config(args)
     curses.wrapper(annotate, config, filenames)

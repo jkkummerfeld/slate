@@ -114,14 +114,16 @@ class Config(object):
                 self.unique_length = i
                 break
 
-DEFAULT_CONFIG = Config(
-    {
-        's': KeyConfig('s', 'SELL', 2, '{', '}'),
-        'b': KeyConfig('b', 'BUY', 3, '[', ']'),
-        'r': KeyConfig('r', 'RATE', 7, '|', '|'),
-    },
-    0
-)
+def get_default_config(args):
+    return Config(
+        {
+            's': KeyConfig('s', 'SELL', 2, '{', '}'),
+            'b': KeyConfig('b', 'BUY', 3, '[', ']'),
+            'r': KeyConfig('r', 'RATE', 7, '|', '|'),
+        },
+        0,
+        args.output == "overwrite"
+    )
 
 SPECIAL_KEYS = {'u', 'q', 'h', 'p', 'n'}
 COLORS = [
