@@ -221,24 +221,24 @@ class View(object):
         height, width = self.window.getmaxyx()
 
         # First, plan instructions
-        main_height = height
+        main_height = height - 1
         inst = self.instructions()
         if height >= len(inst) and self.show_help:
-            main_height -= len(inst) + 2
+            main_height = main_height - len(inst)
 
         # Shift the top up if necessary
         if self.top > self.pos[0]:
             self.top = self.pos[0]
         # Do dry runs, shifting top down until the position is visible
-        while not self.do_contents(height, width, True):
+        while not self.do_contents(main_height, width, True):
             self.top += 1
 
         # Next, draw contents
-        self.do_contents(height, width)
+        self.do_contents(main_height, width)
 
         # Last, draw instructions
         if height >= len(inst) and self.show_help:
-            cur = main_height + 1
+            cur = main_height
             for line in inst:
                 fmt = "{:<"+ str(width) +"}"
                 self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR))
