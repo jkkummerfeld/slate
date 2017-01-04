@@ -93,6 +93,7 @@ Features:
  - Option to load all at start
  - Option to only save on exit (not when changing files)
  - Have instructions be a set of pieces that are adaptively arranged
+ - Constrain annotations, e.g. a flag to not allow links to point in one direction
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
