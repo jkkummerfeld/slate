@@ -61,7 +61,7 @@ class AnnType(Enum):
     text = 2
 
 class Config(object):
-    def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.categorical)):
+    def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.link)):
         self.keys = keys
         self.unique_length = min_unique_length
         self.overwrite = overwrite
@@ -139,7 +139,9 @@ COLORS = [
 OVERLAP_COLOR = 6
 DEFAULT_COLOR = 4
 CURSOR_COLOR = 1
+LINK_COLOR = 2
 HELP_COLOR = 5
+REF_COLOR = 3
 
 def read_config(filename):
     # TODO: this is a stub, actually implement reading a config

@@ -94,6 +94,7 @@ Features:
  - Option to only save on exit (not when changing files)
  - Have instructions be a set of pieces that are adaptively arranged
  - Constrain annotations, e.g. a flag to not allow links to point in one direction
+ - Allow storage of information about the last time editing, so we can pick up at the same position
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)

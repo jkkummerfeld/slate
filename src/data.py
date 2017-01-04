@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import glob
 
-from config import AnnType, AnnScope
+from config import *
 from sys import stderr
 
 def read_filenames(arg):
@@ -52,76 +52,111 @@ class Datum(object):
                     if self.config.annotation_type == AnnType.categorical:
                         # Format example:
                         # (4, 2) - buy sell
-                        # (4, 2) is labeled 'buy' and 'sell'
-                        labels = set(fields[3:])
+                        # means (4, 2) is labeled 'buy' and 'sell'
+                        labels = fields[3:]
                         self.marked[source] = labels
                     elif self.config.annotation_type == AnnType.link:
                         # Format example:
                         # (4, 2) - (4, 1) (4, 0)
-                        # (4, 2) is linked to the two words before it
-                        targets = []
+                        # means (4, 2) is linked to the two words before it
+                        targets = set()
                         for i in range(3, len(fields), 2):
                             line = get_num(fields[i])
                             token = get_num(fields[i + 1])
-                            targets.append((line, token))
+                            targets.add((line, token))
                         self.marked[source] = targets
                     elif self.config.annotation_type == AnnType.text:
                         # Format example:
                         # (4, 2) - blah blah blah
-                        # (4, 2) is labeled "blah blah blah"
+                        # means (4, 2) is labeled "blah blah blah"
                         self.marked[source] = ' '.join(fields[3:])
                 elif self.config.annotation == AnnScope.line:
                     source = int(fields[0])
                     if self.config.annotation_type == AnnType.categorical:
                         # Format example:
                         # 3 - buy sell
-                        # line 3 is labeled 'buy' and 'sell'
-                        self.marked[source] = set(fields[2:])
+                        # means line 3 is labeled 'buy' and 'sell'
+                        self.marked[source] = fields[2:]
                     elif self.config.annotation_type == AnnType.link:
                         # Format example:
                         # 3 - 4 1
-                        # line 3 is linked to lines 1 and 4
+                        # means line 3 is linked to lines 1 and 4
                         targets = {int(v) for v in fields[2:]}
                         self.marked[source] = targets
                     elif self.config.annotation_type == AnnType.text:
                         # Format example:
                         # 3 - blah blah
-                        # line 3 is labeled "blah blah"
+                        # means line 3 is labeled "blah blah"
                         self.marked[source] = ' '.join(fields[2:])
 
-    def get_markings(self, position):
-        if position in self.marked:
-            return self.marked[position]
+    def get_marked_token(self, pos, cursor, linking_pos):
+        token = self.tokens[pos[0]][pos[1]]
+        color = DEFAULT_COLOR
+        text = None
+
+        if self.config.annotation == AnnScope.line:
+            pos = pos[0]
+            linking_pos = linking_pos[0]
+            cursor = cursor[0]
+            # For categorical data, set the text
+            if self.config.annotation_type == AnnType.categorical:
+                text = ' '.join(self.marked.get(cursor, []))
+
+        if pos == cursor:
+            color = CURSOR_COLOR
+            if self.config.annotation_type == AnnType.text:
+                text = self.marked.get(pos)
+        elif pos == linking_pos:
+            color = LINK_COLOR
+        elif pos in self.marked or linking_pos in self.marked:
+            if self.config.annotation_type == AnnType.categorical:
+               for key in self.marked.get(pos, []):
+                    modifier = self.config.keys[key]
+                    if color != DEFAULT_COLOR: color = OVERLAP_COLOR
+                    else: color = modifier.color
+            elif self.config.annotation_type == AnnType.link:
+                if pos in self.marked.get(linking_pos, []):
+                    color = REF_COLOR
+            else:
+                pass
         else:
-            return set()
+            pass
+
+        return (token, color, text)
 
     def annotation_filename(self):
         return self.filename + ".annotations"
 
-    def convert_to_key(self, pos, ref):
+    def convert_to_key(self, pos):
         if self.config.annotation == AnnScope.line:
             return pos[0]
         else:
             return (pos[0], pos[1])
 
-    def modify_annotation(self, pos, ref, symbol):
-        key = self.convert_to_key(pos)
+    def modify_annotation(self, pos, linking_pos, symbol=None):
+        pos_key = self.convert_to_key(pos)
+        item = symbol
+        if self.config.annotation_type == AnnType.link:
+            item = pos_key
+            pos_key = self.convert_to_key(linking_pos)
 
-        if key not in self.marked:
-            self.marked[key] = {symbol}
-        elif symbol not in self.marked[key]:
-            self.marked[key].add(symbol)
-        elif len(self.marked[key]) == 1:
+        if pos_key not in self.marked:
+            self.marked[pos_key] = {item}
+        elif item not in self.marked[pos_key]:
+            self.marked[pos_key].add(item)
+        elif len(self.marked[pos_key]) == 1:
             # Given the first two conditions, we know there is a single
             # mark and it is this symbol.
-            self.marked.pop(key)
+            self.marked.pop(pos_key)
         else:
-            self.marked[key].remove(symbol)
+            self.marked[pos_key].remove(item)
 
-    def remove_annotation(self, pos):
-        key = self.convert_to_key(pos)
-        if key in self.marked:
-            self.marked.pop(key)
+    def remove_annotation(self, pos, ref):
+        pos_key = self.convert_to_key(pos)
+        if self.config.annotation_type == AnnType.link:
+            pos_key = self.convert_to_key(ref)
+        if pos_key in self.marked:
+            self.marked.pop(pos_key)
 
     def write_out(self, filename=None):
         out_filename = self.annotation_filename()

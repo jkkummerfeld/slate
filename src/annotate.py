@@ -11,6 +11,11 @@ from data import *
 from config import *
 from view import *
 
+def get_view(window, datum, config, file_num, total_files):
+    cursor = [0, 0]
+    link = [0, 0] if config.annotation_type == AnnType.link else [-1, -1]
+    return View(window, cursor, link, datum, config, file_num, total_files)
+
 def annotate(window, config, filenames):
     out_filename = "files_still_to_do"
     overwrite = False
@@ -30,7 +35,7 @@ def annotate(window, config, filenames):
 
     cfilename = 0
     datum = Datum(filenames[cfilename], config)
-    view = View(window, [0, 0], datum, config, cfilename, len(filenames))
+    view = get_view(window, datum, config, cfilename, len(filenames))
 
     at_end = None
     while True:
@@ -40,48 +45,57 @@ def annotate(window, config, filenames):
             # Get input
             user_input = window.getch()
 
-            if user_input == curses.KEY_LEFT: view.move_left()
-            elif user_input == curses.KEY_SLEFT: view.move_to_start()
-            elif user_input == curses.KEY_RIGHT: view.move_right()
-            elif user_input == curses.KEY_SRIGHT: view.move_to_end()
+            # Note - First two are SHIFT + DOWN and SHIFT + UP, determined by
+            # hand on a Mac.
+            if user_input == 337:
+                if config.annotation_type == AnnType.link: view.move_up(True)
+                else: view.move_to_top()
+            elif user_input == 336:
+                if config.annotation_type == AnnType.link: view.move_down(True)
+                else: view.move_to_bottom() 
+            elif user_input == curses.KEY_SLEFT:
+                if config.annotation_type == AnnType.link: view.move_left(True)
+                else: view.move_to_start()
+            elif user_input == curses.KEY_SRIGHT:
+                if config.annotation_type == AnnType.link: view.move_right(True)
+                else: view.move_to_end()
             elif user_input == curses.KEY_UP: view.move_up()
-            elif user_input == 337: view.move_to_top() # SHIFT + UP, Worked out on a Mac by hand...
             elif user_input == curses.KEY_DOWN: view.move_down()
-            elif user_input == 336: view.move_to_bottom() # SHIFT + DOWN, Worked out on a Mac by hand...
+            elif user_input == curses.KEY_LEFT: view.move_left()
+            elif user_input == curses.KEY_RIGHT: view.move_right()
             elif user_input == ord("n"): view.next_number()
             elif user_input == ord("h"): view.toggle_help()
             elif user_input == ord("p"): view.next_number()
+            elif user_input == ord("d"):
+                datum.modify_annotation(view.cursor, view.linking_pos)
+                if config.annotation_type == AnnType.link:
+                    if config.annotation == AnnScope.line:
+                        view.move_down(True)
+                    else:
+                        view.move_right(True)
+            elif user_input == ord("D"):
+                datum.modify_annotation(view.cursor, view.linking_pos)
             elif user_input == ord("u"):
-                datum.remove_annotation(view.pos, view.ref)
+                datum.remove_annotation(view.cursor, view.linking_pos)
             elif user_input in [ord('s'), ord('b'), ord('r')]:
-                datum.modify_annotation(view.pos, view.ref, chr(user_input))
-            elif user_input == ord("/"):
+                datum.modify_annotation(view.cursor, view.linking_pos,
+                        chr(user_input))
+            elif user_input == ord("/") or user_input == ord("\\"):
                 # If we can get another file, do
                 datum.write_out()
-                if cfilename < len(filenames) -1:
-                    cfilename += 1
+                direction = 1 if user_input == ord("/") else -1
+                if 0 <= cfilename + direction < len(filenames):
+                    cfilename += direction
                     datum = Datum(filenames[cfilename], config)
-                    view.datum = datum
-
-                    # Reset, but do not rename as we want the view to have the
-                    # same objects still
-                    view.pos = [0, 0]
-                else:
+                    view = get_view(window, datum, config, cfilename,
+                            len(filenames))
+                elif direction > 0:
                     at_end = 'end'
-            elif user_input == ord("\\"):
-                # If we can go earlier, do
-                datum.write_out()
-                if cfilename > 0:
-                    cfilename -= 1
-                    datum = Datum(filenames[cfilename], config)
-                    view.datum = datum
-
-                    # Reset, but do not rename as we want the view to have the
-                    # same objects still
-                    view.pos = [0, 0]
                 else:
                     at_end = 'start'
-            elif user_input == ord("q"): break
+            elif user_input == ord("q"):
+                datum.write_out()
+                break
         else:
             # Draw screen
             view.render_edgecase(at_end)
