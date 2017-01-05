@@ -46,11 +46,11 @@ def annotate(window, config, filenames):
             user_input = window.getch()
 
             # Note - First two are SHIFT + DOWN and SHIFT + UP, determined by
-            # hand on a Mac.
-            if user_input == 337:
+            # hand on two laptops.
+            if user_input in [259, 337]:
                 if config.annotation_type == AnnType.link: view.move_up(True)
                 else: view.move_to_top()
-            elif user_input == 336:
+            elif user_input == [258, 336]:
                 if config.annotation_type == AnnType.link: view.move_down(True)
                 else: view.move_to_bottom() 
             elif user_input == curses.KEY_SLEFT:
