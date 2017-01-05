@@ -65,9 +65,13 @@ def annotate(window, config, filenames):
             elif user_input == curses.KEY_DOWN: view.move_down()
             elif user_input == curses.KEY_LEFT: view.move_left()
             elif user_input == curses.KEY_RIGHT: view.move_right()
-            elif user_input == ord("n"): view.next_number()
             elif user_input == ord("h"): view.toggle_help()
-            elif user_input == ord("p"): view.next_number()
+            elif user_input == ord("n"):
+                if config.annotation_type != AnnType.link:
+                    view.next_number()
+            elif user_input == ord("p"):
+                if config.annotation_type != AnnType.link:
+                    view.next_number()
             elif user_input == ord("d"):
                 datum.modify_annotation(view.cursor, view.linking_pos)
                 if config.annotation_type == AnnType.link:
@@ -87,8 +91,9 @@ def annotate(window, config, filenames):
             elif user_input == ord("u"):
                 datum.remove_annotation(view.cursor, view.linking_pos)
             elif user_input in [ord('s'), ord('b'), ord('r')]:
-                datum.modify_annotation(view.cursor, view.linking_pos,
-                        chr(user_input))
+                if config.annotation_type != AnnType.link:
+                    datum.modify_annotation(view.cursor, view.linking_pos,
+                            chr(user_input))
             elif user_input == ord("/") or user_input == ord("\\"):
                 # If we can get another file, do
                 datum.write_out()
