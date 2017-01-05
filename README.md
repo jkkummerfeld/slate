@@ -13,28 +13,28 @@ If you wish, there can also be two numbers after each filename, indicating the l
 
 You will be shown files one at a time in plain text. Commands for are:
 
-Type                 | Key                  | Labelling Affect                 | Linking Affect
--------------------- | -------------------- | -------------------------------- | ---------------------
-Movement             | left arrow           | move to previous word            | move antecedent to previous word
-                     | left arrow + shift   | go to first word in line         | move to previous word
-                     | right arrow          | move to next word                | move antecedent to next word
-                     | right arrow + shift  | go to last word in line          | move to next word
-                     | up arrow             | move up a line                   | move antecedent up a line
-                     | up arrow + shift     | go to first line                 | move up a line
-                     | down arrow           | move down a line                 | move antecedent down a line
-                     | down arrow + shift   | go to last line                  | move down a line
-                     | n                    | move to next numerical value     | -
-                     | p                    | move to previous numerical value | -
-Annotation           | r                    | [un]mark this token as ||        | -
-                     | s                    | [un]mark this token as {}        | -
-                     | b                    | [un]mark this token as []        | -
-                     | d                    | -                                | create a link and move down / right
-                     | D                    | -                                | create a link
-                     | u                    | undo annotation on this token    | undo all annotations for the current item
-Saving, exiting, etc | /                    | save and go to next file         | same
-                     | \                    | save and go to previous file     | same
-                     | q                    | quit                             | same
-                     | h                    | toggle help info (default on)    | same
+Type                 | Key                     | Labelling Affect                 | Linking Affect
+-------------------- | ----------------------- | -------------------------------- | ---------------------
+Movement             | left arrow              | move to previous word            | move antecedent to previous word
+                     | left arrow + shift      | go to first word in line         | move to previous word
+                     | right arrow             | move to next word                | move antecedent to next word
+                     | right arrow + shift     | go to last word in line          | move to next word
+                     | up arrow                | move up a line                   | move antecedent up a line
+                     | c or up arrow + shift   | go to first line                 | move up a line
+                     | down arrow              | move down a line                 | move antecedent down a line
+                     | v or down arrow + shift | go to last line                  | move down a line
+                     | n                       | move to next numerical value     | -
+                     | p                       | move to previous numerical value | -
+Annotation           | r                       | [un]mark this token as ||        | -
+                     | s                       | [un]mark this token as {}        | -
+                     | b                       | [un]mark this token as []        | -
+                     | d                       | -                                | create a link and move down / right
+                     | D                       | -                                | create a link
+                     | u                       | undo annotation on this token    | undo all annotations for the current item
+Saving, exiting, etc | /                       | save and go to next file         | same
+                     | \                       | save and go to previous file     | same
+                     | q                       | quit                             | same
+                     | h                       | toggle help info (default on)    | same
 
 Note, when moving to the next or previous file, the current state is saved.
 If annotations are being saved without overwriting raw data then the annotated version will be read in.
