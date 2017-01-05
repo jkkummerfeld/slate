@@ -11,9 +11,9 @@ from data import *
 from config import *
 from view import *
 
-def get_view(window, datum, config, file_num, total_files):
-    cursor = [0, 0]
-    link = [0, 0] if config.annotation_type == AnnType.link else [-1, -1]
+def get_view(window, datum, config, file_num, total_files, position):
+    cursor = position[:]
+    link = position[:] if config.annotation_type == AnnType.link else [-1, -1]
     return View(window, cursor, link, datum, config, file_num, total_files)
 
 def annotate(window, config, filenames):
@@ -34,14 +34,16 @@ def annotate(window, config, filenames):
     curses.curs_set(0)
 
     cfilename = 0
-    datum = Datum(filenames[cfilename], config)
-    view = get_view(window, datum, config, cfilename, len(filenames))
+    filename, start_pos = filenames[cfilename]
+    datum = Datum(filename, config)
+    view = get_view(window, datum, config, cfilename, len(filenames), start_pos)
 
     at_end = None
     while True:
         if at_end is None:
             # Draw screen
             view.render()
+            view.must_show_linking_pos = False
             # Get input
             user_input = window.getch()
 
@@ -71,8 +73,15 @@ def annotate(window, config, filenames):
                 if config.annotation_type == AnnType.link:
                     if config.annotation == AnnScope.line:
                         view.move_down(True)
+                        view.cursor[0] = view.linking_pos[0]
+                        view.cursor[1] = view.linking_pos[1]
+                        view.move_up()
                     else:
                         view.move_right(True)
+                        view.cursor[0] = view.linking_pos[0]
+                        view.cursor[1] = view.linking_pos[1]
+                        view.move_left()
+                    view.must_show_linking_pos = True
             elif user_input == ord("D"):
                 datum.modify_annotation(view.cursor, view.linking_pos)
             elif user_input == ord("u"):
@@ -83,18 +92,21 @@ def annotate(window, config, filenames):
             elif user_input == ord("/") or user_input == ord("\\"):
                 # If we can get another file, do
                 datum.write_out()
+                filenames[cfilename] = (filename, view.cursor)
                 direction = 1 if user_input == ord("/") else -1
                 if 0 <= cfilename + direction < len(filenames):
                     cfilename += direction
-                    datum = Datum(filenames[cfilename], config)
+                    filename, start_pos = filenames[cfilename]
+                    datum = Datum(filename, config)
                     view = get_view(window, datum, config, cfilename,
-                            len(filenames))
+                            len(filenames), start_pos)
                 elif direction > 0:
                     at_end = 'end'
                 else:
                     at_end = 'start'
             elif user_input == ord("q"):
                 datum.write_out()
+                filenames[cfilename] = (filename, view.cursor)
                 break
         else:
             # Draw screen
@@ -109,7 +121,8 @@ def annotate(window, config, filenames):
 
         window.clear()
 
-    print('\n'.join(filenames[cfilename:]), file=out)
+    for filename, start_pos in filenames:
+        print("{} {} {}".format(filename, start_pos[0], start_pos[1]), file=out)
     out.close()
 
 if __name__ == '__main__':
