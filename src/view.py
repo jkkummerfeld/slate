@@ -17,6 +17,7 @@ class View(object):
         self.show_help = True
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.config = my_config
+        self.must_show_linking_pos = False
 
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
@@ -188,7 +189,9 @@ class View(object):
         # For freeform text, include it at the bottom
 
         # Tracks if the cursor is vsible
-        seen = None
+        seen_cursor = None
+        seen_linking_pos = None
+
         # Row and column indicate the position on the screen, while line and
         # token indicate the position in the text.
         row = -1
@@ -223,17 +226,25 @@ class View(object):
                     # Not printing as we are off the screen.  Must wait till
                     # here in case we have a line wrapping above.
                     if pos == cursor:
-                        seen = False
+                        seen_cursor = False
+                    if pos == linking_pos:
+                        seen_linking_pos = False
                     break
                 else:
                     if not trial:
                         color = curses.color_pair(color)
                         self.window.addstr(row, column, token, color)
-                    if pos == cursor and seen is None:
-                        seen = True
+                    if pos == cursor and seen_cursor is None:
+                        seen_cursor = True
+                    if pos == linking_pos and seen_linking_pos is None:
+                        seen_linking_pos = True
 
                 column += len(token)
-        return seen
+
+        if not self.must_show_linking_pos:
+            seen_linking_pos = True
+        return (seen_cursor and seen_linking_pos)
+
 
     def render(self):
         height, width = self.window.getmaxyx()

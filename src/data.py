@@ -8,11 +8,19 @@ from sys import stderr
 def read_filenames(arg):
     if len(glob.glob(arg)) == 0:
         raise Exception("Cannot open / find '{}'".format(arg))
-    filenames = [line.strip() for line in open(arg).readlines()]
+    file_info = [line.strip() for line in open(arg).readlines()]
     failed = []
-    for filename in filenames:
+    filenames = []
+    for line in file_info:
+        parts = line.split()
+        filename = parts[0]
+        position = [0, 0]
+        if len(parts) > 2:
+            position = [int(parts[1]), int(parts[2])]
         if len(glob.glob(filename)) == 0:
             failed.append(filename)
+        else:
+            filenames.append((filename, position))
     if len(failed) > 0:
         raise Exception("File errors:\n{}".format('\n'.join(failed)))
     return filenames
