@@ -128,13 +128,15 @@ def get_default_config(args):
 SPECIAL_KEYS = {'u', 'q', 'h', 'p', 'n'}
 COLORS = [
     # Color combinations, (ID#, foreground, background)
-    (1, curses.COLOR_BLUE, curses.COLOR_WHITE),
+    (1, curses.COLOR_BLACK, curses.COLOR_WHITE),
     (2, curses.COLOR_GREEN, curses.COLOR_BLACK),
-    (3, curses.COLOR_YELLOW, curses.COLOR_BLACK),
+    (3, curses.COLOR_BLUE, curses.COLOR_BLACK),
     (4, curses.COLOR_WHITE, curses.COLOR_BLACK),
     (5, curses.COLOR_BLACK, curses.COLOR_WHITE),
     (6, curses.COLOR_CYAN, curses.COLOR_BLACK),
     (7, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
+    (8, curses.COLOR_BLUE, curses.COLOR_WHITE),
+    (9, curses.COLOR_GREEN, curses.COLOR_WHITE),
 ]
 OVERLAP_COLOR = 6
 DEFAULT_COLOR = 4
@@ -142,6 +144,8 @@ CURSOR_COLOR = 1
 LINK_COLOR = 2
 HELP_COLOR = 5
 REF_COLOR = 3
+REF_CURSOR_COLOR = 8
+LINK_CURSOR_COLOR = 9
 
 def read_config(filename):
     # TODO: this is a stub, actually implement reading a config

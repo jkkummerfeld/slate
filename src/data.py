@@ -112,6 +112,12 @@ class Datum(object):
 
         if pos == cursor:
             color = CURSOR_COLOR
+            if pos == linking_pos:
+                color = LINK_CURSOR_COLOR
+            elif linking_pos in self.marked:
+                if self.config.annotation_type == AnnType.link:
+                    if pos in self.marked.get(linking_pos, []):
+                        color = REF_CURSOR_COLOR
             if self.config.annotation_type == AnnType.text:
                 text = self.marked.get(pos)
         elif pos == linking_pos:
