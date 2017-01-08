@@ -139,5 +139,8 @@ if __name__ == '__main__':
 
     ### Start interface
     filenames = read_filenames(args.data)
+    if len(filenames) == 0:
+        print("File '{}' contained no filenames".format(args.data))
+        sys.exit(0)
     config = get_default_config(args)
     curses.wrapper(annotate, config, filenames)
