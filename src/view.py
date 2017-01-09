@@ -13,7 +13,7 @@ class View(object):
         self.cursor = cursor
         self.linking_pos = linking_pos
         self.datum = datum
-        self.top = 0
+        self.top = max(0, cursor[0] - self.window.getmaxyx()[0] - 10)
         self.show_help = True
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.config = my_config
