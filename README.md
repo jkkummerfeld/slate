@@ -99,6 +99,7 @@ Features:
  - Have instructions be a set of pieces that are adaptively arranged
  - Constrain annotations, e.g. a flag to not allow links to point in one direction
  - Allow storage of information about the last time editing, so we can pick up at the same position
+ - Option to specify file names on the command line
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
