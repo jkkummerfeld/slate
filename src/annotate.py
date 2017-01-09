@@ -50,11 +50,17 @@ def annotate(window, config, filenames):
             # Note - First two are SHIFT + DOWN and SHIFT + UP, determined by
             # hand on two laptops.
             if user_input in [ord('c'), 337]:
-                if config.annotation_type == AnnType.link: view.move_up(True)
-                else: view.move_to_top()
+                if config.annotation_type == AnnType.link:
+                    view.move_up(True)
+                    view.must_show_linking_pos = True
+                else:
+                    view.move_to_top()
             elif user_input in [ord('v'), 336]:
-                if config.annotation_type == AnnType.link: view.move_down(True)
-                else: view.move_to_bottom() 
+                if config.annotation_type == AnnType.link:
+                    view.move_down(True)
+                    view.must_show_linking_pos = True
+                else:
+                    view.move_to_bottom()
             elif user_input == curses.KEY_SLEFT:
                 if config.annotation_type == AnnType.link: view.move_left(True)
                 else: view.move_to_start()
