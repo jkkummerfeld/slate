@@ -200,7 +200,7 @@ class View(object):
             if line_no < self.top:
                 continue
 
-            # Set 
+            # Set
             row += 1
             column = 0
             for token_no, token in enumerate(line):
@@ -225,18 +225,18 @@ class View(object):
                 if row >= height:
                     # Not printing as we are off the screen.  Must wait till
                     # here in case we have a line wrapping above.
-                    if pos == cursor:
+                    if self.datum.check_equal(pos, cursor):
                         seen_cursor = False
-                    if pos == linking_pos:
+                    if self.datum.check_equal(pos, linking_pos):
                         seen_linking_pos = False
                     break
                 else:
                     if not trial:
                         color = curses.color_pair(color)
                         self.window.addstr(row, column, token, color)
-                    if pos == cursor and seen_cursor is None:
+                    if self.datum.check_equal(pos, cursor) and seen_cursor is None:
                         seen_cursor = True
-                    if pos == linking_pos and seen_linking_pos is None:
+                    if self.datum.check_equal(pos, linking_pos) and seen_linking_pos is None:
                         seen_linking_pos = True
 
                 column += len(token)

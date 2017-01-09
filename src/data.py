@@ -172,6 +172,12 @@ class Datum(object):
         if pos_key in self.marked:
             self.marked.pop(pos_key)
 
+    def check_equal(self, pos0, pos1):
+        if self.config.annotation == AnnScope.line:
+            return pos0[0] == pos1[0]
+        else:
+            return pos0 == pos1
+
     def write_out(self, filename=None):
         out_filename = self.annotation_filename()
         if filename is not None:
