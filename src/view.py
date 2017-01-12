@@ -22,14 +22,14 @@ class View(object):
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
             return [
-                self.progress + " Colors are blue-(possible link) green-(current line) yellow-link",
+                self.progress + "  Colors are highlight:possible-link green:current blue:link",
                 "arrows (move blue about), shift + arrows (move green)",
                 "d + shift (mark as linked), d (mark as linked and move green down)",
                 "u (undo visible links), / \\ (next & previous file), q (quit), h (help)",
             ]
         else:
             return [
-                self.progress + " Colors are blue-current green-sell yellow-buy cyan-both",
+                self.progress + "  Colors are highlight-current blue-linked (TODO update)",
                 "arrows (move about), n p (next & previous number, via regex)",
                 "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)",
             ]
@@ -241,9 +241,10 @@ class View(object):
 
                 column += len(token)
 
-        if not self.must_show_linking_pos:
-            seen_linking_pos = True
-        return (seen_cursor and seen_linking_pos)
+        if self.must_show_linking_pos:
+            return seen_linking_pos
+        else:
+            return seen_cursor
 
 
     def render(self):
