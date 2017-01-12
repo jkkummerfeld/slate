@@ -40,6 +40,7 @@ Note, when moving to the next or previous file, the current state is saved.
 If annotations are being saved without overwriting raw data then the annotated version will be read in.
 For example, if a file is annotated, then '/\' is typed, the file will be showing again with the new annotations.
 
+
 Tokens are coloured as follows:
 
  - Blue on white, current token under consideration
