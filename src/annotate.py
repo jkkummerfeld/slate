@@ -11,10 +11,10 @@ from data import *
 from config import *
 from view import *
 
-def get_view(window, datum, config, file_num, total_files, position):
+def get_view(window, datum, config, file_num, total_files, position, show_help=True):
     cursor = position[:]
     link = position[:] if config.annotation_type == AnnType.link else [-1, -1]
-    return View(window, cursor, link, datum, config, file_num, total_files)
+    return View(window, cursor, link, datum, config, file_num, total_files, show_help)
 
 def annotate(window, config, filenames):
     out_filename = "files_still_to_do"
@@ -110,7 +110,7 @@ def annotate(window, config, filenames):
                     filename, start_pos = filenames[cfilename]
                     datum = Datum(filename, config)
                     view = get_view(window, datum, config, cfilename,
-                            len(filenames), start_pos)
+                            len(filenames), start_pos, view.show_help)
                 elif direction > 0:
                     at_end = 'end'
                 else:

@@ -8,13 +8,13 @@ from config import *
 
 number_regex = re.compile('^[,0-9k]*[.]?[0-9][,0-9k]*[.]?[,0-9k]*$')
 class View(object):
-    def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num):
+    def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, show_help):
         self.window = window
         self.cursor = cursor
         self.linking_pos = linking_pos
         self.datum = datum
         self.top = max(0, cursor[0] - self.window.getmaxyx()[0] - 10)
-        self.show_help = True
+        self.show_help = show_help
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.config = my_config
         self.must_show_linking_pos = False
