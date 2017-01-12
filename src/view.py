@@ -214,11 +214,11 @@ class View(object):
 
                 # Check if we are going on to the next line and adjust
                 # accordingly.
-                space_before = 0 if column > 0 else 1
+                space_before = 1 if column > 0 else 0
                 if column + length + space_before >= width:
                     column = 0
                     row += 1
-                else:
+                elif space_before > 0:
                     length += space_before
                     token = " "+ token
 
