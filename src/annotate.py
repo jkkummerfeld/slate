@@ -100,11 +100,11 @@ def annotate(window, config, filenames):
                 if config.annotation_type != AnnType.link:
                     datum.modify_annotation(view.cursor, view.linking_pos,
                             chr(user_input))
-            elif user_input == ord("/") or user_input == ord("\\"):
+            elif user_input in [ord("/"), ord("\\"), ord(','), ord('.')]:
                 # If we can get another file, do
                 datum.write_out()
                 filenames[cfilename] = (filename, view.cursor)
-                direction = 1 if user_input == ord("/") else -1
+                direction = 1 if user_input in [ord('.'), ord("/")] else -1
                 if 0 <= cfilename + direction < len(filenames):
                     cfilename += direction
                     filename, start_pos = filenames[cfilename]
