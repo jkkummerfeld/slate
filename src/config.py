@@ -60,14 +60,19 @@ class AnnType(Enum):
     link = 1
     text = 2
 
+class Mode(Enum):
+    annotate = 0
+    compare = 1
+
 class Config(object):
-    def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.link)):
+    def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.link), mode=Mode.annotate):
         self.keys = keys
         self.unique_length = min_unique_length
         self.overwrite = overwrite
         self.annotation = ann[0]
         self.annotation_type = ann[1]
         self.log = open("log.txt", "w")
+        self.mode = mode
 
     def set_by_file(self, filename):
         self.keys = {}
@@ -114,7 +119,7 @@ class Config(object):
                 self.unique_length = i
                 break
 
-def get_default_config(args):
+def get_default_config(args, mode=Mode.annotate):
     return Config(
         {
             's': KeyConfig('s', 'SELL', 2, '{', '}'),
@@ -122,10 +127,14 @@ def get_default_config(args):
             'r': KeyConfig('r', 'RATE', 7, '|', '|'),
         },
         0,
-        args.output == "overwrite"
+        args.output == "overwrite",
+        mode=mode
     )
 
 SPECIAL_KEYS = {'u', 'q', 'h', 'p', 'n'}
+# TODO: Consider simplifying, with the cursor being white background always
+# (and being a modulator on top of whatever else is going on). Reason for
+# caution is that in token level mode it can look bad.
 COLORS = [
     # Color combinations, (ID#, foreground, background)
     (1, curses.COLOR_BLACK, curses.COLOR_WHITE),
@@ -137,6 +146,12 @@ COLORS = [
     (7, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
     (8, curses.COLOR_BLUE, curses.COLOR_WHITE),
     (9, curses.COLOR_GREEN, curses.COLOR_WHITE),
+    (10, curses.COLOR_RED, curses.COLOR_BLACK),
+    (11, curses.COLOR_RED, curses.COLOR_WHITE),
+    (12, curses.COLOR_CYAN, curses.COLOR_BLACK),
+    (13, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
+    (14, curses.COLOR_CYAN, curses.COLOR_WHITE),
+    (15, curses.COLOR_MAGENTA, curses.COLOR_WHITE),
 ]
 OVERLAP_COLOR = 6
 DEFAULT_COLOR = 4
@@ -147,10 +162,15 @@ REF_COLOR = 3
 REF_CURSOR_COLOR = 8
 LINK_CURSOR_COLOR = 9
 
+COMPARE_DISAGREE_COLOR = 10
+COMPARE_DISAGREE_CURSOR_COLOR = 11
+COMPARE_REF_COLORS = [12, 13]
+COMPARE_REF_CURSOR_COLORS = [14, 15]
+
 def read_config(filename):
     # TODO: this is a stub, actually implement reading a config
     keys = DEFAULT_CONFIG.keys
     unique_length = 0
     overwrite = True
-    return Config(keys, unique_length, overwrite)
+    return Config(keys, unique_length, overwrite, mode=Mode.annotate)
 

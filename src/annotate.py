@@ -17,15 +17,6 @@ def get_view(window, datum, config, file_num, total_files, position, show_help=T
     return View(window, cursor, link, datum, config, file_num, total_files, show_help)
 
 def annotate(window, config, filenames):
-    out_filename = "files_still_to_do"
-    overwrite = False
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == '-log' and len(sys.argv) > i + 1:
-            out_filename = sys.argv[i + 1]
-        if sys.argv[i] == '-overwrite':
-            overwrite = True
-    out = open(out_filename, "w")
-
     # Set color combinations
     for num, fore, back in COLORS:
         curses.init_pair(num, fore, back)
@@ -34,8 +25,8 @@ def annotate(window, config, filenames):
     curses.curs_set(0)
 
     cfilename = 0
-    filename, start_pos = filenames[cfilename]
-    datum = Datum(filename, config)
+    filename, start_pos, annotation_files = filenames[cfilename]
+    datum = Datum(filename, config, annotation_files)
     view = get_view(window, datum, config, cfilename, len(filenames), start_pos)
 
     at_end = None
@@ -71,14 +62,15 @@ def annotate(window, config, filenames):
             elif user_input == curses.KEY_DOWN: view.move_down()
             elif user_input == curses.KEY_LEFT: view.move_left()
             elif user_input == curses.KEY_RIGHT: view.move_right()
-            elif user_input == ord("h"): view.toggle_help()
+            elif user_input == ord("h"):
+                view.toggle_help()
             elif user_input == ord("n"):
                 if config.annotation_type != AnnType.link:
                     view.next_number()
             elif user_input == ord("p"):
                 if config.annotation_type != AnnType.link:
                     view.next_number()
-            elif user_input == ord("d"):
+            elif user_input == ord("d") and config.mode == Mode.annotate:
                 datum.modify_annotation(view.cursor, view.linking_pos)
                 if config.annotation_type == AnnType.link:
                     if config.annotation == AnnScope.line:
@@ -92,23 +84,25 @@ def annotate(window, config, filenames):
                         view.cursor[1] = view.linking_pos[1]
                         view.move_left()
                     view.must_show_linking_pos = True
-            elif user_input == ord("D"):
+            elif user_input == ord("D") and config.mode == Mode.annotate:
                 datum.modify_annotation(view.cursor, view.linking_pos)
-            elif user_input == ord("u"):
+            elif user_input == ord("u") and config.mode == Mode.annotate:
                 datum.remove_annotation(view.cursor, view.linking_pos)
-            elif user_input in [ord('s'), ord('b'), ord('r')]:
+            elif user_input in [ord('s'), ord('b'), ord('r')] and config.mode == Mode.annotate:
                 if config.annotation_type != AnnType.link:
                     datum.modify_annotation(view.cursor, view.linking_pos,
                             chr(user_input))
             elif user_input in [ord("/"), ord("\\"), ord(','), ord('.')]:
                 # If we can get another file, do
-                datum.write_out()
-                filenames[cfilename] = (filename, view.cursor)
+                if config.mode == Mode.annotate:
+                    datum.write_out()
+                # TODO: Set to linking line rather than cursor where appropriate
+                filenames[cfilename] = (filename, view.cursor, annotation_files)
                 direction = 1 if user_input in [ord('.'), ord("/")] else -1
                 if 0 <= cfilename + direction < len(filenames):
                     cfilename += direction
-                    filename, start_pos = filenames[cfilename]
-                    datum = Datum(filename, config)
+                    filename, start_pos, annotation_files = filenames[cfilename]
+                    datum = Datum(filename, config, annotation_files)
                     view = get_view(window, datum, config, cfilename,
                             len(filenames), start_pos, view.show_help)
                 elif direction > 0:
@@ -116,8 +110,10 @@ def annotate(window, config, filenames):
                 else:
                     at_end = 'start'
             elif user_input == ord("q"):
-                datum.write_out()
-                filenames[cfilename] = (filename, view.cursor)
+                if config.mode == Mode.annotate:
+                    datum.write_out()
+                # TODO: Set to linking line rather than cursor where appropriate
+                filenames[cfilename] = (filename, view.cursor, annotation_files)
                 break
         else:
             # Draw screen
@@ -132,8 +128,16 @@ def annotate(window, config, filenames):
 
         window.clear()
 
-    for filename, start_pos in filenames:
-        print("{} {} {}".format(filename, start_pos[0], start_pos[1]), file=out)
+    out_filename = "files_still_to_do"
+    overwrite = False
+    for i in range(len(sys.argv)):
+        if sys.argv[i] == '-log' and len(sys.argv) > i + 1:
+            out_filename = sys.argv[i + 1]
+        if sys.argv[i] == '-overwrite':
+            overwrite = True
+    out = open(out_filename, "w")
+    for filename, start_pos, annotation_files in filenames:
+        print("{} {} {} {}".format(filename, start_pos[0], start_pos[1], ' '.join(annotation_files)), file=out)
     out.close()
 
 if __name__ == '__main__':
@@ -148,5 +152,9 @@ if __name__ == '__main__':
     if len(filenames) == 0:
         print("File '{}' contained no filenames".format(args.data))
         sys.exit(0)
-    config = get_default_config(args)
+    mode = Mode.annotate
+    for _, _, annotations in filenames:
+        if len(annotations) > 1:
+            mode = Mode.compare
+    config = get_default_config(args, mode)
     curses.wrapper(annotate, config, filenames)

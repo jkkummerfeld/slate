@@ -207,6 +207,7 @@ class View(object):
                 pos = (line_no, token_no)
                 cursor = (self.cursor[0], self.cursor[1])
                 linking_pos = (self.linking_pos[0], self.linking_pos[1])
+                # TODO: Only calculate color if it is going to be displayed
                 token, color, test = self.datum.get_marked_token(pos, cursor,
                         linking_pos)
 
@@ -257,8 +258,12 @@ class View(object):
             main_height = main_height - len(inst)
 
         # Shift the top up if necessary
-        if self.top > self.cursor[0]:
-            self.top = self.cursor[0]
+        if self.must_show_linking_pos:
+            if self.top > self.linking_pos[0]:
+                self.top = self.linking_pos[0]
+        else:
+            if self.top > self.cursor[0]:
+                self.top = self.cursor[0]
         # Do dry runs, shifting top down until the position is visible
         while not self.do_contents(main_height, width, True):
             self.top += 1
