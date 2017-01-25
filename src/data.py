@@ -148,7 +148,7 @@ class Datum(object):
                     if pos in marked.get(linking_pos, []):
                         color = COMPARE_REF_CURSOR_COLORS[i]
                         count += 1
-                if count == len(self.marked_compare):
+                if count > 0 and count == len(self.marked_compare):
                     color = REF_CURSOR_COLOR
             if self.config.annotation_type == AnnType.text:
                 text = self.marked.get(pos)
@@ -174,7 +174,7 @@ class Datum(object):
                 if pos in marked.get(linking_pos, []):
                     color = COMPARE_REF_COLORS[i]
                     count += 1
-            if count == len(self.marked_compare):
+            if count > 0 and count == len(self.marked_compare):
                 color = REF_COLOR
 
         return (token, color, text)
