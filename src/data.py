@@ -118,6 +118,9 @@ class Datum(object):
                         self.disagree.add(source)
                     elif marked0[source] != marked1[source]:
                         self.disagree.add(source)
+                for source in marked1:
+                    if source not in marked0:
+                        self.disagree.add(source)
 
     def get_marked_token(self, pos, cursor, linking_pos):
         token = self.tokens[pos[0]][pos[1]]
