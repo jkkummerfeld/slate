@@ -101,8 +101,9 @@ Features:
  - Constrain annotations, e.g. a flag to not allow links to point in one direction
  - Allow storage of information about the last time editing, so we can pick up at the same position
  - Option to specify file names on the command line
- - Modes: editing annotations, comparing annotations
+ - Modes: editing annotations, comparing annotations (and resolving disagreements?)
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
  - Nicer argument, error, and logging handling
+ - Don't re-render if there is no change to the view
