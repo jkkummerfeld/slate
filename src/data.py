@@ -4,6 +4,7 @@ import glob
 
 from config import *
 from sys import stderr
+import logging
 
 def read_filenames(arg):
     if len(glob.glob(arg)) == 0:
@@ -18,7 +19,7 @@ def read_filenames(arg):
         annotations = []
         if len(parts) > 2:
             position = [int(parts[1]), int(parts[2])]
-        if len(parts) > 4:
+        if len(parts) >= 4:
             annotations = parts[3:]
         if len(glob.glob(filename)) == 0:
             failed.append(filename)
@@ -194,6 +195,10 @@ class Datum(object):
             return (pos[0], pos[1])
 
     def modify_annotation(self, pos, linking_pos, symbol=None):
+        # Do not allow links from an item to itself
+        if pos == linking_pos:
+            return
+
         pos_key = self.convert_to_key(pos)
         item = symbol
         if self.config.annotation_type == AnnType.link:

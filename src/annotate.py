@@ -147,6 +147,8 @@ if __name__ == '__main__':
     parser.add_argument('--log_prefix', help='Prefix for logging files (otherwise none)')
     args = parser.parse_args()
 
+    logging.basicConfig(filename="debug.txt",level=logging.DEBUG)
+
     ### Start interface
     filenames = read_filenames(args.data)
     if len(filenames) == 0:
