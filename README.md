@@ -87,23 +87,27 @@ Features:
  - Space between token and label
  - For blank lines, print only one in a row
  - Variable location of instructions
- - Option to output to standoff annotations instead
  - Adjustable keybinding
  - Allow default key assignment to include 0
  - Make special keys customisable
  - Allow multi-key labels
  - Allow auto-search over labels (i.e. user types characters and we search over labels to get the right one as they type)
- - Allow definition of keys to jump to next match on a regex
+ - Allow definition of keys to jump to next match on a regex or even a simple string
  - Add the option to read in the raw data when going back to a seen file
  - Option to load all at start
  - Option to only save on exit (not when changing files)
  - Have instructions be a set of pieces that are adaptively arranged
  - Constrain annotations, e.g. a flag to not allow links to point in one direction
- - Allow storage of information about the last time editing, so we can pick up at the same position
  - Option to specify file names on the command line
  - Modes: editing annotations, comparing annotations (and resolving disagreements?)
+ - Write scripts to take standoff and create inline data (don't add inline as an output)
+ - Add logging of all edits to a file, so a crash can be recoverd from easily.
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
  - Nicer argument, error, and logging handling
  - Don't re-render if there is no change to the view
+
+Done?
+ - Allow storage of information about the last time editing, so we can pick up at the same position
+
