@@ -6,27 +6,45 @@ from config import *
 from sys import stderr
 import logging
 
-def read_filenames(arg):
+def read_filenames(arg, config):
     if len(glob.glob(arg)) == 0:
         raise Exception("Cannot open / find '{}'".format(arg))
     file_info = [line.strip() for line in open(arg).readlines()]
-    failed = []
     filenames = []
     for line in file_info:
         parts = line.split()
-        filename = parts[0]
+        raw_file = parts[0]
         position = [0, 0]
+        output_file = raw_file + ".annotations"
         annotations = []
-        if len(parts) > 2:
-            position = [int(parts[1]), int(parts[2])]
-        if len(parts) >= 4:
-            annotations = parts[3:]
-        if len(glob.glob(filename)) == 0:
-            failed.append(filename)
-        else:
-            filenames.append((filename, position, annotations))
-    if len(failed) > 0:
-        raise Exception("File errors:\n{}".format('\n'.join(failed)))
+        if len(parts) > 1:
+            output_file = parts[1]
+        if len(parts) > 3:
+            position = [int(parts[2]), int(parts[3])]
+        if len(parts) > 4:
+            annotations = parts[4:]
+        logging.info((raw_file, position, output_file, annotations))
+        filenames.append((raw_file, position, output_file, annotations))
+
+    # Check files exist (or do not exist if being created)
+    missing = []
+    extra = []
+    for raw_file, _, output_file, annotations in filenames:
+        if len(glob.glob(raw_file)) == 0:
+            missing.append(raw_file)
+        if not config.overwrite:
+            if len(glob.glob(output_file)) != 0:
+                extra.append(output_file)
+        for annotation in annotations:
+            if len(glob.glob(annotation)) == 0:
+                missing.append(annotation)
+    if len(missing) > 0 or len(extra) > 0:
+        error = "Input Filename List Has Errors"
+        if len(missing) > 0:
+            error += "\n\nUnable to open:\n" + '\n'.join(missing)
+        if len(extra) > 0:
+            error += "\n\nOutput file already exists:\n" + '\n'.join(extra)
+        raise Exception(error)
     return filenames
 
 def get_num(text):
@@ -89,16 +107,36 @@ def read_annotation_file(config, filename):
                     marked[source] = ' '.join(fields[2:])
     return marked
 
+def compare_nums(num0, num1):
+    if num0 < num1:
+        return -1
+    elif num0 == num1:
+        return 0
+    else:
+        return 1
+
+def compare_pos(config, pos0, pos1):
+    if config.annotation == AnnScope.line:
+        return compare_nums(pos0, pos1)
+    else:
+        comparison = compare_nums(pos0[0], pos1[0])
+        if comparison == 0:
+            return compare_nums(pos0[1], pos1[1])
+        else:
+            return comparison
+
 class Datum(object):
     """Storage for a single file's data and annotations.
 
     Note, the structure of storage depends on the annotation type."""
-    def __init__(self, filename, config, annotation_files):
+
+    def __init__(self, filename, config, output_file, annotation_files):
         self.filename = filename
         self.annotation_files = annotation_files
         self.config = config
+        self.output_file = output_file
 
-        self.marked = read_annotation_file(config, self.annotation_filename())
+        self.marked = read_annotation_file(config, self.output_file)
 
         self.tokens = []
         for line in open(filename):
@@ -106,22 +144,22 @@ class Datum(object):
             for token in line.split():
                 self.tokens[-1].append(token)
 
+        counts = {}
         self.marked_compare = []
         for filename in self.annotation_files:
-            self.marked_compare.append(read_annotation_file(config, filename))
+            other_marked = read_annotation_file(config, filename)
+            self.marked_compare.append(other_marked)
+            for key in other_marked:
+                # TODO: Work out how to handle the AnnType.text case
+                for label in other_marked[key]:
+                    counts[key, label] = counts.get((key, label), 0) + 1
+
         self.disagree = set()
-        for marked0 in self.marked_compare:
-            for marked1 in self.marked_compare:
-                if marked0 == marked1:
-                    break
-                for source in marked0:
-                    if source not in marked1:
-                        self.disagree.add(source)
-                    elif marked0[source] != marked1[source]:
-                        self.disagree.add(source)
-                for source in marked1:
-                    if source not in marked0:
-                        self.disagree.add(source)
+        for key, label in counts:
+            if counts[key, label] == len(self.marked_compare):
+                self.marked.setdefault(key, set()).add(label)
+            else:
+                self.disagree.add(key)
 
     def get_marked_token(self, pos, cursor, linking_pos):
         token = self.tokens[pos[0]][pos[1]]
@@ -140,53 +178,48 @@ class Datum(object):
             color = CURSOR_COLOR
             if pos == linking_pos:
                 color = LINK_CURSOR_COLOR
-            elif linking_pos in self.marked:
-                if pos in self.marked.get(linking_pos, []):
-                    color = REF_CURSOR_COLOR
+            elif pos in self.marked.get(linking_pos, []):
+                color = REF_CURSOR_COLOR
             else:
-                if pos in self.disagree:
-                    color = COMPARE_DISAGREE_CURSOR_COLOR
-                
                 count = 0
-                for i, marked in enumerate(self.marked_compare):
+                for marked in self.marked_compare:
                     if pos in marked.get(linking_pos, []):
-                        color = COMPARE_REF_CURSOR_COLORS[i]
+                        color = COMPARE_REF_CURSOR_COLORS[min(count, 1)]
                         count += 1
                 if count > 0 and count == len(self.marked_compare):
                     color = REF_CURSOR_COLOR
+
             if self.config.annotation_type == AnnType.text:
                 text = self.marked.get(pos)
         elif pos == linking_pos:
             color = LINK_COLOR
         else:
-            if pos in self.marked or linking_pos in self.marked:
-                if self.config.annotation_type == AnnType.categorical:
-                   for key in self.marked.get(pos, []):
-                        modifier = self.config.keys[key]
-                        if color != DEFAULT_COLOR: color = OVERLAP_COLOR
-                        else: color = modifier.color
-                elif self.config.annotation_type == AnnType.link:
-                    if pos in self.marked.get(linking_pos, []):
-                        color = REF_COLOR
-                    elif pos in self.disagree:
+            if pos in self.disagree:
+                if compare_pos(self.config, pos, cursor) > 0:
+                    if compare_pos(self.config, pos, linking_pos) > 0:
                         color = COMPARE_DISAGREE_COLOR
-            elif pos in self.disagree:
-                color = COMPARE_DISAGREE_COLOR
 
             count = 0
-            for i, marked in enumerate(self.marked_compare):
+            for marked in self.marked_compare:
                 if pos in marked.get(linking_pos, []):
-                    color = COMPARE_REF_COLORS[i]
+                    color = COMPARE_REF_COLORS[min(count, 1)]
                     count += 1
             if count > 0 and count == len(self.marked_compare):
                 color = REF_COLOR
 
-        return (token, color, text)
+            if pos in self.marked or linking_pos in self.marked:
+                if self.config.annotation_type == AnnType.categorical:
+                   for key in self.marked.get(pos, []):
+                        modifier = self.config.keys[key]
+                        if color != DEFAULT_COLOR:
+                            color = OVERLAP_COLOR
+                        else:
+                            color = modifier.color
+                elif self.config.annotation_type == AnnType.link:
+                    if pos in self.marked.get(linking_pos, []):
+                        color = REF_COLOR
 
-    def annotation_filename(self):
-        if len(self.annotation_files) == 1:
-            return self.annotation_files[0]
-        return self.filename + ".annotations"
+        return (token, color, text)
 
     def convert_to_key(self, pos):
         if self.config.annotation == AnnScope.line:
@@ -230,7 +263,7 @@ class Datum(object):
             return pos0 == pos1
 
     def write_out(self, filename=None):
-        out_filename = self.annotation_filename()
+        out_filename = self.output_file
         if filename is not None:
             out_filename = filename
         out = open(out_filename, 'w')

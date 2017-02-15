@@ -62,7 +62,7 @@ class AnnType(Enum):
 
 class Mode(Enum):
     annotate = 0
-    compare = 1
+    read = 1
 
 class Config(object):
     def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.link), mode=Mode.annotate):
@@ -127,7 +127,7 @@ def get_default_config(args, mode=Mode.annotate):
             'r': KeyConfig('r', 'RATE', 7, '|', '|'),
         },
         0,
-        args.output == "overwrite",
+        True,
         mode=mode
     )
 
@@ -164,6 +164,7 @@ LINK_CURSOR_COLOR = 9
 
 COMPARE_DISAGREE_COLOR = 10
 COMPARE_DISAGREE_CURSOR_COLOR = 11
+# These indicate how many people labeled something, 1,2...
 COMPARE_REF_COLORS = [12, 13]
 COMPARE_REF_CURSOR_COLORS = [14, 15]
 

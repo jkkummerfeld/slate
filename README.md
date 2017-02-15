@@ -79,6 +79,14 @@ A series of lines, each containing ([] are optional):
 >> ./annotation_tool.py do_later -log do_even_later
 ```
 
+# What makes this tool good?
+
+- Trivial installation
+- Focuses all of the screen space on annotation (good for large fonts)
+- Fast
+- Works in constrained environments (e.g. only allowed ssh access to a machine)
+- (eventually) easily configurable
+
 # TODO:
 
 Features:
@@ -102,11 +110,13 @@ Features:
  - Modes: editing annotations, comparing annotations (and resolving disagreements?)
  - Write scripts to take standoff and create inline data (don't add inline as an output)
  - Add logging of all edits to a file, so a crash can be recoverd from easily.
+ - Allow different default when resolving disagreements (rather than the union, only have those with agreement, or a majority). Note, this is subtle, as it interacts with the way colouring works.
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
  - Nicer argument, error, and logging handling
  - Don't re-render if there is no change to the view
+ - Start the link line after the cursor and don't allow them to overlap
 
 Done?
  - Allow storage of information about the last time editing, so we can pick up at the same position
