@@ -151,6 +151,13 @@ class View(object):
                     pos[1] = len(self.datum.tokens[pos[0]]) - 1
                 break
 
+    def next_disagreement(self, reverse=False):
+        npos = self.datum.next_disagreement(self.cursor, self.linking_pos,
+                reverse)
+        self.cursor, self.linking_pos = npos
+    def previous_disagreement(self):
+        self.next_disagreement(True)
+
     # TODO: Combine these two
     def next_number(self):
         if self.config.annotation == AnnScope.line:

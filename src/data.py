@@ -144,24 +144,27 @@ class Datum(object):
             for token in line.split():
                 self.tokens[-1].append(token)
 
-        counts = {}
-        self.marked_compare = []
+        self.marked_compare = {}
         for filename in self.annotation_files:
             other_marked = read_annotation_file(config, filename)
-            self.marked_compare.append(other_marked)
             for key in other_marked:
                 # TODO: Work out how to handle the AnnType.text case
                 for label in other_marked[key]:
-                    counts[key, label] = counts.get((key, label), 0) + 1
+                    current = self.marked_compare.setdefault(key, {})
+                    current[label] = current.get(label, 0) + 1
 
         self.disagree = set()
-        for key, label in counts:
-            if counts[key, label] == len(self.marked_compare):
-                self.marked.setdefault(key, set()).add(label)
-            else:
-                self.disagree.add(key)
+        for key in self.marked_compare:
+            for label in self.marked_compare[key]:
+                if self.marked_compare[key][label] == len(self.annotation_files):
+                    self.marked.setdefault(key, set()).add(label)
+                else:
+                    self.disagree.add(key)
 
     def get_marked_token(self, pos, cursor, linking_pos):
+        pos = tuple(pos)
+        linking_pos = tuple(linking_pos)
+
         token = self.tokens[pos[0]][pos[1]]
         color = DEFAULT_COLOR
         text = None
@@ -181,13 +184,11 @@ class Datum(object):
             elif pos in self.marked.get(linking_pos, []):
                 color = REF_CURSOR_COLOR
             else:
-                count = 0
-                for marked in self.marked_compare:
-                    if pos in marked.get(linking_pos, []):
-                        color = COMPARE_REF_CURSOR_COLORS[min(count, 1)]
-                        count += 1
-                if count > 0 and count == len(self.marked_compare):
+                count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
+                if count == len(self.annotation_files):
                     color = REF_CURSOR_COLOR
+                elif count > 0:
+                    color = COMPARE_REF_CURSOR_COLORS[min(count, 1)]
 
             if self.config.annotation_type == AnnType.text:
                 text = self.marked.get(pos)
@@ -199,13 +200,11 @@ class Datum(object):
                     if compare_pos(self.config, pos, linking_pos) > 0:
                         color = COMPARE_DISAGREE_COLOR
 
-            count = 0
-            for marked in self.marked_compare:
-                if pos in marked.get(linking_pos, []):
-                    color = COMPARE_REF_COLORS[min(count, 1)]
-                    count += 1
-            if count > 0 and count == len(self.marked_compare):
+            count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
+            if count == len(self.annotation_files):
                 color = REF_COLOR
+            elif count > 0:
+                color = COMPARE_REF_COLORS[min(count, 1)]
 
             if pos in self.marked or linking_pos in self.marked:
                 if self.config.annotation_type == AnnType.categorical:
@@ -226,6 +225,48 @@ class Datum(object):
             return pos[0]
         else:
             return (pos[0], pos[1])
+
+    def next_disagreement(self, pos, linking_pos, reverse):
+        if self.config.annotation == AnnScope.line:
+            pos = pos[0]
+            linking_pos = linking_pos[0]
+
+        # First, move the pos
+        marked = self.marked_compare
+        if self.config.annotation_type == AnnType.link:
+            marked = marked[linking_pos]
+
+        closest = None
+        for opos in marked:
+            comparison = compare_pos(self.config, pos, opos)
+            if reverse and comparison <= 0:
+                continue
+            elif (not reverse) and comparison >= 0:
+                continue
+
+            if closest is None:
+                closest = opos
+            else:
+                comparison = compare_pos(self.config, closest, opos)
+                if reverse and comparison <= 0:
+                    closest = opos
+                elif (not reverse) and comparison >= 0:
+                    closest = opos
+        if closest is not None:
+            if self.config.annotation == AnnScope.line:
+                return ([closest, 0], [linking_pos, 0])
+            else:
+                return (closest, linking_pos)
+
+        # If that fails, and we are linking, move the linking_pos, then the pos
+        if self.config.annotation_type == AnnType.link:
+            pass
+
+        # If there are no disagreements, don't move at all
+        if self.config.annotation == AnnScope.line:
+            return ([pos, 0], [linking_pos, 0])
+        else:
+            return (pos, linking_pos)
 
     def modify_annotation(self, pos, linking_pos, symbol=None):
         # Do not allow links from an item to itself

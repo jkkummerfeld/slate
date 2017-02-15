@@ -85,11 +85,9 @@ def annotate(window, config, filenames):
             elif user_input == ord("h"):
                 view.toggle_help()
             elif user_input == ord("n"):
-                if config.annotation_type != AnnType.link:
-                    view.next_number()
+                view.next_disagreement()
             elif user_input == ord("p"):
-                if config.annotation_type != AnnType.link:
-                    view.next_number()
+                view.previous_disagreement()
             elif user_input == ord("d") and config.mode == Mode.annotate:
                 datum.modify_annotation(view.cursor, view.linking_pos)
                 if config.annotation_type == AnnType.link:
