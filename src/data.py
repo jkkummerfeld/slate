@@ -125,6 +125,27 @@ def compare_pos(config, pos0, pos1):
         else:
             return comparison
 
+def get_closest(config, pos, options, before, check):
+    closest = None
+    for option in options:
+        if check(option):
+            continue
+        comparison = compare_pos(config, pos, option)
+        if before and comparison <= 0:
+            continue
+        elif (not before) and comparison >= 0:
+            continue
+
+        if closest is None:
+            closest = option
+        else:
+            comparison = compare_pos(config, closest, option)
+            if before and comparison <= 0:
+                closest = option
+            elif (not before) and comparison >= 0:
+                closest = option
+    return closest
+
 class Datum(object):
     """Storage for a single file's data and annotations.
 
@@ -234,24 +255,13 @@ class Datum(object):
         # First, move the pos
         marked = self.marked_compare
         if self.config.annotation_type == AnnType.link:
-            marked = marked[linking_pos]
-
-        closest = None
-        for opos in marked:
-            comparison = compare_pos(self.config, pos, opos)
-            if reverse and comparison <= 0:
-                continue
-            elif (not reverse) and comparison >= 0:
-                continue
-
-            if closest is None:
-                closest = opos
+            if linking_pos in marked:
+                marked = marked[linking_pos]
             else:
-                comparison = compare_pos(self.config, closest, opos)
-                if reverse and comparison <= 0:
-                    closest = opos
-                elif (not reverse) and comparison >= 0:
-                    closest = opos
+                marked = {}
+
+        closest = get_closest(self.config, pos, marked, reverse,
+                lambda x: marked[x] == len(self.annotation_files))
         if closest is not None:
             if self.config.annotation == AnnScope.line:
                 return ([closest, 0], [linking_pos, 0])
@@ -260,7 +270,21 @@ class Datum(object):
 
         # If that fails, and we are linking, move the linking_pos, then the pos
         if self.config.annotation_type == AnnType.link:
-            pass
+            closest_link = get_closest(self.config, linking_pos,
+                    self.marked_compare, reverse,
+                    lambda x: x not in self.disagree)
+            if closest_link is not None:
+                comparison = closest_link if reverse else (-1, -1)
+                if self.config.annotation == AnnScope.line and (not reverse):
+                    comparison = -1
+                closest_pos = get_closest(self.config, comparison,
+                        self.marked_compare[closest_link], reverse,
+                        lambda x: self.marked_compare[closest_link][x] == len(self.annotation_files))
+                logging.info((pos, linking_pos, closest_link, closest_pos))
+                if self.config.annotation == AnnScope.line:
+                    return ([closest_pos, 0], [closest_link, 0])
+                else:
+                    return (closest_pos, closest_link)
 
         # If there are no disagreements, don't move at all
         if self.config.annotation == AnnScope.line:
