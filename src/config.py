@@ -71,7 +71,6 @@ class Config(object):
         self.overwrite = overwrite
         self.annotation = ann[0]
         self.annotation_type = ann[1]
-        self.log = open("log.txt", "w")
         self.mode = mode
 
     def set_by_file(self, filename):

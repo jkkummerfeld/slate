@@ -1,10 +1,10 @@
 from __future__ import print_function
 
+import logging
 import glob
+import sys
 
 from config import *
-from sys import stderr
-import logging
 
 def read_filenames(arg, config):
     if len(glob.glob(arg)) == 0:
@@ -23,7 +23,6 @@ def read_filenames(arg, config):
             position = [int(parts[2]), int(parts[3])]
         if len(parts) > 4:
             annotations = parts[4:]
-        logging.info((raw_file, position, output_file, annotations))
         filenames.append((raw_file, position, output_file, annotations))
 
     # Check files exist (or do not exist if being created)
@@ -125,26 +124,13 @@ def compare_pos(config, pos0, pos1):
         else:
             return comparison
 
-def get_closest(config, pos, options, before, check):
-    closest = None
-    for option in options:
-        if check(option):
-            continue
-        comparison = compare_pos(config, pos, option)
-        if before and comparison <= 0:
-            continue
-        elif (not before) and comparison >= 0:
-            continue
-
-        if closest is None:
-            closest = option
-        else:
-            comparison = compare_pos(config, closest, option)
-            if before and comparison <= 0:
-                closest = option
-            elif (not before) and comparison >= 0:
-                closest = option
-    return closest
+def prepare_for_return(config, pos):
+    if config.annotation != AnnScope.line:
+        return pos
+    elif pos == -1:
+        return [-1, -1]
+    else:
+        return [pos, 0]
 
 class Datum(object):
     """Storage for a single file's data and annotations.
@@ -209,7 +195,7 @@ class Datum(object):
                 if count == len(self.annotation_files):
                     color = REF_CURSOR_COLOR
                 elif count > 0:
-                    color = COMPARE_REF_CURSOR_COLORS[min(count, 1)]
+                    color = COMPARE_REF_CURSOR_COLORS[min(count, 2) - 1]
 
             if self.config.annotation_type == AnnType.text:
                 text = self.marked.get(pos)
@@ -225,7 +211,7 @@ class Datum(object):
             if count == len(self.annotation_files):
                 color = REF_COLOR
             elif count > 0:
-                color = COMPARE_REF_COLORS[min(count, 1)]
+                color = COMPARE_REF_COLORS[min(count, 2) - 1]
 
             if pos in self.marked or linking_pos in self.marked:
                 if self.config.annotation_type == AnnType.categorical:
@@ -247,6 +233,32 @@ class Datum(object):
         else:
             return (pos[0], pos[1])
 
+    def get_closest_disagreement(self, pos, options, before, check_disagree):
+        closest = None
+        for option in options:
+            # Only consider cases where there was a disagreement
+            if check_disagree:
+                if option not in self.disagree:
+                    continue
+            elif options[option] == len(self.annotation_files):
+                continue
+
+            comparison = compare_pos(self.config, pos, option)
+            if before and comparison <= 0:
+                continue
+            elif (not before) and comparison >= 0:
+                continue
+
+            if closest is None:
+                closest = option
+            else:
+                comparison = compare_pos(self.config, closest, option)
+                if before and comparison <= 0:
+                    closest = option
+                elif (not before) and comparison >= 0:
+                    closest = option
+        return closest
+
     def next_disagreement(self, pos, linking_pos, reverse):
         if self.config.annotation == AnnScope.line:
             pos = pos[0]
@@ -255,42 +267,33 @@ class Datum(object):
         # First, move the pos
         marked = self.marked_compare
         if self.config.annotation_type == AnnType.link:
-            if linking_pos in marked:
-                marked = marked[linking_pos]
-            else:
-                marked = {}
-
-        closest = get_closest(self.config, pos, marked, reverse,
-                lambda x: marked[x] == len(self.annotation_files))
+            marked = marked.get(linking_pos, {})
+        closest = self.get_closest_disagreement(pos, marked, reverse, False)
         if closest is not None:
-            if self.config.annotation == AnnScope.line:
-                return ([closest, 0], [linking_pos, 0])
-            else:
-                return (closest, linking_pos)
+            return (prepare_for_return(self.config, closest),
+                    prepare_for_return(self.config, linking_pos))
 
         # If that fails, and we are linking, move the linking_pos, then the pos
         if self.config.annotation_type == AnnType.link:
-            closest_link = get_closest(self.config, linking_pos,
-                    self.marked_compare, reverse,
-                    lambda x: x not in self.disagree)
+            marked = self.marked_compare
+            closest_link = self.get_closest_disagreement(linking_pos, marked,
+                    reverse, True)
             if closest_link is not None:
-                comparison = closest_link if reverse else (-1, -1)
-                if self.config.annotation == AnnScope.line and (not reverse):
-                    comparison = -1
-                closest_pos = get_closest(self.config, comparison,
-                        self.marked_compare[closest_link], reverse,
-                        lambda x: self.marked_compare[closest_link][x] == len(self.annotation_files))
-                logging.info((pos, linking_pos, closest_link, closest_pos))
+                comparison = (-1, -1)
+                if reverse:
+                    comparison = (sys.maxsize, sys.maxsize)
                 if self.config.annotation == AnnScope.line:
-                    return ([closest_pos, 0], [closest_link, 0])
-                else:
-                    return (closest_pos, closest_link)
+                    comparison = comparison[0]
+
+                marked = marked[closest_link]
+                closest_pos = self.get_closest_disagreement(comparison,
+                        marked, reverse, False)
+                return (prepare_for_return(self.config, closest_pos),
+                        prepare_for_return(self.config, closest_link))
 
         # If there are no disagreements, don't move at all
-        if self.config.annotation == AnnScope.line:
-            return ([pos, 0], [linking_pos, 0])
-        else:
-            return (pos, linking_pos)
+        return (prepare_for_return(self.config, pos),
+                prepare_for_return(self.config, linking_pos))
 
     def modify_annotation(self, pos, linking_pos, symbol=None):
         # Do not allow links from an item to itself
