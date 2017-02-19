@@ -111,6 +111,7 @@ Features:
  - Write scripts to take standoff and create inline data (don't add inline as an output)
  - Add logging of all edits to a file, so a crash can be recoverd from easily.
  - Allow different default when resolving disagreements (rather than the union, only have those with agreement, or a majority). Note, this is subtle, as it interacts with the way colouring works.
+ - Ability to colour linked items as they are created (to see the history). Either always showing all using different colours, or showing what the cursor is linked to.
 
 Internal:
  - More intelligent calculation of view position (avoid dry runs)
