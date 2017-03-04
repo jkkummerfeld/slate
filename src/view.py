@@ -241,7 +241,7 @@ class View(object):
                 else:
                     if not trial:
                         color = curses.color_pair(color)
-                        self.window.addstr(row, column, token, color)
+                        self.window.addstr(row, column, token, color + curses.A_BOLD)
                     if self.datum.check_equal(pos, cursor) and seen_cursor is None:
                         seen_cursor = True
                     if self.datum.check_equal(pos, linking_pos) and seen_linking_pos is None:
@@ -283,7 +283,7 @@ class View(object):
             cur = main_height
             for line in inst:
                 fmt = "{:<"+ str(width) +"}"
-                self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR))
+                self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
                 cur += 1
 
         self.window.refresh()
@@ -297,7 +297,7 @@ class View(object):
         if edge == 'end':
             dir_key = '\\'
         line1 = "Type 'q' to quit, or '"+ dir_key+ "' to go back."
-        self.window.addstr(pos, 0, line0, curses.color_pair(HELP_COLOR))
-        self.window.addstr(pos + 1, 0, line1, curses.color_pair(DEFAULT_COLOR))
+        self.window.addstr(pos, 0, line0, curses.color_pair(HELP_COLOR) + curses.A_BOLD)
+        self.window.addstr(pos + 1, 0, line1, curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD)
         self.window.refresh()
 
