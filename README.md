@@ -112,12 +112,18 @@ Features:
  - Add logging of all edits to a file, so a crash can be recoverd from easily.
  - Allow different default when resolving disagreements (rather than the union, only have those with agreement, or a majority). Note, this is subtle, as it interacts with the way colouring works.
  - Ability to colour linked items as they are created (to see the history). Either always showing all using different colours, or showing what the cursor is linked to.
+ - Shortcut to jump to just before the link line
+ - Option to not allow annotation of some files (and not create a file)
 
 Internal:
+ - What happens if we hit a word wider than the window?
+ - At the moment spacing is being lost (e.g. intentional multiple spaces)
  - More intelligent calculation of view position (avoid dry runs)
  - Nicer argument, error, and logging handling
  - Don't re-render if there is no change to the view
  - Start the link line after the cursor and don't allow them to overlap
+ - Saving both cursor and link for linking mode (in todo file) and reading similarly
+ - Work out how to get brighter colours (cf vim)
 
 Done?
  - Allow storage of information about the last time editing, so we can pick up at the same position
