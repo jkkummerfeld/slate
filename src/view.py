@@ -18,6 +18,7 @@ class View(object):
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.config = my_config
         self.must_show_linking_pos = False
+        self.typing_command = False
 
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
@@ -255,14 +256,17 @@ class View(object):
             return seen_cursor
 
 
-    def render(self):
+    def render(self, current_search):
         height, width = self.window.getmaxyx()
 
         # First, plan instructions
         main_height = height - 1
         inst = self.instructions()
-        if height >= len(inst) and self.show_help:
-            main_height = main_height - len(inst)
+        space_needed = 0
+        if self.show_help: space_needed += len(inst)
+        if self.typing_command: space_needed += 1
+        if height >= space_needed:
+            main_height = main_height - space_needed
 
         # Shift the top up if necessary
         if self.must_show_linking_pos:
@@ -278,17 +282,26 @@ class View(object):
         # Next, draw contents
         self.do_contents(main_height, width)
 
-        # Last, draw instructions
-        if height >= len(inst) and self.show_help:
+        # Then, draw instructions
+        if main_height < (height - 1) and self.show_help:
             cur = main_height
             for line in inst:
                 fmt = "{:<"+ str(width) +"}"
                 self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
                 cur += 1
 
+        # Last, draw the text being typed
+        if main_height < (height - 1) and self.typing_command:
+            cur = main_height
+            if self.show_help: cur += len(inst)
+            text = "/"+ current_search
+            fmt = "{:<"+ str(width) +"}"
+            self.window.addstr(cur, 0, fmt.format(text), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
+
         self.window.refresh()
 
     def render_edgecase(self, edge):
+        ielf.typing_command = False
         self.window.clear()
         height, width = self.window.getmaxyx()
         pos = int(height / 2)
