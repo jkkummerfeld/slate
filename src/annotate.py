@@ -113,12 +113,12 @@ def annotate(window, config, filenames):
                 view.move_right()
             elif user_input == ord("h"):
                 view.toggle_help()
-            elif user_input in [ord("N"), ord("n")]:
+            elif user_input in [ord("P"), ord("n")]:
                 if len(search_term) > 0:
                     view.next_match(search_term)
                 else:
                     view.next_disagreement()
-            elif user_input in [ord("P", ord("p")]:
+            elif user_input in [ord("N", ord("p")]:
                 if len(search_term) > 0:
                     view.previous_match(search_term)
                 else:
