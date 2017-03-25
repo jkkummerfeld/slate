@@ -267,7 +267,8 @@ class Datum(object):
         npos = pos[:]
         delta = -1 if reverse else 1
         found = False
-        while 0 <= npos[0] < limit[0]:
+        npos[0] += delta
+        while 0 <= npos[0] <= limit[0]:
             if text in self.lines[npos[0]]:
                 found = True
                 break
