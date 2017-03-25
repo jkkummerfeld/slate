@@ -6,6 +6,7 @@ import curses
 import argparse
 import logging
 import sys
+import string
 
 from data import *
 from config import *
@@ -31,6 +32,8 @@ def annotate(window, config, filenames):
             start_pos, True)
 
     at_end = None
+    search_term = ''
+    typing_command = False
     while True:
         if at_end is not None:
             # Draw screen
@@ -43,16 +46,35 @@ def annotate(window, config, filenames):
                 at_end = None
             elif user_input == ord("q"):
                 break
+        elif typing_command:
+            # Draw screen
+            view.render("/"+ search_term)
+            view.must_show_linking_pos = False
+            # Get input
+            user_input = window.getch()
+
+            logging.debug("Got:" + str(user_input))
+
+            # TODO: Hacky, these numbers were worked out by hand.
+            if user_input in [ord('?'), 10]:
+                typing_command = False
+            elif user_input in [ord('!'), 263, 127]:
+                search_term = search_term[:-1]
+            elif user_input in [ord(v) for v in string.printable]:
+                search_term += chr(user_input)
         else:
             # Draw screen
-            view.render()
+            view.render(search_term)
             view.must_show_linking_pos = False
             # Get input
             user_input = window.getch()
 
             # Note - First two are SHIFT + DOWN and SHIFT + UP, determined by
             # hand on two laptops.
-            if user_input in [ord('c'), 337]:
+            if user_input == ord('/'):
+                typing_command = True
+                search_term = ''
+            elif user_input in [ord('c'), 337]:
                 if config.annotation_type == AnnType.link:
                     view.move_up(True)
                     view.must_show_linking_pos = True
@@ -85,9 +107,15 @@ def annotate(window, config, filenames):
             elif user_input == ord("h"):
                 view.toggle_help()
             elif user_input == ord("n"):
-                view.next_disagreement()
+                if len(search_term) > 0:
+                    view.next_match(search_term)
+                else:
+                    view.next_disagreement()
             elif user_input == ord("p"):
-                view.previous_disagreement()
+                if len(search_term) > 0:
+                    view.previous_match(search_term)
+                else:
+                    view.previous_disagreement()
             elif user_input == ord("d") and config.mode == Mode.annotate:
                 datum.modify_annotation(view.cursor, view.linking_pos)
                 if config.annotation_type == AnnType.link:
@@ -111,7 +139,7 @@ def annotate(window, config, filenames):
                     if config.annotation_type != AnnType.link:
                         datum.modify_annotation(view.cursor, view.linking_pos,
                                 chr(user_input))
-            elif user_input in [ord(c) for c in "/\\,.q"]:
+            elif user_input in [ord(c) for c in ",.q"]:
                 # If we can get another file, do
                 if config.mode == Mode.annotate:
                     datum.write_out()

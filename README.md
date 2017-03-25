@@ -114,6 +114,7 @@ Features:
  - Ability to colour linked items as they are created (to see the history). Either always showing all using different colours, or showing what the cursor is linked to.
  - Shortcut to jump to just before the link line
  - Option to not allow annotation of some files (and not create a file)
+ - When the movement key is pressed multiple times in a row quickly, start jumping further [optional], or have a fast jump key?
 
 Internal:
  - What happens if we hit a word wider than the window?
@@ -124,6 +125,7 @@ Internal:
  - Start the link line after the cursor and don't allow them to overlap
  - Saving both cursor and link for linking mode (in todo file) and reading similarly
  - Work out how to get brighter colours (cf vim)
+ - Improve speed of jumping back down
 
 Done?
  - Allow storage of information about the last time editing, so we can pick up at the same position

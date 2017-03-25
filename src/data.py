@@ -146,8 +146,10 @@ class Datum(object):
         self.marked = read_annotation_file(config, self.output_file)
 
         self.tokens = []
+        self.lines = []
         for line in open(filename):
             self.tokens.append([])
+            self.lines.append(line.strip())
             for token in line.split():
                 self.tokens[-1].append(token)
 
@@ -258,6 +260,23 @@ class Datum(object):
                 elif (not before) and comparison >= 0:
                     closest = option
         return closest
+
+    def next_match(self, pos, limit, text, reverse):
+        # TODO: Only implemented correctly for the line matching case at the
+        # moment!
+        npos = pos
+        delta = -1 if reverse else 1
+        found = False
+        while 0 <= npos[0] < limit[0]:
+            if text in self.lines[npos[0]]:
+                found = True
+                break
+            npos = (npos[0] + delta, pos[1])
+
+        if found:
+            return npos
+        else:
+            return pos
 
     def next_disagreement(self, pos, linking_pos, reverse):
         if self.config.annotation == AnnScope.line:

@@ -158,6 +158,13 @@ class View(object):
     def previous_disagreement(self):
         self.next_disagreement(True)
 
+    def next_match(self, text, reverse=False):
+        npos = self.datum.next_match(self.cursor, self.linking_pos,text,
+                reverse)
+        self.cursor = npos
+    def previous_match(self, text):
+        self.next_match(text, True)
+
     # TODO: Combine these two
     def next_number(self):
         if self.config.annotation == AnnScope.line:
@@ -255,14 +262,17 @@ class View(object):
             return seen_cursor
 
 
-    def render(self):
+    def render(self, current_search):
         height, width = self.window.getmaxyx()
 
         # First, plan instructions
         main_height = height - 1
         inst = self.instructions()
-        if height >= len(inst) and self.show_help:
-            main_height = main_height - len(inst)
+        space_needed = 0
+        if self.show_help: space_needed += len(inst)
+        if len(current_search) > 0: space_needed += 1
+        if height >= space_needed:
+            main_height = main_height - space_needed
 
         # Shift the top up if necessary
         if self.must_show_linking_pos:
@@ -278,13 +288,21 @@ class View(object):
         # Next, draw contents
         self.do_contents(main_height, width)
 
-        # Last, draw instructions
-        if height >= len(inst) and self.show_help:
+        # Then, draw instructions
+        if main_height < (height - 1) and self.show_help:
             cur = main_height
             for line in inst:
                 fmt = "{:<"+ str(width) +"}"
                 self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
                 cur += 1
+
+        # Last, draw the text being typed
+        if main_height < (height - 1) and len(current_search) > 0:
+            cur = main_height
+            if self.show_help: cur += len(inst)
+            text = current_search
+            fmt = "{:<"+ str(width) +"}"
+            self.window.addstr(cur, 0, fmt.format(text), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
 
         self.window.refresh()
 
@@ -293,9 +311,7 @@ class View(object):
         height, width = self.window.getmaxyx()
         pos = int(height / 2)
         line0 = "At "+ edge +" in the files."
-        dir_key = '/'
-        if edge == 'end':
-            dir_key = '\\'
+        dir_key = ',' if edge == 'end' else '.'
         line1 = "Type 'q' to quit, or '"+ dir_key+ "' to go back."
         self.window.addstr(pos, 0, line0, curses.color_pair(HELP_COLOR) + curses.A_BOLD)
         self.window.addstr(pos + 1, 0, line1, curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD)
