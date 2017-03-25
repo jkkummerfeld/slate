@@ -41,7 +41,6 @@ def annotate(window, config, filenames):
             view.render_edgecase(at_end)
             # Get input
             user_input = window.getch()
-            nsteps += 1
             if at_end == 'start' and user_input in [ord('.'), ord("/")]:
                 at_end = None
             elif at_end == 'end' and user_input in [ord(','), ord("\\")]:
