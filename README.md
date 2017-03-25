@@ -31,8 +31,8 @@ Annotation           | r                       | [un]mark this token as ||      
                      | d                       | -                                | create a link and move down / right
                      | D                       | -                                | create a link
                      | u                       | undo annotation on this token    | undo all annotations for the current item
-Saving, exiting, etc | / or .                  | save and go to next file         | same
-                     | \ or ,                  | save and go to previous file     | same
+Saving, exiting, etc | .                       | save and go to next file         | same
+                     | ,                       | save and go to previous file     | same
                      | q                       | quit                             | same
                      | h                       | toggle help info (default on)    | same
 
