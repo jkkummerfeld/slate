@@ -264,14 +264,14 @@ class Datum(object):
     def next_match(self, pos, limit, text, reverse):
         # TODO: Only implemented correctly for the line matching case at the
         # moment!
-        npos = pos
+        npos = pos[:]
         delta = -1 if reverse else 1
         found = False
         while 0 <= npos[0] < limit[0]:
             if text in self.lines[npos[0]]:
                 found = True
                 break
-            npos = (npos[0] + delta, pos[1])
+            npos[0] += delta
 
         if found:
             return npos

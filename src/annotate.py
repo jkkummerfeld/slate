@@ -157,7 +157,7 @@ def annotate(window, config, filenames):
                 if user_input == ord('q'):
                     break
 
-                direction = 1 if user_input in [ord('.'), ord("/")] else -1
+                direction = 1 if user_input == ord('.') else -1
                 if 0 <= cfilename + direction < len(filenames):
                     cfilename += direction
                     filename, start_pos, output_file, annotation_files = \
