@@ -24,8 +24,8 @@ Movement             | left arrow              | move to previous word          
 .                    | down arrow              | move down a line                 | move antecedent down a line
 .                    | v or down arrow + shift | go to last line                  | move down a line
 .                    | /                       | -                                | start typing a search term
-.                    | n                       | -                                | move to next search match
-.                    | p                       | -                                | move to previous search match
+.                    | n or P                  | -                                | move to next search match
+.                    | p or N                  | -                                | move to previous search match
 Annotation           | r                       | [un]mark this token as ||        | -
 .                    | s                       | [un]mark this token as {}        | -
 .                    | b                       | [un]mark this token as []        | -
