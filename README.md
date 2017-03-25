@@ -16,12 +16,12 @@ You will be shown files one at a time in plain text. Commands for are:
 Type                 | Key                     | Labelling Affect                 | Linking Affect
 -------------------- | ----------------------- | -------------------------------- | ---------------------
 Movement             | left arrow              | move to previous word            | move antecedent to previous word
-                     | left arrow + shift      | go to first word in line         | move to previous word
-                     | right arrow             | move to next word                | move antecedent to next word
-                     | right arrow + shift     | go to last word in line          | move to next word
-                     | up arrow                | move up a line                   | move antecedent up a line
-                     | c or up arrow + shift   | go to first line                 | move up a line
-                     | down arrow              | move down a line                 | move antecedent down a line
+.                    | left arrow + shift      | go to first word in line         | move to previous word
+.                    | right arrow             | move to next word                | move antecedent to next word
+.                    | right arrow + shift     | go to last word in line          | move to next word
+.                    | up arrow                | move up a line                   | move antecedent up a line
+.                    | c or up arrow + shift   | go to first line                 | move up a line
+.                    | down arrow              | move down a line                 | move antecedent down a line
                      | v or down arrow + shift | go to last line                  | move down a line
                      | n                       | move to next numerical value     | -
                      | p                       | move to previous numerical value | -
