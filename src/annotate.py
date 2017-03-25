@@ -118,7 +118,7 @@ def annotate(window, config, filenames):
                     view.next_match(search_term)
                 else:
                     view.next_disagreement()
-            elif user_input in [ord("N", ord("p")]:
+            elif user_input in [ord("N"), ord("p")]:
                 if len(search_term) > 0:
                     view.previous_match(search_term)
                 else:
