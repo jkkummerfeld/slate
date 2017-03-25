@@ -34,12 +34,14 @@ def annotate(window, config, filenames):
     at_end = None
     search_term = ''
     typing_command = False
+    nsteps = 0
     while True:
         if at_end is not None:
             # Draw screen
             view.render_edgecase(at_end)
             # Get input
             user_input = window.getch()
+            nsteps += 1
             if at_end == 'start' and user_input in [ord('.'), ord("/")]:
                 at_end = None
             elif at_end == 'end' and user_input in [ord(','), ord("\\")]:
@@ -52,8 +54,11 @@ def annotate(window, config, filenames):
             view.must_show_linking_pos = False
             # Get input
             user_input = window.getch()
+            nsteps += 1
+            if nsteps % 100 == 0 and config.mode == Mode.annotate:
+                datum.write_out()
 
-            logging.debug("Got:" + str(user_input))
+###            logging.debug("Got:" + str(user_input))
 
             # TODO: Hacky, these numbers were worked out by hand.
             if user_input in [ord('?'), 10]:
@@ -68,6 +73,9 @@ def annotate(window, config, filenames):
             view.must_show_linking_pos = False
             # Get input
             user_input = window.getch()
+            nsteps += 1
+            if nsteps % 100 == 0 and config.mode == Mode.annotate:
+                datum.write_out()
 
             # Note - First two are SHIFT + DOWN and SHIFT + UP, determined by
             # hand on two laptops.
