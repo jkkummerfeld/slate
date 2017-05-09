@@ -31,7 +31,7 @@ def read_filenames(arg, config):
     for raw_file, _, output_file, annotations in filenames:
         if len(glob.glob(raw_file)) == 0:
             missing.append(raw_file)
-        if not config.overwrite:
+        if not config.args.overwrite:
             if len(glob.glob(output_file)) != 0:
                 extra.append(output_file)
         for annotation in annotations:

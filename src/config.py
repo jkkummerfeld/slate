@@ -49,8 +49,8 @@ class KeyConfig(object):
 class AnnScope(Enum):
     token = 0
     line = 1
+    span = 2
     # TODO:
-    # span
     # sentence
     # paragraph
     # character
@@ -63,15 +63,16 @@ class AnnType(Enum):
 class Mode(Enum):
     annotate = 0
     read = 1
+    calibrate = 2
+    set_span = 3
 
 class Config(object):
-    def __init__(self, keys, min_unique_length=-1, overwrite=False, ann=(AnnScope.line, AnnType.link), mode=Mode.annotate):
+    def __init__(self, keys, args):
+        self.args = args
         self.keys = keys
-        self.unique_length = min_unique_length
-        self.overwrite = overwrite
-        self.annotation = ann[0]
-        self.annotation_type = ann[1]
-        self.mode = mode
+        self.annotation = AnnScope[args.ann_scope]
+        self.annotation_type = AnnType[args.ann_type]
+        self.mode = Mode[args.mode]
 
     def set_by_file(self, filename):
         self.keys = {}
@@ -118,16 +119,14 @@ class Config(object):
                 self.unique_length = i
                 break
 
-def get_default_config(args, mode=Mode.annotate):
+def get_config(args, mode=Mode.annotate):
     return Config(
         {
             's': KeyConfig('s', 'SELL', 2, '{', '}'),
             'b': KeyConfig('b', 'BUY', 3, '[', ']'),
             'r': KeyConfig('r', 'RATE', 7, '|', '|'),
         },
-        0,
-        True,
-        mode=mode
+        args
     )
 
 SPECIAL_KEYS = {'u', 'q', 'h', 'p', 'n'}
@@ -166,11 +165,3 @@ COMPARE_DISAGREE_CURSOR_COLOR = 11
 # These indicate how many people labeled something, 1,2...
 COMPARE_REF_COLORS = [12, 13]
 COMPARE_REF_CURSOR_COLORS = [14, 15]
-
-def read_config(filename):
-    # TODO: this is a stub, actually implement reading a config
-    keys = DEFAULT_CONFIG.keys
-    unique_length = 0
-    overwrite = True
-    return Config(keys, unique_length, overwrite, mode=Mode.annotate)
-

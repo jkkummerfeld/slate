@@ -186,17 +186,21 @@ def annotate(window, config, filenames):
     out.close()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='A tool for annotating text data with extra information.')
+    parser = argparse.ArgumentParser(description='A tool for annotating text data with extra information.', fromfile_prefix_chars='@')
     parser.add_argument('data', help='File containing a list of files to annotate')
     parser.add_argument('--log_prefix', help='Prefix for logging files (otherwise none)', default="annotation_log")
     parser.add_argument('--readonly', help='Do not allow changes or save annotations.', default=False)
+    parser.add_argument('--overwrite', help='If they exist already, overwrite output files.', default=False, action='store_true')
+    parser.add_argument('--ann_type', help='The type of annotation being done.', choices=[v for v in AnnType.__members__], default='link')
+    parser.add_argument('--ann_scope', help='The scope of annotation being done.', choices=[v for v in AnnScope.__members__], default='line')
+    parser.add_argument('--mode', help='High-level control of what the tool does.', choices=[v for v in Mode.__members__], default='annotate')
     args = parser.parse_args()
 
     logging.basicConfig(filename=args.log_prefix + '.log', level=logging.DEBUG)
 
     ### Process configuration
     mode = Mode.read if args.readonly else Mode.annotate
-    config = get_default_config(args, mode)
+    config = get_config(args, mode)
     filenames = read_filenames(args.data, config)
     if len(filenames) == 0:
         print("File '{}' contained no filenames".format(args.data))
