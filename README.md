@@ -91,8 +91,8 @@ A series of lines, each containing ([] are optional):
 # TODO:
 
 Features:
- - Enable different scales of annotation (e.g. multiword span, or an entire sentence)
- - Enable linking items rather than labeling them (and labeled links)
+ - Enable different scales of annotation (e.g. multiword span, or an entire sentence). Have sclaes (character, token, line, sentence, paragraph), types (item, span), labels (categories, free text, directed link, undirected link, set)
+ - Allow multiple annotations of the same file at the same time
  - Space between token and label
  - For blank lines, print only one in a row
  - Variable location of instructions
@@ -127,7 +127,4 @@ Internal:
  - Saving both cursor and link for linking mode (in todo file) and reading similarly
  - Work out how to get brighter colours (cf vim)
  - Improve speed of jumping back down
-
-Done?
- - Allow storage of information about the last time editing, so we can pick up at the same position
 
