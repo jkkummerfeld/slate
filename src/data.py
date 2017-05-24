@@ -86,6 +86,30 @@ def read_annotation_file(config, filename):
                     # (4, 2) - blah blah blah
                     # means (4, 2) is labeled "blah blah blah"
                     marked[source] = ' '.join(fields[3:])
+            elif config.annotation == AnnScope.span:
+                # All examples refer to a span from word 2 on line 4 to word 1 on line 6
+                source_start = (get_num(fields[0]), get_num(fields[1]))
+                source_end = (get_num(fields[2]), get_num(fields[3]))
+                source = (source_start, source_end)
+                if config.annotation_type == AnnType.categorical:
+                    # Format example:
+                    # ((4, 2), (6, 1) - buy sell
+                    labels = set(fields[5:])
+                    marked[source] = labels
+                elif config.annotation_type == AnnType.link:
+                    # Format example:
+                    # ((4, 2), (6, 1) - ((0, 0), (0, 4)), ((1,0), (1,2))
+                    targets = set()
+                    for i in range(5, len(fields), 4):
+                        start = (get_num(fields[i]), get_num(fields[i + 1]))
+                        end = (get_num(fields[i + 2]), get_num(fields[i + 3]))
+                        targets.add((start, end))
+                    marked[source] = targets
+                elif config.annotation_type == AnnType.text:
+                    # Format example:
+                    # (4, 2) - blah blah blah
+                    # means (4, 2) is labeled "blah blah blah"
+                    marked[source] = ' '.join(fields[3:])
             elif config.annotation == AnnScope.line:
                 source = int(fields[0])
                 if config.annotation_type == AnnType.categorical:
@@ -367,5 +391,4 @@ class Datum(object):
                 pass
             print("{} - {}".format(source, info), file=out)
         out.close()
-
 

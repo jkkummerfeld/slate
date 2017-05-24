@@ -57,8 +57,6 @@ def annotate(window, config, filenames):
             if nsteps % 100 == 0 and config.mode == Mode.annotate:
                 datum.write_out()
 
-###            logging.debug("Got:" + str(user_input))
-
             # TODO: Hacky, these numbers were worked out by hand.
             if user_input in [ord('?'), 10]:
                 typing_command = False
