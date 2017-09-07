@@ -91,6 +91,7 @@ A series of lines, each containing ([] are optional):
 # TODO:
 
 Features:
+ - Add a calibration mode, where people type keys so I can figure out what they mean (and they could customise things).
  - Enable different scales of annotation (e.g. multiword span, or an entire sentence). Have sclaes (character, token, line, sentence, paragraph), types (item, span), labels (categories, free text, directed link, undirected link, set)
  - Allow multiple annotations of the same file at the same time
  - Space between token and label
@@ -116,6 +117,7 @@ Features:
  - Shortcut to jump to just before the link line
  - Option to not allow annotation of some files (and not create a file)
  - When the movement key is pressed multiple times in a row quickly, start jumping further [optional], or have a fast jump key?
+ - Look into the LAF format for data input / output
 
 Internal:
  - What happens if we hit a word wider than the window?
