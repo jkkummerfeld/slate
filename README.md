@@ -130,3 +130,4 @@ Internal:
  - Work out how to get brighter colours (cf vim)
  - Improve speed of jumping back down
 
+Candidate name - SLATE, Super-Lightweight Annotation Tool for Experts
