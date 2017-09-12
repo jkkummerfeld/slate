@@ -47,14 +47,10 @@ class KeyConfig(object):
         return ans, self.color
 
 class AnnScope(Enum):
-    token = 0
-    line = 1
-    span = 2
-    # TODO:
-    # character
-    # sentence
-    # paragraph
-    # document
+    character = 0
+    token = 1
+    line = 2
+    document = 3
 
 # TODO: Have a separate notion of 'single', 'continuous', 'discontiuous' (for the item selection), so the user could be linking a pair of discontinuous sets of lines
 

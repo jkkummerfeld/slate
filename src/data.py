@@ -156,22 +156,58 @@ def prepare_for_return(config, pos):
     else:
         return [pos, 0]
 
-class Item(object):
-    """A thing to be annotated.
-    
-    This is used in Datum to keep track of annotations, and used in View to determine the current appearance."""
+class Span(object):
+    """A continuous span of text."""
 
-    def __init__(self):
-        pass
+    def __init__(self, scope, doc, span=None):
+        self.doc = doc
+        self.start = None
+        self.end = None
+        self.singular = True
+        if scope == AnnScope.character:
+            self.start, self.end = (0, 0, 0), (0, 0, 1)
+        elif scope == AnnScope.token:
+            self.start, self.end = (0, 0), (0, 1)
+        elif scope == AnnScope.line:
+            self.start, self.end = (0), (1)
+        elif scope = AnnScope.document:
+            self.start, self.end = (), ()
+        else:
+            raise Exception("Invalid scope")
+        if span is not None:
+            # Most of the time a span will be provided to start from. Use the
+            # last part of it as the basis for the new item.
+            self.end = span.end
+            if scope == AnnScope.character:
+                self.start = (span.end[0], span.end[1], span.end[2] - 1)
+            elif scope == AnnScope.token:
+                self.start = (span.end[0], span.end[1] - 1)
+            elif scope == AnnScope.line:
+                self.start = span.end[0] - 1
+
+    # TODO: Hash function that only considers start and end
 
     # Modification functions, each returns the position that was modified
-    def edit_left(self, shift=False, alt=False):
+    def edit_left(self, moving=True, shift=False):
+        if len(self.start) == 0: return
+        if moving:
+            if shift:
+                pass # Jump to start of [doc, line, token]
+            else:
+                pass # Move to previous [line, token, character]
+        else:
+            if shift:
+                pass # Move start of the span
+            else:
+                pass # Move end of the span
+    def edit_right(self, shift=False):
+        if len(self.start) == 0: return
         pass
-    def edit_right(self, shift=False, alt=False):
+    def edit_up(self, shift=False):
+        if len(self.start) == 0: return
         pass
-    def edit_up(self, shift=False, alt=False):
-        pass
-    def edit_down(self, shift=False, alt=False):
+    def edit_down(self, shift=False):
+        if len(self.start) == 0: return
         pass
 
     def change_ann_type(self):
@@ -191,6 +227,14 @@ class Item(object):
     #
     # This allows for construction of items, editing, multi-token spans,
     # linking, nesting.
+
+class Item(object):
+    """One or more spans and a set of labels.
+
+    This is used in Datum to keep track of annotations, and used in View to determine the current appearance."""
+    def __init__(self):
+        self.spans = []
+        self.labels = set()
 
 class Datum(object):
     """Storage for a single file's data and annotations.
