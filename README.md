@@ -88,6 +88,9 @@ A series of lines, each containing ([] are optional):
 - Works in constrained environments (e.g. only allowed ssh access to a machine)
 - (eventually) easily configurable
 
+# Notes on design choices
+
+
 # TODO:
 
 Features:
@@ -129,5 +132,6 @@ Internal:
  - Saving both cursor and link for linking mode (in todo file) and reading similarly
  - Work out how to get brighter colours (cf vim)
  - Improve speed of jumping back down
+ - For help, compose it out of a set of items, with line breaks changing when the screen is narrow
 
 Candidate name - SLATE, Super-Lightweight Annotation Tool for Experts

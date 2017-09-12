@@ -156,6 +156,42 @@ def prepare_for_return(config, pos):
     else:
         return [pos, 0]
 
+class Item(object):
+    """A thing to be annotated.
+    
+    This is used in Datum to keep track of annotations, and used in View to determine the current appearance."""
+
+    def __init__(self):
+        pass
+
+    # Modification functions, each returns the position that was modified
+    def edit_left(self, shift=False, alt=False):
+        pass
+    def edit_right(self, shift=False, alt=False):
+        pass
+    def edit_up(self, shift=False, alt=False):
+        pass
+    def edit_down(self, shift=False, alt=False):
+        pass
+
+    def change_ann_type(self):
+        pass
+
+    # How to do coreference resolution annotation:
+    # Normally, have a single position, left =, right, etc move it.
+    # Pressing 'a' makes it a mention and switches into linking mode.
+    # Pressing 'A' switches into a span specification mode, where movement
+    # edits the extent of the span, and pressing 'a' completes it and switches
+    # into linking mode.
+    # In linking mode, movement allows choosing between previous clusters
+    # (starting with 'no cluster').
+    # Pressing 'c' creates the link and switches back to regular mode.
+    # Note, in the initial mode, if a span is highlighted, 's' will select it,
+    # and 'S' will select it and go into span editing mode.
+    #
+    # This allows for construction of items, editing, multi-token spans,
+    # linking, nesting.
+
 class Datum(object):
     """Storage for a single file's data and annotations.
 

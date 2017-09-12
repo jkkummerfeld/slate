@@ -51,20 +51,23 @@ class AnnScope(Enum):
     line = 1
     span = 2
     # TODO:
+    # character
     # sentence
     # paragraph
-    # character
+    # document
+
+# TODO: Have a separate notion of 'single', 'continuous', 'discontiuous' (for the item selection), so the user could be linking a pair of discontinuous sets of lines
 
 class AnnType(Enum):
     categorical = 0
-    link = 1
+    link = 1 #TODO: directed or undirected
     text = 2
+    # TODO: sets
 
 class Mode(Enum):
     annotate = 0
     read = 1
     calibrate = 2
-    set_span = 3
 
 class Config(object):
     def __init__(self, keys, args):
