@@ -7,6 +7,9 @@ import sys
 from config import *
 
 def read_filenames(arg, config):
+    # File containing lines of the form:
+    #  raw_filename [output_filename [cur_line cur_token [other_annotations]]]
+    #
     if len(glob.glob(arg)) == 0:
         raise Exception("Cannot open / find '{}'".format(arg))
     file_info = [line.strip() for line in open(arg).readlines()]
@@ -22,6 +25,7 @@ def read_filenames(arg, config):
         if len(parts) > 3:
             position = [int(parts[2]), int(parts[3])]
         if len(parts) > 4:
+            # Additional annotations (used when comparing annotations)
             annotations = parts[4:]
         filenames.append((raw_file, position, output_file, annotations))
 
@@ -47,6 +51,7 @@ def read_filenames(arg, config):
     return filenames
 
 def get_num(text):
+    # TODO: Switch to simple regex
     mod_text = []
     for char in text:
         if char not in '(),':
@@ -86,30 +91,30 @@ def read_annotation_file(config, filename):
                     # (4, 2) - blah blah blah
                     # means (4, 2) is labeled "blah blah blah"
                     marked[source] = ' '.join(fields[3:])
-            elif config.annotation == AnnScope.span:
-                # All examples refer to a span from word 2 on line 4 to word 1 on line 6
-                source_start = (get_num(fields[0]), get_num(fields[1]))
-                source_end = (get_num(fields[2]), get_num(fields[3]))
-                source = (source_start, source_end)
-                if config.annotation_type == AnnType.categorical:
-                    # Format example:
-                    # ((4, 2), (6, 1) - buy sell
-                    labels = set(fields[5:])
-                    marked[source] = labels
-                elif config.annotation_type == AnnType.link:
-                    # Format example:
-                    # ((4, 2), (6, 1) - ((0, 0), (0, 4)), ((1,0), (1,2))
-                    targets = set()
-                    for i in range(5, len(fields), 4):
-                        start = (get_num(fields[i]), get_num(fields[i + 1]))
-                        end = (get_num(fields[i + 2]), get_num(fields[i + 3]))
-                        targets.add((start, end))
-                    marked[source] = targets
-                elif config.annotation_type == AnnType.text:
-                    # Format example:
-                    # (4, 2) - blah blah blah
-                    # means (4, 2) is labeled "blah blah blah"
-                    marked[source] = ' '.join(fields[3:])
+###            elif config.annotation == AnnScope.span:
+###                # All examples refer to a span from word 2 on line 4 to word 1 on line 6
+###                source_start = (get_num(fields[0]), get_num(fields[1]))
+###                source_end = (get_num(fields[2]), get_num(fields[3]))
+###                source = (source_start, source_end)
+###                if config.annotation_type == AnnType.categorical:
+###                    # Format example:
+###                    # ((4, 2), (6, 1) - buy sell
+###                    labels = set(fields[5:])
+###                    marked[source] = labels
+###                elif config.annotation_type == AnnType.link:
+###                    # Format example:
+###                    # ((4, 2), (6, 1) - ((0, 0), (0, 4)), ((1,0), (1,2))
+###                    targets = set()
+###                    for i in range(5, len(fields), 4):
+###                        start = (get_num(fields[i]), get_num(fields[i + 1]))
+###                        end = (get_num(fields[i + 2]), get_num(fields[i + 3]))
+###                        targets.add((start, end))
+###                    marked[source] = targets
+###                elif config.annotation_type == AnnType.text:
+###                    # Format example:
+###                    # ((4, 2), (6, 1)) - blah blah blah
+###                    # means (4, 2) is labeled "blah blah blah"
+###                    marked[source] = ' '.join(fields[3:])
             elif config.annotation == AnnScope.line:
                 source = int(fields[0])
                 if config.annotation_type == AnnType.categorical:
@@ -156,41 +161,174 @@ def prepare_for_return(config, pos):
     else:
         return [pos, 0]
 
+class Document(object):
+    """Storage for the raw text data."""
+    # TODO: Think about maintaining whitespace variations
+
+    def __init__(self, filename):
+        self.tokens = []
+        self.first_char = None
+        self.last_char = None
+        for line in open(filename):
+            cur = []
+            self.tokens.append(cur)
+            for token in line.strip().split():
+                if self.first_char is None:
+                    self.first_char = (len(self.tokens) - 1, 0, 0)
+                self.last_char = (len(self.tokens) - 1, len(cur), len(token) - 1)
+                cur.append(token)
+        assert self.first_char is not None, "Empty document"
+
+    def get_moved_pos(self, pos, right=0, down=0, jump=False):
+        if len(pos) == 0:
+            # This is the whole document, can't move
+            return pos
+        elif len(pos) == 1:
+            # This is a line, ignore right
+            # Note, an empty line can be selected
+            npos = min(len(self.tokens) - 1, max(0, pos[0] + down))
+            if jump and down < 0: npos = 0
+            if jump and down > 0: npos = len(self.tokens) - 1
+            return (npos)
+        elif len(pos) == 2:
+            # Moving a token
+            # Vertical movement
+            nline = pos[0]
+            if jump:
+                # We always want to be on a token, so go to the first or last
+                # line with one.
+                if down < 0: nline = self.first_char(0)
+                elif down > 0: nline = self.last_char(0)
+            else:
+                # Shift incrementally because we only want to count lines that
+                # have tokens.
+                shift = down
+                delta = 1 if shift > 0 else -1
+                while shift != 0 and self.first_char(0) < nline < self.last_char(0):
+                    nline += delta
+                    if len(self.tokens[nline]) > 0:
+                        shift -= delta
+
+            # Horizontal movement
+            ntok = pos[1]
+            if jump:
+                if right < 0: ntok = 0
+                elif right > 0: ntok = len(self.tokens[nline]) - 1
+            else:
+                shift = right
+                delta = 1 if shift > 0 else -1
+                while shift != 0:
+                    if delta == -1 and nline == self.first_char(0) and ntok == self.first_char(1):
+                        break
+                    if delta == 1 and nline == self.last_char(0) and ntok == self.last_char(1):
+                        break
+                    if 0 <= ntok + delta < len(self.tokens[nline]):
+                        ntok += delta
+                    else:
+                        # Go forward/back to a line with tokens. Note, we know
+                        # there are later/earlier lines, since otherwise we would
+                        # have been at the last_char/first_char position.
+                        nline += delta
+                        while len(self.tokens[nline]) == 0:
+                            nline += delta
+                        ntok = 0 if delta > 0 else len(self.tokens{nline]) - 1
+                    shift -= delta
+            return (nline, ntok)
+        else:
+            # Moving a character
+            # Vertical movement
+            nline = pos[0]
+            if jump:
+                # We always want to be on a character, so go to the first or last
+                # line with one.
+                if down < 0: nline = self.first_char(0)
+                elif down > 0: nline = self.last_char(0)
+            else:
+                # Shift incrementally because we only want to count lines that
+                # have characters.
+                shift = down
+                delta = 1 if shift > 0 else -1
+                while shift != 0 and self.first_char(0) < nline < self.last_char(0):
+                    nline += delta
+                    if len(self.tokens[nline]) > 0:
+                        shift -= delta
+
+            # Horizontal movement
+            ntok = pos[1]
+            nchar = pos[2]
+            if jump:
+                if right < 0:
+                    ntok = 0
+                    nchar = 0
+                elif right > 0:
+                    ntok = len(self.tokens[nline]) - 1
+                    nchar = len(self.tokens[nline][ntok]) - 1
+            else:
+                shift = right
+                delta = 1 if shift > 0 else -1
+                while shift != 0:
+                    if delta == -1 and \
+                            nline == self.first_char(0) and \
+                            ntok == self.first_char(1) and \
+                            nchar == self.first_char(1):
+                        break
+                    if delta == 1 and \
+                            nline == self.last_char(0) and \
+                            ntok == self.last_char(1) and \
+                            nchar == self.last_char(1):
+                        break
+                    if 0 < nchar + delta < len(self.tokens[nline][ntok]) - 1:
+                        nchar += delta
+                    elif delta < 0 and ntok > 0:
+                        ntok -= 1
+                        nchar = len(self.tokens[nline][ntok]) - 1
+                    elif delta > 0 and ntok < len(self.tokens[nline]) - 1:
+                        ntok += 1
+                        nchar = 0
+                    else:
+                        # Go forward/back to a line with tokens. Note, we know
+                        # there are later/earlier lines, since otherwise we would
+                        # have been at the last_char/first_char position.
+                        nline += delta
+                        while len(self.tokens[nline]) == 0:
+                            nline += delta
+                        ntok = 0 if delta > 0 else len(self.tokens{nline]) - 1
+                        nchar = 0 if delta > 0 else len(self.tokens[nline][ntok]) - 1
+                    shift -= delta
+            return (nline, ntok, nchar)
+
 class Span(object):
-    """A continuous span of text."""
+    """A continuous span of text.
+    
+    All annotations are on spans, some of which just happen to have a single element."""
 
     def __init__(self, scope, doc, span=None):
         self.doc = doc
         self.start = None
         self.end = None
-        self.singular = True
         if scope == AnnScope.character:
             self.start, self.end = (0, 0, 0), (0, 0, 1)
         elif scope == AnnScope.token:
             self.start, self.end = (0, 0), (0, 1)
         elif scope == AnnScope.line:
             self.start, self.end = (0), (1)
-        elif scope = AnnScope.document:
+        elif scope == AnnScope.document:
             self.start, self.end = (), ()
         else:
             raise Exception("Invalid scope")
         if span is not None:
-            # Most of the time a span will be provided to start from. Use the
-            # last part of it as the basis for the new item.
+            # Most of the time a span will be provided to start from.
             self.end = span.end
-            if scope == AnnScope.character:
-                self.start = (span.end[0], span.end[1], span.end[2] - 1)
-            elif scope == AnnScope.token:
-                self.start = (span.end[0], span.end[1] - 1)
-            elif scope == AnnScope.line:
-                self.start = span.end[0] - 1
+            self.start = span.start
 
-    # TODO: Hash function that only considers start and end
+    def __hash__(self):
+        return hash((self.start, self.end))
 
     # Modification functions, each returns the position that was modified
     def edit_left(self, moving=True, shift=False):
-        if len(self.start) == 0: return
-        if moving:
+        if len(self.start) == 0:
+            pass # Do nothing for full document cases
+        elif moving:
             if shift:
                 pass # Jump to start of [doc, line, token]
             else:
