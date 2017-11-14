@@ -1,5 +1,7 @@
 # annotation-terminal-tool
 
+Candidate name - SLATE, Super-Lightweight Annotation Tool for Experts
+
 A lightweight text annotation tool for use in a terminal
 
 # Usage:
@@ -121,6 +123,7 @@ Features:
  - Option to not allow annotation of some files (and not create a file)
  - When the movement key is pressed multiple times in a row quickly, start jumping further [optional], or have a fast jump key?
  - Look into the LAF format for data input / output
+ - Show the set of available labels
 
 Internal:
  - What happens if we hit a word wider than the window?
@@ -133,5 +136,3 @@ Internal:
  - Work out how to get brighter colours (cf vim)
  - Improve speed of jumping back down
  - For help, compose it out of a set of items, with line breaks changing when the screen is narrow
-
-Candidate name - SLATE, Super-Lightweight Annotation Tool for Experts
