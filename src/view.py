@@ -22,13 +22,16 @@ class View(object):
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
             return [
+                "----------------------------------------------------------------------------",
                 self.progress + "  Colors are highlight:possible-link green:current blue:link",
                 "arrows (move blue about), shift + arrows (move green)",
                 "d + shift (mark as linked), d (mark as linked and move green down)",
                 "u (undo visible links), / \\ (next & previous file), q (quit), h (help)",
+                "Colours: match file0 file1 current",
             ]
         else:
             return [
+                "----------------------------------------------------------------------------",
                 self.progress + "  Colors are highlight-current blue-linked (TODO update)",
                 "arrows (move about), n p (next & previous number, via regex)",
                 "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)",
@@ -292,9 +295,23 @@ class View(object):
         if main_height < (height - 1) and self.show_help:
             cur = main_height
             for line in inst:
-                fmt = "{:<"+ str(width) +"}"
-                self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
-                cur += 1
+                if line.startswith("Colours"):
+                    words = line.strip().split()
+                    cur_col = 0
+                    for word in words:
+                        content = word +" "
+                        base_color = curses.color_pair(HELP_COLOR)
+                        if word == 'match': base_color = curses.color_pair(COMPARE_REF_COLORS[1])
+                        elif word == 'file0': base_color = curses.color_pair(REF_COLOR)
+                        elif word == 'file1': base_color = curses.color_pair(COMPARE_REF_COLORS[0])
+                        elif word == 'current': base_color = curses.color_pair(LINK_COLOR)
+                        self.window.addstr(cur, cur_col, content, base_color + curses.A_BOLD)
+                        cur_col += len(content)
+                    cur += 1
+                else:
+                    fmt = "{:<"+ str(width) +"}"
+                    self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
+                    cur += 1
 
         # Last, draw the text being typed
         if main_height < (height - 1) and len(current_search) > 0:

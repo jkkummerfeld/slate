@@ -180,6 +180,7 @@ class Document(object):
         assert self.first_char is not None, "Empty document"
 
     def get_moved_pos(self, pos, right=0, down=0, jump=False):
+        # TODO: long-jump as well as jump, have jump do a smaller scale
         if len(pos) == 0:
             # This is the whole document, can't move
             return pos
@@ -231,7 +232,7 @@ class Document(object):
                         nline += delta
                         while len(self.tokens[nline]) == 0:
                             nline += delta
-                        ntok = 0 if delta > 0 else len(self.tokens{nline]) - 1
+                        ntok = 0 if delta > 0 else len(self.tokens[nline]) - 1
                     shift -= delta
             return (nline, ntok)
         else:
@@ -292,7 +293,7 @@ class Document(object):
                         nline += delta
                         while len(self.tokens[nline]) == 0:
                             nline += delta
-                        ntok = 0 if delta > 0 else len(self.tokens{nline]) - 1
+                        ntok = 0 if delta > 0 else len(self.tokens[nline]) - 1
                         nchar = 0 if delta > 0 else len(self.tokens[nline][ntok]) - 1
                     shift -= delta
             return (nline, ntok, nchar)
@@ -395,21 +396,29 @@ class Datum(object):
             for token in line.split():
                 self.tokens[-1].append(token)
 
+        # TODO: Work out how to handle the AnnType.text case
         self.marked_compare = {}
+        self.markings = []
         for filename in self.annotation_files:
             other_marked = read_annotation_file(config, filename)
+            self.markings.append(other_marked)
             for key in other_marked:
-                # TODO: Work out how to handle the AnnType.text case
                 for label in other_marked[key]:
                     current = self.marked_compare.setdefault(key, {})
                     current[label] = current.get(label, 0) + 1
 
         self.disagree = set()
+        for key in self.marked:
+            for label in self.marked[key]:
+                if key not in self.marked_compare:
+                    self.disagree.add(key)
+                elif label not in self.marked_compare[key]:
+                    self.disagree.add(key)
         for key in self.marked_compare:
             for label in self.marked_compare[key]:
-                if self.marked_compare[key][label] == len(self.annotation_files):
-                    self.marked.setdefault(key, set()).add(label)
-                else:
+                if key not in self.marked or label not in self.marked[key]:
+                    self.disagree.add(key)
+                if self.marked_compare[key][label] != len(self.annotation_files):
                     self.disagree.add(key)
 
     def get_marked_token(self, pos, cursor, linking_pos):
@@ -451,12 +460,6 @@ class Datum(object):
                     if compare_pos(self.config, pos, linking_pos) > 0:
                         color = COMPARE_DISAGREE_COLOR
 
-            count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
-            if count == len(self.annotation_files):
-                color = REF_COLOR
-            elif count > 0:
-                color = COMPARE_REF_COLORS[min(count, 2) - 1]
-
             if pos in self.marked or linking_pos in self.marked:
                 if self.config.annotation_type == AnnType.categorical:
                    for key in self.marked.get(pos, []):
@@ -468,6 +471,16 @@ class Datum(object):
                 elif self.config.annotation_type == AnnType.link:
                     if pos in self.marked.get(linking_pos, []):
                         color = REF_COLOR
+
+            # Changed to give different colours, rather than count
+            count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
+            if 0 < count < 1+ len(self.annotation_files):
+                if pos in self.marked.get(linking_pos, []):
+                    color = COMPARE_REF_COLORS[1]
+                else:
+                    color = COMPARE_REF_COLORS[0]
+###            elif count > 0:
+###                color = COMPARE_REF_COLORS[min(count, 2) - 1]
 
         return (token, color, text)
 
@@ -484,7 +497,7 @@ class Datum(object):
             if check_disagree:
                 if option not in self.disagree:
                     continue
-            elif options[option] == len(self.annotation_files):
+            elif options[option] == 1 + len(self.annotation_files):
                 continue
 
             comparison = compare_pos(self.config, pos, option)
