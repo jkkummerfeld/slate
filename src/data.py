@@ -474,13 +474,13 @@ class Datum(object):
 
             # Changed to give different colours, rather than count
             count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
-            if 0 < count < 1+ len(self.annotation_files):
-                if pos in self.marked.get(linking_pos, []):
-                    color = COMPARE_REF_COLORS[1]
-                else:
-                    color = COMPARE_REF_COLORS[0]
-###            elif count > 0:
-###                color = COMPARE_REF_COLORS[min(count, 2) - 1]
+            if 0 < count < len(self.annotation_files):
+                color = COMPARE_REF_COLORS[count - 1]
+###            if 0 < count < 1+len(self.annotation_files):
+###                if pos in self.marked.get(linking_pos, []):
+###                    color = COMPARE_REF_COLORS[1]
+###                else:
+###                    color = COMPARE_REF_COLORS[0]
 
         return (token, color, text)
 
