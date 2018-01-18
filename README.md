@@ -128,6 +128,7 @@ Features:
 - Look into the LAF format for data input / output
 - Show the set of available labels
 - Specify every chunk must be labeled, or only some
+- Move view independently of cursor
 
 Internal:
 - What happens if we hit a word wider than the window?
