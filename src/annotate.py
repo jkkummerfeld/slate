@@ -189,6 +189,7 @@ if __name__ == '__main__':
     parser.add_argument('--log_prefix', help='Prefix for logging files (otherwise none)', default="annotation_log")
     parser.add_argument('--readonly', help='Do not allow changes or save annotations.', default=False)
     parser.add_argument('--overwrite', help='If they exist already, overwrite output files.', default=False, action='store_true')
+    parser.add_argument('--show_linked', help='Have a highlight to indicate any linked token.', default=False, action='store_true')
     parser.add_argument('--ann_type', help='The type of annotation being done.', choices=[v for v in AnnType.__members__], default='link')
     parser.add_argument('--ann_scope', help='The scope of annotation being done.', choices=[v for v in AnnScope.__members__], default='line')
     parser.add_argument('--mode', help='High-level control of what the tool does.', choices=[v for v in Mode.__members__], default='annotate')

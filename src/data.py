@@ -387,6 +387,13 @@ class Datum(object):
         self.output_file = output_file
 
         self.marked = read_annotation_file(config, self.output_file)
+        self.in_link = {}
+        if self.config.annotation_type == AnnType.link:
+            for pos in self.marked:
+                for opos in self.marked[pos]:
+                    if opos not in self.in_link:
+                        self.in_link[opos] = 0
+                    self.in_link[opos] += 1
 
         self.tokens = []
         self.lines = []
@@ -408,18 +415,19 @@ class Datum(object):
                     current[label] = current.get(label, 0) + 1
 
         self.disagree = set()
-        for key in self.marked:
-            for label in self.marked[key]:
-                if key not in self.marked_compare:
-                    self.disagree.add(key)
-                elif label not in self.marked_compare[key]:
-                    self.disagree.add(key)
-        for key in self.marked_compare:
-            for label in self.marked_compare[key]:
-                if key not in self.marked or label not in self.marked[key]:
-                    self.disagree.add(key)
-                if self.marked_compare[key][label] != len(self.annotation_files):
-                    self.disagree.add(key)
+        if len(self.annotation_files) > 1:
+            for key in self.marked:
+                for label in self.marked[key]:
+                    if key not in self.marked_compare:
+                        self.disagree.add(key)
+                    elif label not in self.marked_compare[key]:
+                        self.disagree.add(key)
+            for key in self.marked_compare:
+                for label in self.marked_compare[key]:
+                    if key not in self.marked or label not in self.marked[key]:
+                        self.disagree.add(key)
+                    if self.marked_compare[key][label] != len(self.annotation_files):
+                        self.disagree.add(key)
 
     def get_marked_token(self, pos, cursor, linking_pos):
         pos = tuple(pos)
@@ -436,6 +444,14 @@ class Datum(object):
             # For categorical data, set the text
             if self.config.annotation_type == AnnType.categorical:
                 text = ' '.join(self.marked.get(cursor, []))
+
+        # If showing linked, set the default colour
+        if self.config.args.show_linked:
+            if pos in self.marked:
+                if len(self.marked[pos]) > 0:
+                    color = YELLOW_COLOR
+            elif self.in_link.get(pos, 0) > 0:
+                color = YELLOW_COLOR
 
         if pos == cursor:
             color = CURSOR_COLOR
@@ -460,6 +476,16 @@ class Datum(object):
                     if compare_pos(self.config, pos, linking_pos) > 0:
                         color = COMPARE_DISAGREE_COLOR
 
+            # Changed to give different colours, rather than count
+            count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
+            if 0 < count < len(self.annotation_files):
+                color = COMPARE_REF_COLORS[count - 1]
+###            if 0 < count < 1+len(self.annotation_files):
+###                if pos in self.marked.get(linking_pos, []):
+###                    color = COMPARE_REF_COLORS[1]
+###                else:
+###                    color = COMPARE_REF_COLORS[0]
+
             if pos in self.marked or linking_pos in self.marked:
                 if self.config.annotation_type == AnnType.categorical:
                    for key in self.marked.get(pos, []):
@@ -471,16 +497,6 @@ class Datum(object):
                 elif self.config.annotation_type == AnnType.link:
                     if pos in self.marked.get(linking_pos, []):
                         color = REF_COLOR
-
-            # Changed to give different colours, rather than count
-            count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
-            if 0 < count < len(self.annotation_files):
-                color = COMPARE_REF_COLORS[count - 1]
-###            if 0 < count < 1+len(self.annotation_files):
-###                if pos in self.marked.get(linking_pos, []):
-###                    color = COMPARE_REF_COLORS[1]
-###                else:
-###                    color = COMPARE_REF_COLORS[0]
 
         return (token, color, text)
 
@@ -570,6 +586,16 @@ class Datum(object):
         return (prepare_for_return(self.config, pos),
                 prepare_for_return(self.config, linking_pos))
 
+    def add_to_in_link(self, pos):
+        if self.config.annotation_type == AnnType.link:
+            if pos not in self.in_link:
+                self.in_link[pos] = 0
+            self.in_link[pos] += 1
+
+    def remove_from_in_link(self, pos):
+        if self.config.annotation_type == AnnType.link:
+            self.in_link[pos] -= 1
+
     def modify_annotation(self, pos, linking_pos, symbol=None):
         # Do not allow links from an item to itself
         if pos == linking_pos:
@@ -583,20 +609,26 @@ class Datum(object):
 
         if pos_key not in self.marked:
             self.marked[pos_key] = {item}
+            self.add_to_in_link(item)
         elif item not in self.marked[pos_key]:
             self.marked[pos_key].add(item)
+            self.add_to_in_link(item)
         elif len(self.marked[pos_key]) == 1:
             # Given the first two conditions, we know there is a single
             # mark and it is this symbol.
             self.marked.pop(pos_key)
+            self.remove_from_in_link(item)
         else:
             self.marked[pos_key].remove(item)
+            self.remove_from_in_link(item)
 
     def remove_annotation(self, pos, ref):
         pos_key = self.convert_to_key(pos)
         if self.config.annotation_type == AnnType.link:
             pos_key = self.convert_to_key(ref)
         if pos_key in self.marked:
+            for item in self.marked[pos_key]:
+                self.remove_from_in_link(item)
             self.marked.pop(pos_key)
 
     def check_equal(self, pos0, pos1):
