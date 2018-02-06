@@ -455,10 +455,10 @@ class Datum(object):
 
         if pos == cursor:
             color = CURSOR_COLOR
-            if pos == linking_pos:
-                color = LINK_CURSOR_COLOR
-            elif pos in self.marked.get(linking_pos, []):
+            if pos in self.marked.get(linking_pos, []):
                 color = REF_CURSOR_COLOR
+            elif pos == linking_pos:
+                color = LINK_CURSOR_COLOR
             else:
                 count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
                 if count == len(self.annotation_files):
@@ -470,6 +470,8 @@ class Datum(object):
                 text = self.marked.get(pos)
         elif pos == linking_pos:
             color = LINK_COLOR
+            if linking_pos in self.marked.get(pos, []):
+                color = REF_COLOR
         else:
             if pos in self.disagree:
                 if compare_pos(self.config, pos, cursor) > 0:
@@ -479,7 +481,15 @@ class Datum(object):
             # Changed to give different colours, rather than count
             count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
             if 0 < count < len(self.annotation_files):
+                # Colour based on counts
                 color = COMPARE_REF_COLORS[count - 1]
+
+                # Colour based on which annotation has it
+                if self.config.args.alternate_comparisons:
+                    if len(self.markings) == 2:
+                        if pos in self.markings[1].get(linking_pos, {}):
+                            color = COMPARE_REF_COLORS[1]
+
 ###            if 0 < count < 1+len(self.annotation_files):
 ###                if pos in self.marked.get(linking_pos, []):
 ###                    color = COMPARE_REF_COLORS[1]
@@ -598,7 +608,7 @@ class Datum(object):
 
     def modify_annotation(self, pos, linking_pos, symbol=None):
         # Do not allow links from an item to itself
-        if pos == linking_pos:
+        if pos == linking_pos and (not self.config.args.allow_self_links):
             return
 
         pos_key = self.convert_to_key(pos)

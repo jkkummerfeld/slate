@@ -40,6 +40,12 @@ class View(object):
     def toggle_help(self):
         self.show_help = not self.show_help
 
+    def shift_view(self, down=False):
+        if down:
+            self.top += 10
+        else:
+            self.top -= 10
+
     def _get_pos_to_move(self, move_link):
         return self.linking_pos if move_link else self.cursor
 
