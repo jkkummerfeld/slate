@@ -129,6 +129,7 @@ Features:
 - Show the set of available labels
 - Specify every chunk must be labeled, or only some
 - Move view independently of cursor
+- Be able to annotate with errors (creating new errors along the way) and then sort by label
 
 Internal:
 - What happens if we hit a word wider than the window?

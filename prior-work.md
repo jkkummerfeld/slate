@@ -21,6 +21,7 @@ Definite:
  - WAT-SL: A Customizable Web Annotation Tool for Segment Labeling, E17-3004.pdf, 
  - eHost / Chartreader, "A Prototype Tool Set to Support Machine-Assisted Annotation" (South et al., 2012), W12-2416.pdf
  - SAWT: Sequence Annotation Web Tool, W16-5808.pdf
+ - https://github.com/jonorthwash/ud-annotatrix
 
 Probably
  - Tweet Conversation Annotation Tool with a Focus on an Arabic Dialect, Moroccan Darija, W13-2317.pdf
