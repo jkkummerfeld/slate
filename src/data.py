@@ -123,7 +123,7 @@ class Document(object):
             npos = min(len(self.tokens) - 1, max(0, npos)) # Bound
             if distance < 0 and down < 0: npos = 0
             if distance < 0 and down > 0: npos = len(self.tokens) - 1
-            return (npos)
+            return (npos,)
         elif len(pos) == 2:
             # Moving a token
             # Vertical movement
@@ -131,14 +131,14 @@ class Document(object):
             if distance < 0:
                 # We always want to be on a token, so go to the first or last
                 # line with one.
-                if down < 0: nline = self.first_char(0)
-                elif down > 0: nline = self.last_char(0)
+                if down < 0: nline = self.first_char[0]
+                elif down > 0: nline = self.last_char[0]
             else:
                 # Shift incrementally because we only want to count lines that
                 # have tokens.
                 shift = down
                 delta = 1 if shift > 0 else -1
-                while shift != 0 and self.first_char(0) < nline < self.last_char(0):
+                while shift != 0 and self.first_char[0] < nline < self.last_char[0]:
                     nline += delta
                     if len(self.tokens[nline]) > 0:
                         shift -= delta
@@ -152,9 +152,9 @@ class Document(object):
                 shift = right
                 delta = 1 if shift > 0 else -1
                 while shift != 0:
-                    if delta == -1 and nline == self.first_char(0) and ntok == self.first_char(1):
+                    if delta == -1 and nline == self.first_char[0] and ntok == self.first_char[1]:
                         break
-                    if delta == 1 and nline == self.last_char(0) and ntok == self.last_char(1):
+                    if delta == 1 and nline == self.last_char[0] and ntok == self.last_char[1]:
                         break
                     if 0 <= ntok + delta < len(self.tokens[nline]):
                         ntok += delta
@@ -175,14 +175,14 @@ class Document(object):
             if distance < 0:
                 # We always want to be on a character, so go to the first or last
                 # line with one.
-                if down < 0: nline = self.first_char(0)
-                elif down > 0: nline = self.last_char(0)
+                if down < 0: nline = self.first_char[0]
+                elif down > 0: nline = self.last_char[0]
             else:
                 # Shift incrementally because we only want to count lines that
                 # have characters.
                 shift = down
                 delta = 1 if shift > 0 else -1
-                while shift != 0 and self.first_char(0) < nline < self.last_char(0):
+                while shift != 0 and self.first_char[0] < nline < self.last_char[0]:
                     nline += delta
                     if len(self.tokens[nline]) > 0:
                         shift -= delta
@@ -202,14 +202,14 @@ class Document(object):
                 delta = 1 if shift > 0 else -1
                 while shift != 0:
                     if delta == -1 and \
-                            nline == self.first_char(0) and \
-                            ntok == self.first_char(1) and \
-                            nchar == self.first_char(1):
+                            nline == self.first_char[0] and \
+                            ntok == self.first_char[1] and \
+                            nchar == self.first_char[1]:
                         break
                     if delta == 1 and \
-                            nline == self.last_char(0) and \
-                            ntok == self.last_char(1) and \
-                            nchar == self.last_char(1):
+                            nline == self.last_char[0] and \
+                            ntok == self.last_char[1] and \
+                            nchar == self.last_char[1]:
                         break
                     if 0 < nchar + delta < len(self.tokens[nline][ntok]) - 1:
                         nchar += delta
@@ -231,13 +231,20 @@ class Document(object):
                     shift -= delta
             return (nline, ntok, nchar)
 
+    def get_next_pos(self, pos):
+        if len(pos) == 0:
+            return pos
+        elif len(pos) == 1:
+            return self.get_moved_pos(pos, 0, 1)
+        else:
+            return self.get_moved_pos(pos, 1, 0)
+
 class Span(object):
     """A continuous span of text.
     
     All annotations are on spans, some of which just happen to have a single element."""
 
     def __init__(self, scope, doc, span=None):
-        self.doc = doc
         self.start = None
         self.end = None
 
@@ -257,9 +264,13 @@ class Span(object):
                 else:
                     # TODO: Add a check that this position is valid for this doc
                     if type(span[0]) == int:
-                        assert len(span) == length
+                        assert len(span) == length, "Got {} not {}".format(len(span), length)
                         self.start = span
-                        self.end = doc.get_moved_pos(span, 1)
+                        right = 1
+                        down = 0
+                        if scope == AnnScope.line:
+                            down = 1
+                        self.end = doc.get_moved_pos(self.start, right, down)
                     else:
                         assert len(span[0]) == len(span[1]) == length
                         self.start = span[0]
@@ -280,18 +291,18 @@ class Span(object):
                 self.start = ()
             else:
                 raise Exception("Invalid scope")
-            self.end = doc.get_moved_pos(span, 1)
+            self.end = doc.get_next_pos(self.start)
 
     def __repr__(self):
-        return str((self.start, self.end))
+        return "Span({}, {})".format(self.start, self.end)
     def __str__(self):
-        return repr(self)
+        return str((self.start, self.end))
 
     def __hash__(self):
         return hash((self.start, self.end))
 
     # Modification functions, each returns the position that was modified
-    def edit(self, direction=None, change=None, distance=0):
+    def edit(self, doc, direction=None, change=None, distance=0):
         """Change this span, either moving both ends or only one.
 
         direction is left, right, up, or down
@@ -313,24 +324,27 @@ class Span(object):
             down_val *= -1
 
         if change == "move":
-            nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
-            nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
+            nstart = doc.get_moved_pos(self.start, right_val, down_val, distance)
+            nend = doc.get_moved_pos(self.end, right_val, down_val, distance)
             # Only move if it will change both (otherwise it is a shift).
             if nstart != self.start and nend != self.end:
                 self.start = nstart
                 self.end = nend
         else:
-            move_start = 
-                (change == "extend" and (direction == "left" or direction == "up")) or
-                (change == "contract" and (direction == "right" or direction == "down"))
+            move_start = (
+                change == "extend" and (
+                    direction == "left" or direction == "up")
+            ) or (
+                change == "contract" and (
+                    direction == "right" or direction == "down"))
 
             if move_start:
-                nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
+                nstart = doc.get_moved_pos(self.start, right_val, down_val, distance)
                 # Check that it doesn't make an inconsistnet span
                 if nstart != self.end:
                     self.start = nstart
             else:
-                nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
+                nend = doc.get_moved_pos(self.end, right_val, down_val, distance)
                 # Check that it doesn't make an inconsistnet span
                 if nend != self.start:
                     self.end = nend
@@ -343,7 +357,8 @@ class Item(object):
     """One or more spans and a set of labels.
 
     This is used in Datum to keep track of annotations, and used in View to determine the current appearance."""
-    def __init__(self, init_span=None, init_label=None):
+    def __init__(self, doc, init_span=None, init_label=None):
+        self.doc = doc
         self.spans = []
         if type(init_span) == list:
             self.spans += init_span
@@ -352,43 +367,57 @@ class Item(object):
 
         self.labels = set()
         if type(init_label) == set:
-            self.labels.update(init_labels)
+            self.labels.update(init_label)
         elif init_label is not None:
             self.labels.add(init_label)
 
-    def __repr__(self):
+    def __str__(self):
         labels = []
         for label in self.labels:
             labels.append(str(label))
         labels = ' '.join(labels)
 
-        spans = repr(self.spans)
+        spans = str([str(s) for s in self.spans])
         if len(self.spans) == 1:
-            spans = repr(self.spans[0])
-            if len(self.spans[0]) == 1:
-                spans = repr(self.spans[0][0])
-        elif len(self.spans) > 1 and len(self.spans[0]) == 1:
-            spans = [repr(s[0]) for s in self.spans]
+            spans = str(self.spans[0])
+            if self.doc.get_next_pos(self.spans[0].start) == self.spans[0].end:
+                spans = str(self.spans[0].start)
+                if len(self.spans[0].start) == 1:
+                    spans = str(self.spans[0].start[0])
+        elif len(self.spans) > 1:
+            all_single = True
+            for s in self.spans:
+                if self.doc.get_next_pos(s.start) != s.end:
+                    all_single = False
+            if all_single:
+                spans = " ".join([str(s.start) for s in self.spans])
+                if len(self.spans[0].start) == 1:
+                    spans = " ".join([str(s.start[0]) for s in self.spans])
 
         return "{} - {}".format(spans, labels)
 
 def get_spans(text, doc, config):
     # TODO: allow for <filename>:data
 
-    spans = eval(text.strip())
-    if type(spans) == int:
-        spans = [(spans)]
-    elif type(spans) == tuple:
-        spans = [spans]
-    elif type(spans) == list:
-        if len(spans) == 0:
-            spans = [()]
-        elif type(spans[0]) == int:
-            spans = [(s) for s in spans]
+    spans = []
+    if text[0] == '(':
+        spans = eval(text.strip())
+        if type(spans) == int:
+            spans = [(spans)]
+        elif type(spans) == tuple:
+            spans = [spans]
+        elif type(spans) == list:
+            if len(spans) == 0:
+                spans = [()]
+            elif type(spans[0]) == int:
+                spans = [(s,) for s in spans]
+    else:
+        for num in text.split():
+            spans.append((int(num),))
     
     return [Span(config.annotation, doc, s) for s in spans]
 
-def get_labels(text):
+def get_labels(text, config):
     labels = set()
     if config.annotation_type == AnnType.categorical:
         for label in text.strip().split():
@@ -403,18 +432,17 @@ def get_labels(text):
 def read_annotation_file2(config, filename, doc):
     items = []
 
-    assert glob.glob(filename) != 0, "File {} does not exist".format(filename)
+    if len(glob.glob(filename +".alt")) != 0:
+        for line in open(filename +".alt"):
+            fields = line.strip().split()
 
-    for line in open(filename):
-        fields = line.strip().split()
+            # Always lay out as:
+            # [spans] - [labels]
 
-        # Always lay out as:
-        # [spans] - [labels]
+            spans = get_spans(line.split('-')[0], doc, config)
+            labels = get_labels('-'.join(line.split('-')[1:]), config)
 
-        spans = get_spans(line.split('-')[0], config)
-        labels = get_labels('-'.join(line.split('-')[1:]), config)
-
-        items.append(Item(spans, labels)
+            items.append(Item(self.doc, spans, labels))
 
     return items
 
@@ -449,7 +477,7 @@ def read_annotation_file(config, filename):
                     src_span = Span(doc, config.ann_scope, source)
                     for target in targets:
                         target_span = Span(doc, config.ann_scope, target)
-                        items.append(Item([src_span, target_span], None))
+                        items.append(Item(self.doc, [src_span, target_span], None))
                 elif config.annotation_type == AnnType.text:
                     # Format example:
                     # (4, 2) - blah blah blah
@@ -515,7 +543,7 @@ class Datum(object):
 
         # New
         self.doc = Document(filename)
-        self.annotations = read_annotation_file2(config, self.output_file, doc)
+        self.annotations = read_annotation_file2(config, self.output_file, self.doc)
 
         # Old
         self.tokens = []
@@ -538,7 +566,7 @@ class Datum(object):
         self.marked_compare = {}
         self.markings = []
         for filename in self.annotation_files:
-            other_marked = read_annotation_file(config, filename, doc)
+            other_marked = read_annotation_file(config, filename, self.doc)
             self.markings.append(other_marked)
             for key in other_marked:
                 for label in other_marked[key]:
@@ -741,7 +769,17 @@ class Datum(object):
             self.in_link[pos] -= 1
 
     def modify_annotation(self, pos, linking_pos, symbol=None):
-###        self.modify_annotation2(pos, linking_pos, symbol)
+        # Wrap new
+        wrap_pos = tuple(pos)
+        wrap_link = tuple(linking_pos)
+        if self.config.annotation == AnnScope.line:
+            wrap_pos = tuple([pos[0]])
+            wrap_link = tuple([linking_pos[0]])
+        spans = [
+            Span(self.config.annotation, self.doc, wrap_pos),
+            Span(self.config.annotation, self.doc, wrap_link)
+        ]
+        self.modify_annotation2(spans, symbol)
 
         # Do not allow links from an item to itself
         if pos == linking_pos and (not self.config.args.allow_self_links):
@@ -781,11 +819,12 @@ class Datum(object):
         return None
 
     def modify_annotation2(self, spans, label=None):
+        logging.info(repr(spans))
         to_edit = self.get_item_with_spans(spans)
         if to_edit is None:
             # No item with these spans exists, create it
-            nspans = [Span(self.config.annotation_scope, self.doc, s) for s in spans]
-            item = Item(nspans, label)
+            nspans = [Span(self.config.annotation, self.doc, s) for s in spans]
+            item = Item(self.doc, nspans, label)
             self.annotations.append(item)
         else:
             # Modify existing item
@@ -824,11 +863,11 @@ class Datum(object):
             return pos0 == pos1
 
     def write_out(self, filename=None):
-###        self.write_out2(filename)
-
         out_filename = self.output_file
         if filename is not None:
             out_filename = filename
+
+        self.write_out2(out_filename +".alt")
 
         out = open(out_filename, 'w')
         for key in self.marked:
@@ -849,6 +888,6 @@ class Datum(object):
             out_filename = filename
         out = open(out_filename, 'w')
         for item in self.annotations:
-            print(item, file=out)
+            print(str(item), file=out)
         out.close()
 

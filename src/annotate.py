@@ -5,6 +5,7 @@ from __future__ import print_function
 import curses
 import argparse
 import logging
+###        logging.info("text")
 import sys
 import string
 
