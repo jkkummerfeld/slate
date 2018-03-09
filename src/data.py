@@ -555,6 +555,7 @@ class Datum(object):
         # New
         self.doc = Document(filename)
         self.annotations = read_annotation_file2(config, self.output_file, self.doc)
+        self.current_markings = None
 
         # Old
         self.tokens = []
@@ -600,41 +601,103 @@ class Datum(object):
                         self.disagree.add(key)
 
     def get_all_markings(self, cursor, linking_pos):
+        ans2 = self.get_all_markings2(cursor, linking_pos)
         ans = {}
         for line_no in range(len(self.tokens)):
-            for token_no in range(len(line)):
+            for token_no in range(len(self.tokens[line_no])):
                 pos = (line_no, token_no)
                 ans[pos] = self.get_marked_token(pos, cursor, linking_pos)
+
+        for key in ans:
+            if ans[key][1] != 4:
+                logging.info("Old: {} {}".format(key, ans[key]))
+        for key in ans2:
+            if ans2[key][1] != 4:
+                logging.info("New: {} {}".format(key, ans2[key]))
+###        assert ans == ans2
         return ans
 
     def get_all_markings2(self, cursor, linking_pos):
         # TODO: Convert to character level
-        ans = {}
+        if self.current_markings is None or True:
+            ans = {}
 
-        # Set text and default colour
-        for line_no in range(len(self.tokens)):
-            for token_no in range(len(line)):
-                pos = (line_no, token_no)
-                token = self.tokens[pos[0]][pos[1]]
-                color = DEFAULT_COLOR
-                text = None
-                ans[pos] = (token, color, text)
+            # Set text and default colour
+            for line_no in range(len(self.tokens)):
+                for token_no in range(len(self.tokens[line_no])):
+                    pos = (line_no, token_no)
+                    token = self.tokens[line_no][token_no]
+                    color = DEFAULT_COLOR
+                    if pos == cursor:
+                        color = CURSOR_COLOR
+                        if pos == linking_pos:
+                            color = LINK_CURSOR_COLOR
+                    elif pos == linking_pos:
+                        color = LINK_COLOR
+                    text = None
+                    ans[pos] = (token, color, text)
 
-        # Now add colours
-        for item in self.annotations:
-            for span in item.spans:
-                # base_color = Get the colour for this spans label(s)
-                # If there are no labels, and there are multiple spans, then
-                # this is a link. 
+            # Now add base colours
+            for item in self.annotations:
+                # Get the standard color for this item based on its label
+                base_color = None
+                if self.config.annotation_type == AnnType.categorical:
+                    # For categorical use the configuration set
+                    for key in item.labels:
+                        if key in self.config.keys:
+                            modifier = self.config.keys[key]
+                            if base_color is not None:
+                                base_color = OVERLAP_COLOR
+                            else:
+                                base_color = modifier.color
+                elif self.config.annotation_type == AnnType.link:
+                    # For links potentially indicate it is linked
+                    if self.config.args.show_linked:
+                        base_color = YELLOW_COLOR
+                
+                has_cursor = False
+                has_link = False
+                for span in item.spans:
+                    pos = span.start
+                    while pos != span.end:
+                        if pos == cursor:
+                            has_cursor = True
+                        if pos == linking_pos:
+                            has_link = True
+                        pos = self.doc.get_next_pos(pos)
 
-                # Go through tokens from the start of the span to the end,
-                # setting colours based on:
-                #
-                #   If the position is the current cursor
-                #   If the position is the linking_pos
-                #   If the position has a colour already
+                for span in item.spans:
+                    if has_link or has_cursor:
+                        logging.info("{} {} {}".format(span, has_link, has_cursor))
+                    pos = span.start
+                    while pos != span.end:
+                        cur_ans = ans[pos]
+                        this_color = cur_ans[1]
+                        if this_color == DEFAULT_COLOR:
+                            this_color = base_color
+                        elif self.config.annotation_type == AnnType.categorical:
+                            if this_color != CURSOR_COLOR:
+                                this_color = OVERLAP_COLOR
 
-        return ans
+                        if len(item.spans) > 1:
+                            if pos == linking_pos:
+                                this_color = LINK_COLOR
+                                if pos == cursor:
+                                    this_color = LINK_CURSOR_COLOR
+                            elif has_link:
+                                this_color = REF_COLOR
+                                if pos == cursor:
+                                    this_color = REF_CURSOR_COLOR
+
+                        if this_color is not None:
+                            ans[pos] = (cur_ans[0], this_color, cur_ans[2])
+
+                        pos = self.doc.get_next_pos(pos)
+
+            # TODO: Now do disagreement colours
+
+            self.current_markings = ans
+        return self.current_markings
 
     def get_marked_token(self, pos, cursor, linking_pos):
         pos = tuple(pos)
@@ -865,6 +928,7 @@ class Datum(object):
 
     def modify_annotation2(self, spans, label=None):
         to_edit = self.get_item_with_spans(spans)
+        self.current_markings = None
         if to_edit is None:
             # No item with these spans exists, create it
             nspans = [Span(self.config.annotation, self.doc, s) for s in spans]
@@ -906,6 +970,7 @@ class Datum(object):
         to_remove = self.get_item_with_spans(spans)
         if to_remove is not None:
             self.annotations.remove(to_remove)
+            self.current_markings = None
 
     def check_equal(self, pos0, pos1):
         if self.config.annotation == AnnScope.line:
