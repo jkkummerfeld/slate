@@ -50,126 +50,18 @@ def read_filenames(arg, config):
         raise Exception(error)
     return filenames
 
-def get_num(text):
-    # TODO: Switch to simple regex
-    mod_text = []
-    for char in text:
-        if char not in '(),':
-            mod_text.append(char)
-    return int(''.join(mod_text))
-
-def read_annotation_file(config, filename):
-    marked = {}
-
-    # Read standoff annotations if they exist. Note:
-    #  - Whitespace variations are ignored.
-    #  - Repeated labels / links are ignored.
-    if len(glob.glob(filename)) != 0:
-        for line in open(filename):
-            fields = line.strip().split()
-            if config.annotation == AnnScope.token:
-                # All examples refer to word 2 on line 4
-                source = (get_num(fields[0]), get_num(fields[1]))
-                if config.annotation_type == AnnType.categorical:
-                    # Format example:
-                    # (4, 2) - buy sell
-                    # means (4, 2) is labeled 'buy' and 'sell'
-                    labels = set(fields[3:])
-                    marked[source] = labels
-                elif config.annotation_type == AnnType.link:
-                    # Format example:
-                    # (4, 2) - (4, 1) (4, 0)
-                    # means (4, 2) is linked to the two words before it
-                    targets = set()
-                    for i in range(3, len(fields), 2):
-                        line = get_num(fields[i])
-                        token = get_num(fields[i + 1])
-                        targets.add((line, token))
-                    marked[source] = targets
-                elif config.annotation_type == AnnType.text:
-                    # Format example:
-                    # (4, 2) - blah blah blah
-                    # means (4, 2) is labeled "blah blah blah"
-                    marked[source] = ' '.join(fields[3:])
-###            elif config.annotation == AnnScope.span:
-###                # All examples refer to a span from word 2 on line 4 to word 1 on line 6
-###                source_start = (get_num(fields[0]), get_num(fields[1]))
-###                source_end = (get_num(fields[2]), get_num(fields[3]))
-###                source = (source_start, source_end)
-###                if config.annotation_type == AnnType.categorical:
-###                    # Format example:
-###                    # ((4, 2), (6, 1) - buy sell
-###                    labels = set(fields[5:])
-###                    marked[source] = labels
-###                elif config.annotation_type == AnnType.link:
-###                    # Format example:
-###                    # ((4, 2), (6, 1) - ((0, 0), (0, 4)), ((1,0), (1,2))
-###                    targets = set()
-###                    for i in range(5, len(fields), 4):
-###                        start = (get_num(fields[i]), get_num(fields[i + 1]))
-###                        end = (get_num(fields[i + 2]), get_num(fields[i + 3]))
-###                        targets.add((start, end))
-###                    marked[source] = targets
-###                elif config.annotation_type == AnnType.text:
-###                    # Format example:
-###                    # ((4, 2), (6, 1)) - blah blah blah
-###                    # means (4, 2) is labeled "blah blah blah"
-###                    marked[source] = ' '.join(fields[3:])
-            elif config.annotation == AnnScope.line:
-                source = int(fields[0])
-                if config.annotation_type == AnnType.categorical:
-                    # Format example:
-                    # 3 - buy sell
-                    # means line 3 is labeled 'buy' and 'sell'
-                    marked[source] = set(fields[2:])
-                elif config.annotation_type == AnnType.link:
-                    # Format example:
-                    # 3 - 4 1
-                    # means line 3 is linked to lines 1 and 4
-                    targets = {int(v) for v in fields[2:]}
-                    marked[source] = targets
-                elif config.annotation_type == AnnType.text:
-                    # Format example:
-                    # 3 - blah blah
-                    # means line 3 is labeled "blah blah"
-                    marked[source] = ' '.join(fields[2:])
-    return marked
-
-def compare_nums(num0, num1):
-    if num0 < num1:
-        return -1
-    elif num0 == num1:
-        return 0
-    else:
-        return 1
-
-def compare_pos(config, pos0, pos1):
-    if config.annotation == AnnScope.line:
-        return compare_nums(pos0, pos1)
-    else:
-        comparison = compare_nums(pos0[0], pos1[0])
-        if comparison == 0:
-            return compare_nums(pos0[1], pos1[1])
-        else:
-            return comparison
-
-def prepare_for_return(config, pos):
-    if config.annotation != AnnScope.line:
-        return pos
-    elif pos == -1:
-        return [-1, -1]
-    else:
-        return [pos, 0]
-
 class Document(object):
     """Storage for the raw text data."""
     # TODO: Think about maintaining whitespace variations
 
     def __init__(self, filename):
+        self.raw_text = open(filename).read()
+        self.lines = self.raw_text.split("\n")
+
         self.tokens = []
         self.first_char = None
         self.last_char = None
-        for line in open(filename):
+        for line in self.raw_text.strip().split("\n"):
             cur = []
             self.tokens.append(cur)
             for token in line.strip().split():
@@ -179,23 +71,64 @@ class Document(object):
                 cur.append(token)
         assert self.first_char is not None, "Empty document"
 
-    def get_moved_pos(self, pos, right=0, down=0, jump=False):
-        # TODO: long-jump as well as jump, have jump do a smaller scale
+    def next_match(self, pos, text, reverse=False):
+        return pos
+        # TODO:
+###        if len(pos) == 1:
+###            cline = pos[0]
+###            delta = -1 if reverse else 1
+###            while 0 <= cline < len(self.lines):
+###                if text in self.lines[cline]:
+###                    return (cline)
+###                cline += delta
+###        elif len(pos) > 1:
+###            # Check this line first
+###            if text in self.lines[pos[0]]:
+###                parts = self.lines[pos[0]].split(text)
+###                ctoken, cchar = 0, 0
+###                options = []
+###                for part in parts:
+###                    # Advance
+###                    for char in part:
+###                        if char == ' ':
+###                            ctoken += 1
+###                            cchar = 0
+###                        else:
+###                            cchar += 1
+###                    options.append((ctoken, cchar))
+###                    for char in text:
+###                        if char == ' ':
+###                            ctoken += 1
+###                            cchar = 0
+###                        else:
+###                            cchar += 1
+###                pass
+###        return pos
+
+    def get_moved_pos(self, pos, right=0, down=0, distance=1):
+        """Calculate a shifted version of  a given a position in this document.
+
+        Co-ordinates are (line number, token number), with (0,0) as the top
+        left, tokens increasing left to right and lines increasing top to
+        bottom.
+        """
+        # TODO: adjust distance to be used as more than just non-negative or not
         if len(pos) == 0:
             # This is the whole document, can't move
             return pos
         elif len(pos) == 1:
             # This is a line, ignore right
             # Note, an empty line can be selected
-            npos = min(len(self.tokens) - 1, max(0, pos[0] + down))
-            if jump and down < 0: npos = 0
-            if jump and down > 0: npos = len(self.tokens) - 1
+            npos = pos[0] + down # Shift (possibly out of bounds)
+            npos = min(len(self.tokens) - 1, max(0, npos)) # Bound
+            if distance < 0 and down < 0: npos = 0
+            if distance < 0 and down > 0: npos = len(self.tokens) - 1
             return (npos)
         elif len(pos) == 2:
             # Moving a token
             # Vertical movement
             nline = pos[0]
-            if jump:
+            if distance < 0:
                 # We always want to be on a token, so go to the first or last
                 # line with one.
                 if down < 0: nline = self.first_char(0)
@@ -212,7 +145,7 @@ class Document(object):
 
             # Horizontal movement
             ntok = pos[1]
-            if jump:
+            if distance < 0:
                 if right < 0: ntok = 0
                 elif right > 0: ntok = len(self.tokens[nline]) - 1
             else:
@@ -239,7 +172,7 @@ class Document(object):
             # Moving a character
             # Vertical movement
             nline = pos[0]
-            if jump:
+            if distance < 0:
                 # We always want to be on a character, so go to the first or last
                 # line with one.
                 if down < 0: nline = self.first_char(0)
@@ -257,7 +190,7 @@ class Document(object):
             # Horizontal movement
             ntok = pos[1]
             nchar = pos[2]
-            if jump:
+            if distance < 0:
                 if right < 0:
                     ntok = 0
                     nchar = 0
@@ -307,73 +240,266 @@ class Span(object):
         self.doc = doc
         self.start = None
         self.end = None
-        if scope == AnnScope.character:
-            self.start, self.end = (0, 0, 0), (0, 0, 1)
-        elif scope == AnnScope.token:
-            self.start, self.end = (0, 0), (0, 1)
-        elif scope == AnnScope.line:
-            self.start, self.end = (0), (1)
-        elif scope == AnnScope.document:
-            self.start, self.end = (), ()
-        else:
-            raise Exception("Invalid scope")
+
+        # Most of the time a span will be provided to start from.
         if span is not None:
-            # Most of the time a span will be provided to start from.
-            self.end = span.end
-            self.start = span.start
+            # Check it has the right length
+            length = 0
+            if scope == AnnScope.character: length = 3
+            elif scope == AnnScope.token: length = 2
+            elif scope == AnnScope.line: length = 1
+            elif scope == AnnScope.document: length = 0
+            else: raise Exception("Invalid scope")
+
+            if type(span) == tuple:
+                if len(span) == 0:
+                    self.start, self.end = (), ()
+                else:
+                    # TODO: Add a check that this position is valid for this doc
+                    if type(span[0]) == int:
+                        assert len(span) == length
+                        self.start = span
+                        self.end = doc.get_moved_pos(span, 1)
+                    else:
+                        assert len(span[0]) == len(span[1]) == length
+                        self.start = span[0]
+                        self.end = span[1]
+            else:
+                assert len(span.start) == len(span.end) == length
+                self.end = span.end
+                self.start = span.start
+        else:
+            first = doc.first_char
+            if scope == AnnScope.character:
+                self.start = (first[0], first[1], first[2])
+            elif scope == AnnScope.token:
+                self.start = (first[0], first[1])
+            elif scope == AnnScope.line:
+                self.start = (first[0])
+            elif scope == AnnScope.document:
+                self.start = ()
+            else:
+                raise Exception("Invalid scope")
+            self.end = doc.get_moved_pos(span, 1)
+
+    def __repr__(self):
+        return str((self.start, self.end))
+    def __str__(self):
+        return repr(self)
 
     def __hash__(self):
         return hash((self.start, self.end))
 
     # Modification functions, each returns the position that was modified
-    def edit_left(self, moving=True, shift=False):
-        if len(self.start) == 0:
-            pass # Do nothing for full document cases
-        elif moving:
-            if shift:
-                pass # Jump to start of [doc, line, token]
-            else:
-                pass # Move to previous [line, token, character]
-        else:
-            if shift:
-                pass # Move start of the span
-            else:
-                pass # Move end of the span
-    def edit_right(self, shift=False):
-        if len(self.start) == 0: return
-        pass
-    def edit_up(self, shift=False):
-        if len(self.start) == 0: return
-        pass
-    def edit_down(self, shift=False):
-        if len(self.start) == 0: return
-        pass
+    def edit(self, direction=None, change=None, distance=0):
+        """Change this span, either moving both ends or only one.
 
-    def change_ann_type(self):
-        pass
+        direction is left, right, up, or down
+        change is move, expand, or contract
+        distance is an integer, with negative numbers meaning max
+        """
+        right_val = 0
+        down_val = 0
+        if direction == 'left':
+            right_val = -1
+        elif direction == 'right':
+            right_val = 1
+        elif direction == 'up':
+            down_val = -1
+        elif direction == 'down':
+            down_val = 1
+        if change == 'contract':
+            right_val *= -1
+            down_val *= -1
+
+        if change == "move":
+            nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
+            nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
+            # Only move if it will change both (otherwise it is a shift).
+            if nstart != self.start and nend != self.end:
+                self.start = nstart
+                self.end = nend
+        else:
+            move_start = 
+                (change == "extend" and (direction == "left" or direction == "up")) or
+                (change == "contract" and (direction == "right" or direction == "down"))
+
+            if move_start:
+                nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
+                # Check that it doesn't make an inconsistnet span
+                if nstart != self.end:
+                    self.start = nstart
+            else:
+                nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
+                # Check that it doesn't make an inconsistnet span
+                if nend != self.start:
+                    self.end = nend
 
     # How to do coreference resolution annotation:
-    # Normally, have a single position, left =, right, etc move it.
-    # Pressing 'a' makes it a mention and switches into linking mode.
-    # Pressing 'A' switches into a span specification mode, where movement
-    # edits the extent of the span, and pressing 'a' completes it and switches
-    # into linking mode.
-    # In linking mode, movement allows choosing between previous clusters
-    # (starting with 'no cluster').
-    # Pressing 'c' creates the link and switches back to regular mode.
-    # Note, in the initial mode, if a span is highlighted, 's' will select it,
-    # and 'S' will select it and go into span editing mode.
-    #
-    # This allows for construction of items, editing, multi-token spans,
-    # linking, nesting.
+    # - Normal mode is selecting a position using the edit function
+    # - Switch to link mode and then toggle between mentions including this one (to indicate no prior link)
 
 class Item(object):
     """One or more spans and a set of labels.
 
     This is used in Datum to keep track of annotations, and used in View to determine the current appearance."""
-    def __init__(self):
+    def __init__(self, init_span=None, init_label=None):
         self.spans = []
+        if type(init_span) == list:
+            self.spans += init_span
+        elif init_span is not None:
+            self.spans.append(init_span)
+
         self.labels = set()
+        if type(init_label) == set:
+            self.labels.update(init_labels)
+        elif init_label is not None:
+            self.labels.add(init_label)
+
+    def __repr__(self):
+        labels = []
+        for label in self.labels:
+            labels.append(str(label))
+        labels = ' '.join(labels)
+
+        spans = repr(self.spans)
+        if len(self.spans) == 1:
+            spans = repr(self.spans[0])
+            if len(self.spans[0]) == 1:
+                spans = repr(self.spans[0][0])
+        elif len(self.spans) > 1 and len(self.spans[0]) == 1:
+            spans = [repr(s[0]) for s in self.spans]
+
+        return "{} - {}".format(spans, labels)
+
+def get_spans(text, doc, config):
+    # TODO: allow for <filename>:data
+
+    spans = eval(text.strip())
+    if type(spans) == int:
+        spans = [(spans)]
+    elif type(spans) == tuple:
+        spans = [spans]
+    elif type(spans) == list:
+        if len(spans) == 0:
+            spans = [()]
+        elif type(spans[0]) == int:
+            spans = [(s) for s in spans]
+    
+    return [Span(config.annotation, doc, s) for s in spans]
+
+def get_labels(text):
+    labels = set()
+    if config.annotation_type == AnnType.categorical:
+        for label in text.strip().split():
+            labels.add(label)
+    elif config.annotation_type == AnnType.text:
+        labels.add(text.strip().split())
+    else:
+        assert len(text.strip().split()) == 0
+
+    return labels
+
+def read_annotation_file2(config, filename, doc):
+    items = []
+
+    assert glob.glob(filename) != 0, "File {} does not exist".format(filename)
+
+    for line in open(filename):
+        fields = line.strip().split()
+
+        # Always lay out as:
+        # [spans] - [labels]
+
+        spans = get_spans(line.split('-')[0], config)
+        labels = get_labels('-'.join(line.split('-')[1:]), config)
+
+        items.append(Item(spans, labels)
+
+    return items
+
+def read_annotation_file(config, filename):
+    marked = {}
+
+    # Read standoff annotations if they exist. Note:
+    #  - Whitespace variations are ignored.
+    #  - Repeated labels / links are ignored.
+    if len(glob.glob(filename)) != 0:
+        for line in open(filename):
+            fields = line.strip().split()
+            if config.annotation == AnnScope.token:
+                # All examples refer to word 2 on line 4
+                source = (get_num(fields[0]), get_num(fields[1]))
+                if config.annotation_type == AnnType.categorical:
+                    # Format example:
+                    # (4, 2) - buy sell
+                    # means (4, 2) is labeled 'buy' and 'sell'
+                    labels = set(fields[3:])
+                    marked[source] = labels
+                elif config.annotation_type == AnnType.link:
+                    # Format example:
+                    # (4, 2) - (4, 1) (4, 0)
+                    # means (4, 2) is linked to the two words before it
+                    targets = set()
+                    for i in range(3, len(fields), 2):
+                        line = get_num(fields[i])
+                        token = get_num(fields[i + 1])
+                        targets.add((line, token))
+                    marked[source] = targets
+                    src_span = Span(doc, config.ann_scope, source)
+                    for target in targets:
+                        target_span = Span(doc, config.ann_scope, target)
+                        items.append(Item([src_span, target_span], None))
+                elif config.annotation_type == AnnType.text:
+                    # Format example:
+                    # (4, 2) - blah blah blah
+                    # means (4, 2) is labeled "blah blah blah"
+                    marked[source] = ' '.join(fields[3:])
+            elif config.annotation == AnnScope.line:
+                source = int(fields[0])
+                if config.annotation_type == AnnType.categorical:
+                    # Format example:
+                    # 3 - buy sell
+                    # means line 3 is labeled 'buy' and 'sell'
+                    marked[source] = set(fields[2:])
+                elif config.annotation_type == AnnType.link:
+                    # Format example:
+                    # 3 - 4 1
+                    # means line 3 is linked to lines 1 and 4
+                    targets = {int(v) for v in fields[2:]}
+                    marked[source] = targets
+                elif config.annotation_type == AnnType.text:
+                    # Format example:
+                    # 3 - blah blah
+                    # means line 3 is labeled "blah blah"
+                    marked[source] = ' '.join(fields[2:])
+    return marked
+
+def compare_nums(num0, num1):
+    if num0 < num1:
+        return -1
+    elif num0 == num1:
+        return 0
+    else:
+        return 1
+
+def compare_pos(config, pos0, pos1):
+    if config.annotation == AnnScope.line:
+        return compare_nums(pos0, pos1)
+    else:
+        comparison = compare_nums(pos0[0], pos1[0])
+        if comparison == 0:
+            return compare_nums(pos0[1], pos1[1])
+        else:
+            return comparison
+
+def prepare_for_return(config, pos):
+    if config.annotation != AnnScope.line:
+        return pos
+    elif pos == -1:
+        return [-1, -1]
+    else:
+        return [pos, 0]
 
 class Datum(object):
     """Storage for a single file's data and annotations.
@@ -381,10 +507,24 @@ class Datum(object):
     Note, the structure of storage depends on the annotation type."""
 
     def __init__(self, filename, config, output_file, annotation_files):
+        # Common
         self.filename = filename
         self.annotation_files = annotation_files
         self.config = config
         self.output_file = output_file
+
+        # New
+        self.doc = Document(filename)
+        self.annotations = read_annotation_file2(config, self.output_file, doc)
+
+        # Old
+        self.tokens = []
+        self.lines = []
+        for line in open(filename):
+            self.tokens.append([])
+            self.lines.append(line.strip())
+            for token in line.split():
+                self.tokens[-1].append(token)
 
         self.marked = read_annotation_file(config, self.output_file)
         self.in_link = {}
@@ -395,19 +535,10 @@ class Datum(object):
                         self.in_link[opos] = 0
                     self.in_link[opos] += 1
 
-        self.tokens = []
-        self.lines = []
-        for line in open(filename):
-            self.tokens.append([])
-            self.lines.append(line.strip())
-            for token in line.split():
-                self.tokens[-1].append(token)
-
-        # TODO: Work out how to handle the AnnType.text case
         self.marked_compare = {}
         self.markings = []
         for filename in self.annotation_files:
-            other_marked = read_annotation_file(config, filename)
+            other_marked = read_annotation_file(config, filename, doc)
             self.markings.append(other_marked)
             for key in other_marked:
                 for label in other_marked[key]:
@@ -429,6 +560,7 @@ class Datum(object):
                     if self.marked_compare[key][label] != len(self.annotation_files):
                         self.disagree.add(key)
 
+    # TODO:
     def get_marked_token(self, pos, cursor, linking_pos):
         pos = tuple(pos)
         linking_pos = tuple(linking_pos)
@@ -543,8 +675,6 @@ class Datum(object):
         return closest
 
     def next_match(self, pos, limit, text, reverse):
-        # TODO: Only implemented correctly for the line matching case at the
-        # moment!
         npos = pos[:]
         delta = -1 if reverse else 1
         found = False
@@ -560,6 +690,10 @@ class Datum(object):
         else:
             return pos
 
+    def next_match2(self, span, text, reverse=False):
+        return self.doc.next_match(span, text, reverse)
+
+    # TODO:
     def next_disagreement(self, pos, linking_pos, reverse):
         if self.config.annotation == AnnScope.line:
             pos = pos[0]
@@ -607,6 +741,8 @@ class Datum(object):
             self.in_link[pos] -= 1
 
     def modify_annotation(self, pos, linking_pos, symbol=None):
+###        self.modify_annotation2(pos, linking_pos, symbol)
+
         # Do not allow links from an item to itself
         if pos == linking_pos and (not self.config.args.allow_self_links):
             return
@@ -632,7 +768,40 @@ class Datum(object):
             self.marked[pos_key].remove(item)
             self.remove_from_in_link(item)
 
+    def get_item_with_spans(self, spans):
+        for item in self.annotations:
+            matched = 0
+            for span in spans:
+                if span in item.spans:
+                    matched += 1
+                else:
+                    break
+            if matched == len(spans):
+                return item
+        return None
+
+    def modify_annotation2(self, spans, label=None):
+        to_edit = self.get_item_with_spans(spans)
+        if to_edit is None:
+            # No item with these spans exists, create it
+            nspans = [Span(self.config.annotation_scope, self.doc, s) for s in spans]
+            item = Item(nspans, label)
+            self.annotations.append(item)
+        else:
+            # Modify existing item
+            if label is None:
+                if len(to_edit.labels) == 0:
+                    self.annotations.remove(to_edit)
+            elif label in to_edit.labels:
+                to_edit.labels.remove(label)
+                if len(to_edit.labels) == 0:
+                    self.annotations.remove(to_edit)
+            else:
+                to_edit.labels.add(label)
+
     def remove_annotation(self, pos, ref):
+###        self.remove_annotation2(pos, ref)
+
         pos_key = self.convert_to_key(pos)
         if self.config.annotation_type == AnnType.link:
             pos_key = self.convert_to_key(ref)
@@ -641,18 +810,27 @@ class Datum(object):
                 self.remove_from_in_link(item)
             self.marked.pop(pos_key)
 
+    def remove_annotation2(self, spans):
+        to_remove = self.get_item_with_spans(spans)
+        if to_remove is not None:
+            self.annotations.remove(to_remove)
+
     def check_equal(self, pos0, pos1):
         if self.config.annotation == AnnScope.line:
             return pos0[0] == pos1[0]
+        elif self.config.annotation == AnnScope.token:
+            return pos0[0] == pos1[0] and pos0[1] == pos1[1]
         else:
             return pos0 == pos1
 
     def write_out(self, filename=None):
+###        self.write_out2(filename)
+
         out_filename = self.output_file
         if filename is not None:
             out_filename = filename
-        out = open(out_filename, 'w')
 
+        out = open(out_filename, 'w')
         for key in self.marked:
             source = str(key)
             info = self.marked[key]
@@ -663,5 +841,14 @@ class Datum(object):
             elif self.config.annotation_type == AnnType.text:
                 pass
             print("{} - {}".format(source, info), file=out)
+        out.close()
+
+    def write_out2(self, filename=None):
+        out_filename = self.output_file
+        if filename is not None:
+            out_filename = filename
+        out = open(out_filename, 'w')
+        for item in self.annotations:
+            print(item, file=out)
         out.close()
 
