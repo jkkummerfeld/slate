@@ -215,6 +215,11 @@ class View(object):
         seen_cursor = None
         seen_linking_pos = None
 
+        # Get text content and colouring
+        cursor = (self.cursor[0], self.cursor[1])
+        linking_pos = (self.linking_pos[0], self.linking_pos[1])
+        markings = self.datum.get_all_markings(cursor, linking_pos)
+
         # Row and column indicate the position on the screen, while line and
         # token indicate the position in the text.
         row = -1
@@ -228,11 +233,7 @@ class View(object):
             column = 0
             for token_no, token in enumerate(line):
                 pos = (line_no, token_no)
-                cursor = (self.cursor[0], self.cursor[1])
-                linking_pos = (self.linking_pos[0], self.linking_pos[1])
-                # TODO: Only calculate color if it is going to be displayed
-                token, color, test = self.datum.get_marked_token(pos, cursor,
-                        linking_pos)
+                token, color, text_label = markings[pos]
 
                 length = len(token)
 

@@ -127,8 +127,8 @@ def annotate(window, config, filenames):
                 else:
                     view.previous_disagreement()
             elif user_input == ord("d") and config.mode == Mode.annotate:
-                datum.modify_annotation(view.cursor, view.linking_pos)
                 if config.annotation_type == AnnType.link:
+                    datum.modify_annotation(view.cursor, view.linking_pos)
                     if config.annotation == AnnScope.line:
                         view.move_down(True)
                         view.cursor[0] = view.linking_pos[0]
@@ -141,7 +141,8 @@ def annotate(window, config, filenames):
                         view.move_left()
                     view.must_show_linking_pos = True
             elif user_input == ord("D") and config.mode == Mode.annotate:
-                datum.modify_annotation(view.cursor, view.linking_pos)
+                if config.annotation_type == AnnType.link:
+                    datum.modify_annotation(view.cursor, view.linking_pos)
             elif user_input == ord("u") and config.mode == Mode.annotate:
                 datum.remove_annotation(view.cursor, view.linking_pos)
             elif user_input in [ord('s'), ord('b'), ord('r')]:

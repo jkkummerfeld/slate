@@ -599,7 +599,43 @@ class Datum(object):
                     if self.marked_compare[key][label] != len(self.annotation_files):
                         self.disagree.add(key)
 
-    # TODO:
+    def get_all_markings(self, cursor, linking_pos):
+        ans = {}
+        for line_no in range(len(self.tokens)):
+            for token_no in range(len(line)):
+                pos = (line_no, token_no)
+                ans[pos] = self.get_marked_token(pos, cursor, linking_pos)
+        return ans
+
+    def get_all_markings2(self, cursor, linking_pos):
+        # TODO: Convert to character level
+        ans = {}
+
+        # Set text and default colour
+        for line_no in range(len(self.tokens)):
+            for token_no in range(len(line)):
+                pos = (line_no, token_no)
+                token = self.tokens[pos[0]][pos[1]]
+                color = DEFAULT_COLOR
+                text = None
+                ans[pos] = (token, color, text)
+
+        # Now add colours
+        for item in self.annotations:
+            for span in item.spans:
+                # base_color = Get the colour for this spans label(s)
+                # If there are no labels, and there are multiple spans, then
+                # this is a link. 
+
+                # Go through tokens from the start of the span to the end,
+                # setting colours based on:
+                #
+                #   If the position is the current cursor
+                #   If the position is the linking_pos
+                #   If the position has a colour already
+
+        return ans
+
     def get_marked_token(self, pos, cursor, linking_pos):
         pos = tuple(pos)
         linking_pos = tuple(linking_pos)
@@ -847,7 +883,16 @@ class Datum(object):
                 to_edit.labels.add(label)
 
     def remove_annotation(self, pos, ref):
-###        self.remove_annotation2(pos, ref)
+        # Wrap new
+        wrap_pos = tuple(pos)
+        wrap_link = tuple(ref)
+        if self.config.annotation == AnnScope.line:
+            wrap_pos = tuple([pos[0]])
+            wrap_link = tuple([ref[0]])
+        spans = [Span(self.config.annotation, self.doc, wrap_pos)]
+        if self.config.annotation_type == AnnType.link:
+            spans.appaned(Span(self.config.annotation, self.doc, wrap_link))
+        self.remove_annotation2(spans)
 
         pos_key = self.convert_to_key(pos)
         if self.config.annotation_type == AnnType.link:
