@@ -247,6 +247,7 @@ class Span(object):
     def __init__(self, scope, doc, span=None):
         self.start = None
         self.end = None
+        self.doc = doc
 
         # Most of the time a span will be provided to start from.
         if span is not None:
@@ -270,7 +271,7 @@ class Span(object):
                         down = 0
                         if scope == AnnScope.line:
                             down = 1
-                        self.end = doc.get_moved_pos(self.start, right, down)
+                        self.end = self.doc.get_moved_pos(self.start, right, down)
                     else:
                         assert len(span[0]) == len(span[1]) == length
                         self.start = span[0]
@@ -280,7 +281,7 @@ class Span(object):
                 self.end = span.end
                 self.start = span.start
         else:
-            first = doc.first_char
+            first = self.doc.first_char
             if scope == AnnScope.character:
                 self.start = (first[0], first[1], first[2])
             elif scope == AnnScope.token:
@@ -291,15 +292,19 @@ class Span(object):
                 self.start = ()
             else:
                 raise Exception("Invalid scope")
-            self.end = doc.get_next_pos(self.start)
+            self.end = self.doc.get_next_pos(self.start)
 
     def __repr__(self):
         return "Span({}, {})".format(self.start, self.end)
+
     def __str__(self):
         return str((self.start, self.end))
 
     def __hash__(self):
         return hash((self.start, self.end))
+
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end and self.doc == other.doc
 
     # Modification functions, each returns the position that was modified
     def edit(self, doc, direction=None, change=None, distance=0):
@@ -371,6 +376,9 @@ class Item(object):
         elif init_label is not None:
             self.labels.add(init_label)
 
+    def __eq__(self, other):
+        return self.spans == other.spans and self.labels == other.labels and self.doc == other.doc
+
     def __str__(self):
         labels = []
         for label in self.labels:
@@ -390,7 +398,7 @@ class Item(object):
                 if self.doc.get_next_pos(s.start) != s.end:
                     all_single = False
             if all_single:
-                spans = " ".join([str(s.start) for s in self.spans])
+                spans = str([s.start for s in self.spans])
                 if len(self.spans[0].start) == 1:
                     spans = " ".join([str(s.start[0]) for s in self.spans])
 
@@ -400,7 +408,7 @@ def get_spans(text, doc, config):
     # TODO: allow for <filename>:data
 
     spans = []
-    if text[0] == '(':
+    if text[0] in '[(':
         spans = eval(text.strip())
         if type(spans) == int:
             spans = [(spans)]
@@ -442,9 +450,16 @@ def read_annotation_file2(config, filename, doc):
             spans = get_spans(line.split('-')[0], doc, config)
             labels = get_labels('-'.join(line.split('-')[1:]), config)
 
-            items.append(Item(self.doc, spans, labels))
+            items.append(Item(doc, spans, labels))
 
     return items
+
+def get_num(text):
+    mod_text = []
+    for char in text:
+        if char not in '(),':
+            mod_text.append(char)
+    return int(''.join(mod_text))
 
 def read_annotation_file(config, filename):
     marked = {}
@@ -474,10 +489,6 @@ def read_annotation_file(config, filename):
                         token = get_num(fields[i + 1])
                         targets.add((line, token))
                     marked[source] = targets
-                    src_span = Span(doc, config.ann_scope, source)
-                    for target in targets:
-                        target_span = Span(doc, config.ann_scope, target)
-                        items.append(Item(self.doc, [src_span, target_span], None))
                 elif config.annotation_type == AnnType.text:
                     # Format example:
                     # (4, 2) - blah blah blah
@@ -775,10 +786,9 @@ class Datum(object):
         if self.config.annotation == AnnScope.line:
             wrap_pos = tuple([pos[0]])
             wrap_link = tuple([linking_pos[0]])
-        spans = [
-            Span(self.config.annotation, self.doc, wrap_pos),
-            Span(self.config.annotation, self.doc, wrap_link)
-        ]
+        spans = [Span(self.config.annotation, self.doc, wrap_pos)]
+        if self.config.annotation_type == AnnType.link:
+            spans.append(Span(self.config.annotation, self.doc, wrap_link))
         self.modify_annotation2(spans, symbol)
 
         # Do not allow links from an item to itself
@@ -808,18 +818,16 @@ class Datum(object):
 
     def get_item_with_spans(self, spans):
         for item in self.annotations:
-            matched = 0
+            matched = True
             for span in spans:
-                if span in item.spans:
-                    matched += 1
-                else:
+                if span not in item.spans:
+                    matched = False
                     break
-            if matched == len(spans):
+            if matched:
                 return item
         return None
 
     def modify_annotation2(self, spans, label=None):
-        logging.info(repr(spans))
         to_edit = self.get_item_with_spans(spans)
         if to_edit is None:
             # No item with these spans exists, create it

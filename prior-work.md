@@ -22,6 +22,7 @@ Definite:
  - eHost / Chartreader, "A Prototype Tool Set to Support Machine-Assisted Annotation" (South et al., 2012), W12-2416.pdf
  - SAWT: Sequence Annotation Web Tool, W16-5808.pdf
  - https://github.com/jonorthwash/ud-annotatrix
+ - http://universaldependencies.org/tools.html#third-party-tools
 
 Probably
  - Tweet Conversation Annotation Tool with a Focus on an Arabic Dialect, Moroccan Darija, W13-2317.pdf
@@ -62,4 +63,10 @@ Maybe?
  - TableTrans, MultiTrans, InterTrans and TreeTrans: Diverse Tools Built on the Annotation Graph Toolkit.
  - The Brandeis Annotation Tool
 
-
+Other interesting, but not directly relevant work
+ - Assigning Wh-Questions to Verbal Arguments: Annotation Tools Evaluation and Corpus Building
+ - In-tool Learning for Selective Manual Annotation in Large Corpora
+ - Standoff Coordination for Multi-Tool Annotation in a Dialogue Corpus
+ - Tools to Address the Interdependence between Tokenisation and Standoff Annotation
+ - Towards General-Purpose Annotation Tools: How Far Are We Today?
+ - Usability Recommendations for Annotation Tools
