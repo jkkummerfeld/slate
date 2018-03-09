@@ -294,17 +294,31 @@ class Span(object):
                 raise Exception("Invalid scope")
             self.end = self.doc.get_next_pos(self.start)
 
+    def __hash__(self):
+        return hash((self.start, self.end))
+    def __eq__(self, other):
+        return self.start == other.start and self.end == other.end
+    def __lt__(self, other):
+        if self.start == other.start:
+            return self.end < other.end
+        return self.start < other.start
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+    def __gt__(self, other):
+        return not self.__le__(other)
+    def __ge__(self, other):
+        return not self.__lt__(other)
+
     def __repr__(self):
         return "Span({}, {})".format(self.start, self.end)
 
     def __str__(self):
         return str((self.start, self.end))
 
-    def __hash__(self):
-        return hash((self.start, self.end))
 
-    def __eq__(self, other):
-        return self.start == other.start and self.end == other.end and self.doc == other.doc
 
     # Modification functions, each returns the position that was modified
     def edit(self, doc, direction=None, change=None, distance=0):
