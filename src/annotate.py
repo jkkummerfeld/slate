@@ -80,27 +80,27 @@ def annotate(window, config, filenames):
             elif user_input in [ord('c'), 337]:
                 # Note - 337 is SHIFT + UP on a mac keyboard
                 if config.annotation_type == AnnType.link:
-                    view.move('up', 1, True)
+                    view.move('up', 1, False, True)
                     view.must_show_linking_pos = True
                 else:
-                    view.move('up', -1)
+                    view.move('up', 1, True)
             elif user_input in [ord('v'), 336]:
                 # Note - 336 is SHIFT + DOWN on a mac keyboard
                 if config.annotation_type == AnnType.link:
-                    view.move('down', 1, True)
+                    view.move('down', 1, False, True)
                     view.must_show_linking_pos = True
                 else:
-                    view.move('down', -1)
+                    view.move('down', 1, True)
             elif user_input == curses.KEY_SLEFT:
                 if config.annotation_type == AnnType.link:
-                    view.move('left', 1, True)
+                    view.move('left', 1, False, True)
                 else:
-                    view.move('left', -1)
+                    view.move('left', 1, True)
             elif user_input == curses.KEY_SRIGHT:
                 if config.annotation_type == AnnType.link:
-                    view.move('right', 1, True)
+                    view.move('right', 1, False, True)
                 else:
-                    view.move('right', -1)
+                    view.move('right', 1, True)
             elif user_input == curses.KEY_UP:
                 view.move('up', 1)
             elif user_input == curses.KEY_DOWN:

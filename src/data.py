@@ -54,7 +54,9 @@ def read_filenames(arg, config):
 
 class Document(object):
     """Storage for the raw text data."""
-    # TODO: Think about maintaining whitespace variations
+    # TODO: Think about maintaining whitespace variations, probably just by
+    # removing the .strip() below and then adjusting token selection to skip
+    # blank tokens
 
     def __init__(self, filename):
         self.raw_text = open(filename).read()
@@ -63,7 +65,7 @@ class Document(object):
         self.tokens = []
         self.first_char = None
         self.last_char = None
-        for line in self.raw_text.strip().split("\n"):
+        for line in self.raw_text.split("\n"):
             cur = []
             self.tokens.append(cur)
             for token in line.strip().split():
@@ -107,20 +109,19 @@ class Document(object):
 ###                pass
 ###        return pos
 
-    def get_moved_pos(self, pos, right=0, down=0, distance=1, skip_blank=True):
+    def get_moved_pos(self, pos, right=0, down=0, maxjump=False, skip_blank=True):
         """Calculate a shifted version of  a given a position in this document.
 
         Co-ordinates are (line number, token number), with (0,0) as the top
         left, tokens increasing left to right and lines increasing top to
         bottom.
         """
-        # TODO: adjust distance to be used as more than just non-negative or not
         if len(pos) == 0: # This is the whole document, can't move
             return pos
         elif len(pos) == 1: # This is a line, ignore right
             # Shift (possibly out of bounds)
             npos = pos[0]
-            if distance < 0:
+            if maxjump:
                 if down < 0: npos = 0
                 elif down > 0: npos = len(self.tokens) - 1
                 down *= -1 # Needed for blank line skipping
@@ -133,26 +134,28 @@ class Document(object):
                     npos += down
             return (npos,)
         elif len(pos) == 2: # Moving a token
-            # Vertical movement
             nline = pos[0]
-            if distance < 0:
+            ntok = pos[1]
+
+            # Vertical movement
+            if maxjump:
                 # We always want to be on a token, so go to the first or last
                 # line with one.
                 if down < 0: nline = self.first_char[0]
                 elif down > 0: nline = self.last_char[0]
             else:
-                # Shift incrementally because we only want to count lines that
-                # have tokens.
+                # Shift incrementally so we can optionally only count lines
+                # that have tokens.
                 shift = down
                 delta = 1 if shift > 0 else -1
-                while shift != 0 and self.first_char[0] < nline < self.last_char[0]:
+                while shift != 0 and self.first_char[0] <= nline <= self.last_char[0]:
                     nline += delta
-                    if len(self.tokens[nline]) > 0:
+                    if (not skip_blank) or len(self.tokens[nline]) > 0:
                         shift -= delta
+            ntok = min(ntok, len(self.tokens[nline]) - 1)
 
             # Horizontal movement
-            ntok = pos[1]
-            if distance < 0:
+            if maxjump:
                 if right < 0: ntok = 0
                 elif right > 0: ntok = len(self.tokens[nline]) - 1
             else:
@@ -178,7 +181,7 @@ class Document(object):
         else: # Moving a character
             # Vertical movement
             nline = pos[0]
-            if distance < 0:
+            if maxjump:
                 # We always want to be on a character, so go to the first or last
                 # line with one.
                 if down < 0: nline = self.first_char[0]
@@ -196,7 +199,7 @@ class Document(object):
             # Horizontal movement
             ntok = pos[1]
             nchar = pos[2]
-            if distance < 0:
+            if maxjump:
                 if right < 0:
                     ntok = 0
                     nchar = 0
@@ -265,7 +268,20 @@ class Span(object):
         self.scope = scope
 
         # Most of the time a span will be provided to start from.
-        if span is not None:
+        if span is None:
+            first = self.doc.first_char
+            if scope == AnnScope.character:
+                self.start = (first[0], first[1], first[2])
+            elif scope == AnnScope.token:
+                self.start = (first[0], first[1])
+            elif scope == AnnScope.line:
+                self.start = (first[0],)
+            elif scope == AnnScope.document:
+                self.start = ()
+            else:
+                raise Exception("Invalid scope")
+            self.end = self.start
+        else:
             # Check it has the right length
             length = 0
             if scope == AnnScope.character: length = 3
@@ -278,15 +294,12 @@ class Span(object):
                 if len(span) == 0:
                     self.start, self.end = (), ()
                 else:
-                    # TODO: Add a check that this position is valid for this doc
+                    # TODO: Add a check that this position is valid for this
+                    # doc
                     if type(span[0]) == int:
                         assert len(span) == length, "Got {} not {}".format(len(span), length)
                         self.start = span
-                        right = 1
-                        down = 0
-                        if scope == AnnScope.line:
-                            down = 1
-                        self.end = self.doc.get_moved_pos(self.start, right, down)
+                        self.end = span
                     else:
                         assert len(span[0]) == len(span[1]) == length
                         self.start = span[0]
@@ -295,23 +308,12 @@ class Span(object):
                 assert len(span.start) == len(span.end) == length
                 self.end = span.end
                 self.start = span.start
-        else:
-            first = self.doc.first_char
-            if scope == AnnScope.character:
-                self.start = (first[0], first[1], first[2])
-            elif scope == AnnScope.token:
-                self.start = (first[0], first[1])
-            elif scope == AnnScope.line:
-                self.start = (first[0],)
-            elif scope == AnnScope.document:
-                self.start = ()
-            else:
-                raise Exception("Invalid scope")
-            self.end = self.doc.get_next_pos(self.start)
 
     def __hash__(self):
         return hash((self.start, self.end))
     def __eq__(self, other):
+        if type(self) != type(other):
+            return False
         return self.start == other.start and self.end == other.end
     def __lt__(self, other):
         if self.start == other.start:
@@ -333,7 +335,7 @@ class Span(object):
     def __str__(self):
         return str((self.start, self.end))
 
-    def edited(self, direction=None, change=None, distance=0):
+    def edited(self, direction=None, change=None, distance=1, maxjump=False):
         """Change this span, either moving both ends or only one.
 
         direction is left, right, up, down, next or previous
@@ -356,20 +358,20 @@ class Span(object):
         right_val = 0
         down_val = 0
         if direction == 'left':
-            right_val = -1
+            right_val = -distance
         elif direction == 'right':
-            right_val = 1
+            right_val = distance
         elif direction == 'up':
-            down_val = -1
+            down_val = -distance
         elif direction == 'down':
-            down_val = 1
+            down_val = distance
         if change == 'contract':
-            right_val *= -1
-            down_val *= -1
+            right_val *= -distance
+            down_val *= -distance
 
         if change == "move":
-            nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
-            nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
+            nstart = self.doc.get_moved_pos(self.start, right_val, down_val, maxjump)
+            nend = self.doc.get_moved_pos(self.end, right_val, down_val, maxjump)
             logging.info("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
             # Only move if it will change both (otherwise it is a shift).
             if nstart != self.start and nend != self.end:
@@ -384,15 +386,9 @@ class Span(object):
                     direction == "right" or direction == "down"))
 
             if move_start:
-                nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
-                # Check that it doesn't make an inconsistnet span
-                if nstart != self.end:
-                    new_start = nstart
+                new_start = self.doc.get_moved_pos(self.start, right_val, down_val, maxjump)
             else:
-                nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
-                # Check that it doesn't make an inconsistnet span
-                if nend != self.start:
-                    new_end = nend
+                new_end = self.doc.get_moved_pos(self.end, right_val, down_val, maxjump)
 
         return Span(self.scope, self.doc, (new_start, new_end))
     
@@ -453,7 +449,7 @@ def get_spans(text, doc, config):
     if text[0] in '[(':
         spans = eval(text.strip())
         if type(spans) == int:
-            spans = [(spans)]
+            spans = [(spans,)]
         elif type(spans) == tuple:
             spans = [spans]
         elif type(spans) == list:
@@ -519,23 +515,14 @@ class Datum(object):
         # TODO: Convert to character level
         # TODO: Convert to use info as spans
         ans = {}
+        if cursor == linking_pos:
+            ans[cursor.start] = LINK_CURSOR_COLOR
+        else:
+            ans[cursor.start] = CURSOR_COLOR
+            if linking_pos is not None:
+                ans[linking_pos.start] = LINK_COLOR
 
-        # Set text and default colour
-        for line_no in range(len(self.doc.tokens)):
-            for token_no in range(len(self.doc.tokens[line_no])):
-                pos = (line_no, token_no)
-                token = self.doc.tokens[line_no][token_no]
-                color = DEFAULT_COLOR
-                if pos == cursor:
-                    color = CURSOR_COLOR
-                    if pos == linking_pos:
-                        color = LINK_CURSOR_COLOR
-                elif pos == linking_pos:
-                    color = LINK_COLOR
-                text = None
-                ans[pos] = (token, color, text)
-
-        # Now add base colours
+        logging.info("Markings with {} {}".format(repr(cursor), repr(linking_pos)))
         for item in self.annotations:
             # Get the standard color for this item based on its label
             base_color = None
@@ -556,19 +543,18 @@ class Datum(object):
             has_cursor = False
             has_link = False
             for span in item.spans:
-                pos = span.start
-                while pos != span.end:
-                    if pos == cursor:
-                        has_cursor = True
-                    if pos == linking_pos:
-                        has_link = True
-                    pos = self.doc.get_next_pos(pos)
+                if span == cursor:
+                    has_cursor = True
+                if span == linking_pos:
+                    has_link = True
+                pos = self.doc.get_next_pos(pos)
 
             for span in item.spans:
                 pos = span.start
                 while pos != span.end:
-                    cur_ans = ans[pos]
-                    this_color = cur_ans[1]
+                    this_color = DEFAULT_COLOR
+                    if pos in ans:
+                        this_color = ans[pos]
                     if this_color == DEFAULT_COLOR:
                         this_color = base_color
                     elif self.config.annotation_type == AnnType.categorical:
@@ -576,17 +562,17 @@ class Datum(object):
                             this_color = OVERLAP_COLOR
 
                     if len(item.spans) > 1:
-                        if pos == linking_pos:
+                        if pos == linking_pos.start:
                             this_color = LINK_COLOR
-                            if pos == cursor:
+                            if pos == cursor.start:
                                 this_color = LINK_CURSOR_COLOR
                         elif has_link:
                             this_color = REF_COLOR
-                            if pos == cursor:
+                            if pos == cursor.start:
                                 this_color = REF_CURSOR_COLOR
 
                     if this_color is not None:
-                        ans[pos] = (cur_ans[0], this_color, cur_ans[2])
+                        ans[pos] = this_color
 
                     pos = self.doc.get_next_pos(pos)
 

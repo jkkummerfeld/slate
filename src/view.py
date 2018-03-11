@@ -7,11 +7,9 @@ import sys
 
 from config import *
 
-number_regex = re.compile('^[,0-9k]*[.]?[0-9][,0-9k]*[.]?[,0-9k]*$')
 class View(object):
     def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, show_help):
         self.window = window
-        logging.info(cursor)
         self.cursor = cursor
         self.linking_pos = linking_pos
         self.datum = datum
@@ -43,10 +41,8 @@ class View(object):
         self.show_help = not self.show_help
 
     def shift_view(self, down=False):
-        if down:
-            self.top += 10
-        else:
-            self.top -= 10
+        if down: self.top += 10
+        else: self.top -= 10
 
     def _check_move_allowed(self, move_link, new_pos):
         if self.linking_pos is None:
@@ -56,12 +52,12 @@ class View(object):
         else:
             return self.linking_pos <= new_pos
 
-    def move(self, direction, distance, move_link=False):
+    def move(self, direction, distance, maxjump=False, move_link=False):
         mover = self.cursor
         if move_link:
             mover = self.linking_pos
         logging.info("Move {} {} {}".format(self.cursor, direction, distance))
-        new_pos = mover.edited(direction, 'move', distance)
+        new_pos = mover.edited(direction, 'move', distance, maxjump)
         logging.info("Moving {} to {}".format(self.cursor, new_pos))
         if self._check_move_allowed(move_link, new_pos):
             if move_link:
@@ -72,31 +68,14 @@ class View(object):
     def put_cursor_beside_link(self):
         self.cursor = self.linking_pos.edited('previous')
 
-    def span_to_position(self, span):
-        if self.config.annotation == AnnScope.character:
-            return (span.start[0], span.start[1])
-        elif self.config.annotation == AnnScope.token:
-            return (span.start[0], span.start[1])
-        elif self.config.annotation == AnnScope.line:
-            return (span.start[0], 0)
-        elif self.config.annotation == AnnScope.document:
-            return (0, 0)
-
-    def do_contents(self, height, width, trial=False):
+    def do_contents(self, height, width, markings, trial=False):
         # For linked items, colour them to indicate it
         # For labels, colour them always, and add beginning / end
         # For freeform text, include it at the bottom
 
         # Tracks if the cursor is vsible
-        seen_cursor = None
-        seen_linking_pos = None
-
-        # Get text content and colouring
-        cursor = self.span_to_position(self.cursor)
-        linking_pos = None
-        if self.linking_pos is not None:
-            linking_pos = self.span_to_position(self.linking_pos)
-        markings = self.datum.get_all_markings(cursor, linking_pos)
+        seen_cursor = (self.config.annotation == AnnScope.document)
+        seen_linking_pos = (self.config.annotation == AnnScope.document)
 
         # Row and column indicate the position on the screen, while line and
         # token indicate the position in the text.
@@ -105,44 +84,79 @@ class View(object):
             # If this line is above the top of what we are shwoing, skip it
             if line_no < self.top:
                 continue
+            if row >= height:
+                break
+
+            if self.config.annotation == AnnScope.line:
+                # TODO: Need to make sure the entire line fits
+                pos = (line_no,)
+                cursor = self.cursor.start
+                if pos == cursor:
+                    seen_cursor = True
+                if self.linking_pos is not None:
+                    linking_pos = self.linking_pos.start
+                    if pos == linking_pos:
+                        seen_linking_pos = True
 
             # Set
             row += 1
             column = 0
             for token_no, token in enumerate(line):
-                pos = (line_no, token_no)
-                token, color, text_label = markings[pos]
-
-                length = len(token)
-
                 # Check if we are going on to the next line and adjust
                 # accordingly.
                 space_before = 1 if column > 0 else 0
-                if column + length + space_before >= width:
+                if column + len(token) + space_before >= width:
                     column = 0
                     row += 1
-                elif space_before > 0:
-                    length += space_before
-                    token = " "+ token
+                    space_before = 0
 
+                # If this takes us off the screen, stop
                 if row >= height:
-                    # Not printing as we are off the screen.  Must wait till
-                    # here in case we have a line wrapping above.
-                    if pos == cursor:
-                        seen_cursor = False
-                    if pos == linking_pos:
-                        seen_linking_pos = False
                     break
-                else:
-                    if not trial:
-                        color = curses.color_pair(color)
-                        self.window.addstr(row, column, token, color + curses.A_BOLD)
-                    if pos == cursor and seen_cursor is None:
-                        seen_cursor = True
-                    if pos == linking_pos and seen_linking_pos is None:
-                        seen_linking_pos = True
 
-                column += len(token)
+                if self.config.annotation == AnnScope.token:
+                    pos = (line_no, token_no)
+                    cursor = self.cursor.start
+                    if pos == cursor:
+                        seen_cursor = True
+                    if self.linking_pos is not None:
+                        linking_pos = self.linking_pos.start
+                        if pos == linking_pos:
+                            seen_linking_pos = True
+
+                for char_no, char in enumerate(token):
+                    # Allow multiple layers of color, with the more specific
+                    # domainating
+                    color = DEFAULT_COLOR
+                    if not trial:
+                        if () in markings:
+                            color = markings[()]
+                        if (line_no,) in markings:
+                            color = markings[(line_no,)]
+                        if (line_no, token_no) in markings:
+                            color = markings[line_no, token_no]
+                        if (line_no, token_no, char_no) in markings:
+                            color = markings[line_no, token_no, char_no]
+                        color = curses.color_pair(color) + curses.A_BOLD
+
+                    if self.config.annotation == AnnScope.character:
+                        pos = (line_no, token_no, char_no)
+                        cursor = self.cursor.start
+                        if pos == cursor:
+                            seen_cursor = True
+                        if self.linking_pos is not None:
+                            linking_pos = self.linking_pos.start
+                            if pos == linking_pos:
+                                seen_linking_pos = True
+
+                    if space_before > 0:
+                        if not trial:
+                            self.window.addstr(row, column, ' ', color)
+                        column += 1
+                        space_before = 0
+                    if not trial:
+                        self.window.addstr(row, column, char, color)
+                    column += 1
 
         if self.must_show_linking_pos:
             return seen_linking_pos
@@ -170,12 +184,17 @@ class View(object):
             else:
                 if self.top > self.cursor.start[0]:
                     self.top = self.cursor.start[0]
+
+        # Get colors for content
+        markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
+        logging.info(markings)
+
         # Do dry runs, shifting top down until the position is visible
-        while not self.do_contents(main_height, width, True):
+        while not self.do_contents(main_height, width, markings, True):
             self.top += 1
 
         # Next, draw contents
-        self.do_contents(main_height, width)
+        self.do_contents(main_height, width, markings)
 
         # Then, draw instructions
         if main_height < (height - 1) and self.show_help:
