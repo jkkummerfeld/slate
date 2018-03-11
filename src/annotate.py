@@ -5,7 +5,6 @@ from __future__ import print_function
 import curses
 import argparse
 import logging
-###        logging.info("text")
 import sys
 import string
 
@@ -14,8 +13,8 @@ from config import *
 from view import *
 
 def get_view(window, datum, config, file_num, total_files, position, show_help):
-    cursor = position[:]
-    link = position[:] if config.annotation_type == AnnType.link else [-1, -1]
+    cursor = position
+    link = position if config.annotation_type == AnnType.link else None
     return View(window, cursor, link, datum, config, file_num, total_files, show_help)
 
 def annotate(window, config, filenames):
@@ -59,9 +58,9 @@ def annotate(window, config, filenames):
                 datum.write_out()
 
             # TODO: Hacky, these numbers were worked out by hand.
-            if user_input in [ord('?'), 10]:
+            if user_input in [ord('?'), 10]: # Enter
                 typing_command = False
-            elif user_input in [ord('!'), 263, 127]:
+            elif user_input in [ord('!'), 263, 127]: # Backspace
                 search_term = search_term[:-1]
             elif user_input in [ord(v) for v in string.printable]:
                 search_term += chr(user_input)
@@ -75,41 +74,41 @@ def annotate(window, config, filenames):
             if nsteps % 100 == 0 and config.mode == Mode.annotate:
                 datum.write_out()
 
-            # Note - First two are SHIFT + DOWN and SHIFT + UP, determined by
-            # hand on two laptops.
             if user_input == ord('/'):
                 typing_command = True
                 search_term = ''
             elif user_input in [ord('c'), 337]:
+                # Note - 337 is SHIFT + UP on a mac keyboard
                 if config.annotation_type == AnnType.link:
-                    view.move_up(True)
+                    view.move('up', 1, True)
                     view.must_show_linking_pos = True
                 else:
-                    view.move_to_top()
+                    view.move('up', -1)
             elif user_input in [ord('v'), 336]:
+                # Note - 336 is SHIFT + DOWN on a mac keyboard
                 if config.annotation_type == AnnType.link:
-                    view.move_down(True)
+                    view.move('down', 1, True)
                     view.must_show_linking_pos = True
                 else:
-                    view.move_to_bottom()
+                    view.move('down', -1)
             elif user_input == curses.KEY_SLEFT:
                 if config.annotation_type == AnnType.link:
-                    view.move_left(True)
+                    view.move('left', 1, True)
                 else:
-                    view.move_to_start()
+                    view.move('left', -1)
             elif user_input == curses.KEY_SRIGHT:
                 if config.annotation_type == AnnType.link:
-                    view.move_right(True)
+                    view.move('right', 1, True)
                 else:
-                    view.move_to_end()
+                    view.move('right', -1)
             elif user_input == curses.KEY_UP:
-                view.move_up()
+                view.move('up', 1)
             elif user_input == curses.KEY_DOWN:
-                view.move_down()
+                view.move('down', 1)
             elif user_input == curses.KEY_LEFT:
-                view.move_left()
+                view.move('left', 1)
             elif user_input == curses.KEY_RIGHT:
-                view.move_right()
+                view.move('right', 1)
             elif user_input == ord("o"):
                 view.shift_view()
             elif user_input == ord("l"):
@@ -117,28 +116,20 @@ def annotate(window, config, filenames):
             elif user_input == ord("h"):
                 view.toggle_help()
             elif user_input in [ord("P"), ord("n")]:
-                if len(search_term) > 0:
-                    view.next_match(search_term)
-                else:
-                    view.next_disagreement()
+                # TODO: previous search term or disagreement
+                pass
             elif user_input in [ord("N"), ord("p")]:
-                if len(search_term) > 0:
-                    view.previous_match(search_term)
-                else:
-                    view.previous_disagreement()
+                # TODO: next search term or disagreement
+                pass
             elif user_input == ord("d") and config.mode == Mode.annotate:
                 if config.annotation_type == AnnType.link:
                     datum.modify_annotation(view.cursor, view.linking_pos)
                     if config.annotation == AnnScope.line:
-                        view.move_down(True)
-                        view.cursor[0] = view.linking_pos[0]
-                        view.cursor[1] = view.linking_pos[1]
-                        view.move_up()
+                        view.move('down', 1, True)
+                        view.put_cursor_beside_link()
                     else:
-                        view.move_right(True)
-                        view.cursor[0] = view.linking_pos[0]
-                        view.cursor[1] = view.linking_pos[1]
-                        view.move_left()
+                        view.move('right', 1, True)
+                        view.put_cursor_beside_link()
                     view.must_show_linking_pos = True
             elif user_input == ord("D") and config.mode == Mode.annotate:
                 if config.annotation_type == AnnType.link:
@@ -156,8 +147,9 @@ def annotate(window, config, filenames):
                     datum.write_out()
                 # TODO: Set to linking line rather than cursor where
                 # appropriate
-                filenames[cfilename][1][0] = view.cursor[0]
-                filenames[cfilename][1][1] = view.cursor[1]
+                # TODO: Save location we were at
+###                filenames[cfilename][1][0] = view.cursor[0]
+###                filenames[cfilename][1][1] = view.cursor[1]
                 if user_input == ord('q'):
                     break
 

@@ -17,13 +17,15 @@ def read_filenames(arg, config):
     for line in file_info:
         parts = line.split()
         raw_file = parts[0]
-        position = [0, 0]
+        d = Document(raw_file)
+        position = Span(config.annotation, d)
         output_file = raw_file + ".annotations"
         annotations = []
         if len(parts) > 1:
             output_file = parts[1]
         if len(parts) > 3:
-            position = [int(parts[2]), int(parts[3])]
+            # TODO: support non-token cases
+            position = Span(config.annotation, d, (int(parts[2]), int(parts[3])))
         if len(parts) > 4:
             # Additional annotations (used when comparing annotations)
             annotations = parts[4:]
@@ -105,7 +107,7 @@ class Document(object):
 ###                pass
 ###        return pos
 
-    def get_moved_pos(self, pos, right=0, down=0, distance=1):
+    def get_moved_pos(self, pos, right=0, down=0, distance=1, skip_blank=True):
         """Calculate a shifted version of  a given a position in this document.
 
         Co-ordinates are (line number, token number), with (0,0) as the top
@@ -113,19 +115,24 @@ class Document(object):
         bottom.
         """
         # TODO: adjust distance to be used as more than just non-negative or not
-        if len(pos) == 0:
-            # This is the whole document, can't move
+        if len(pos) == 0: # This is the whole document, can't move
             return pos
-        elif len(pos) == 1:
-            # This is a line, ignore right
-            # Note, an empty line can be selected
-            npos = pos[0] + down # Shift (possibly out of bounds)
-            npos = min(len(self.tokens) - 1, max(0, npos)) # Bound
-            if distance < 0 and down < 0: npos = 0
-            if distance < 0 and down > 0: npos = len(self.tokens) - 1
+        elif len(pos) == 1: # This is a line, ignore right
+            # Shift (possibly out of bounds)
+            npos = pos[0]
+            if distance < 0:
+                if down < 0: npos = 0
+                elif down > 0: npos = len(self.tokens) - 1
+                down *= -1 # Needed for blank line skipping
+            else: npos += down
+            # Move in bounds
+            npos = min(len(self.tokens) - 1, max(0, npos))
+            # Move further if we are skipping blank lines
+            if skip_blank:
+                while len(self.tokens[npos]) == 0:
+                    npos += down
             return (npos,)
-        elif len(pos) == 2:
-            # Moving a token
+        elif len(pos) == 2: # Moving a token
             # Vertical movement
             nline = pos[0]
             if distance < 0:
@@ -168,8 +175,7 @@ class Document(object):
                         ntok = 0 if delta > 0 else len(self.tokens[nline]) - 1
                     shift -= delta
             return (nline, ntok)
-        else:
-            # Moving a character
+        else: # Moving a character
             # Vertical movement
             nline = pos[0]
             if distance < 0:
@@ -239,6 +245,14 @@ class Document(object):
         else:
             return self.get_moved_pos(pos, 1, 0)
 
+    def get_previous_pos(self, pos):
+        if len(pos) == 0:
+            return pos
+        elif len(pos) == 1:
+            return self.get_moved_pos(pos, 0, -1)
+        else:
+            return self.get_moved_pos(pos, -1, 0)
+
 class Span(object):
     """A continuous span of text.
     
@@ -248,6 +262,7 @@ class Span(object):
         self.start = None
         self.end = None
         self.doc = doc
+        self.scope = scope
 
         # Most of the time a span will be provided to start from.
         if span is not None:
@@ -287,7 +302,7 @@ class Span(object):
             elif scope == AnnScope.token:
                 self.start = (first[0], first[1])
             elif scope == AnnScope.line:
-                self.start = (first[0])
+                self.start = (first[0],)
             elif scope == AnnScope.document:
                 self.start = ()
             else:
@@ -318,16 +333,26 @@ class Span(object):
     def __str__(self):
         return str((self.start, self.end))
 
-
-
-    # Modification functions, each returns the position that was modified
-    def edit(self, doc, direction=None, change=None, distance=0):
+    def edited(self, direction=None, change=None, distance=0):
         """Change this span, either moving both ends or only one.
 
-        direction is left, right, up, or down
+        direction is left, right, up, down, next or previous
         change is move, expand, or contract
         distance is an integer, with negative numbers meaning max
         """
+        logging.info("{} {} {} {}".format(self, direction, change, distance))
+        new_start = self.start
+        new_end = self.end
+
+        if direction == 'next':
+            new_start = self.doc.get_next_pos(self.start)
+            new_end = self.doc.get_next_pos(self.end)
+            return Span(self.scope, self.doc, (new_start, new_end))
+        elif direction == 'previous':
+            new_start = self.doc.get_previous_pos(self.start)
+            new_end = self.doc.get_previous_pos(self.end)
+            return Span(self.scope, self.doc, (new_start, new_end))
+
         right_val = 0
         down_val = 0
         if direction == 'left':
@@ -343,12 +368,13 @@ class Span(object):
             down_val *= -1
 
         if change == "move":
-            nstart = doc.get_moved_pos(self.start, right_val, down_val, distance)
-            nend = doc.get_moved_pos(self.end, right_val, down_val, distance)
+            nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
+            nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
+            logging.info("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
             # Only move if it will change both (otherwise it is a shift).
             if nstart != self.start and nend != self.end:
-                self.start = nstart
-                self.end = nend
+                new_start = nstart
+                new_end = nend
         else:
             move_start = (
                 change == "extend" and (
@@ -358,16 +384,18 @@ class Span(object):
                     direction == "right" or direction == "down"))
 
             if move_start:
-                nstart = doc.get_moved_pos(self.start, right_val, down_val, distance)
+                nstart = self.doc.get_moved_pos(self.start, right_val, down_val, distance)
                 # Check that it doesn't make an inconsistnet span
                 if nstart != self.end:
-                    self.start = nstart
+                    new_start = nstart
             else:
-                nend = doc.get_moved_pos(self.end, right_val, down_val, distance)
+                nend = self.doc.get_moved_pos(self.end, right_val, down_val, distance)
                 # Check that it doesn't make an inconsistnet span
                 if nend != self.start:
-                    self.end = nend
+                    new_end = nend
 
+        return Span(self.scope, self.doc, (new_start, new_end))
+    
     # How to do coreference resolution annotation:
     # - Normal mode is selecting a position using the edit function
     # - Switch to link mode and then toggle between mentions including this one (to indicate no prior link)
@@ -451,7 +479,7 @@ def get_labels(text, config):
 
     return labels
 
-def read_annotation_file2(config, filename, doc):
+def read_annotation_file(config, filename, doc):
     items = []
 
     if len(glob.glob(filename +".alt")) != 0:
@@ -468,481 +496,109 @@ def read_annotation_file2(config, filename, doc):
 
     return items
 
-def get_num(text):
-    mod_text = []
-    for char in text:
-        if char not in '(),':
-            mod_text.append(char)
-    return int(''.join(mod_text))
-
-def read_annotation_file(config, filename):
-    marked = {}
-
-    # Read standoff annotations if they exist. Note:
-    #  - Whitespace variations are ignored.
-    #  - Repeated labels / links are ignored.
-    if len(glob.glob(filename)) != 0:
-        for line in open(filename):
-            fields = line.strip().split()
-            if config.annotation == AnnScope.token:
-                # All examples refer to word 2 on line 4
-                source = (get_num(fields[0]), get_num(fields[1]))
-                if config.annotation_type == AnnType.categorical:
-                    # Format example:
-                    # (4, 2) - buy sell
-                    # means (4, 2) is labeled 'buy' and 'sell'
-                    labels = set(fields[3:])
-                    marked[source] = labels
-                elif config.annotation_type == AnnType.link:
-                    # Format example:
-                    # (4, 2) - (4, 1) (4, 0)
-                    # means (4, 2) is linked to the two words before it
-                    targets = set()
-                    for i in range(3, len(fields), 2):
-                        line = get_num(fields[i])
-                        token = get_num(fields[i + 1])
-                        targets.add((line, token))
-                    marked[source] = targets
-                elif config.annotation_type == AnnType.text:
-                    # Format example:
-                    # (4, 2) - blah blah blah
-                    # means (4, 2) is labeled "blah blah blah"
-                    marked[source] = ' '.join(fields[3:])
-            elif config.annotation == AnnScope.line:
-                source = int(fields[0])
-                if config.annotation_type == AnnType.categorical:
-                    # Format example:
-                    # 3 - buy sell
-                    # means line 3 is labeled 'buy' and 'sell'
-                    marked[source] = set(fields[2:])
-                elif config.annotation_type == AnnType.link:
-                    # Format example:
-                    # 3 - 4 1
-                    # means line 3 is linked to lines 1 and 4
-                    targets = {int(v) for v in fields[2:]}
-                    marked[source] = targets
-                elif config.annotation_type == AnnType.text:
-                    # Format example:
-                    # 3 - blah blah
-                    # means line 3 is labeled "blah blah"
-                    marked[source] = ' '.join(fields[2:])
-    return marked
-
-def compare_nums(num0, num1):
-    if num0 < num1:
-        return -1
-    elif num0 == num1:
-        return 0
-    else:
-        return 1
-
-def compare_pos(config, pos0, pos1):
-    if config.annotation == AnnScope.line:
-        return compare_nums(pos0, pos1)
-    else:
-        comparison = compare_nums(pos0[0], pos1[0])
-        if comparison == 0:
-            return compare_nums(pos0[1], pos1[1])
-        else:
-            return comparison
-
-def prepare_for_return(config, pos):
-    if config.annotation != AnnScope.line:
-        return pos
-    elif pos == -1:
-        return [-1, -1]
-    else:
-        return [pos, 0]
-
 class Datum(object):
     """Storage for a single file's data and annotations.
 
     Note, the structure of storage depends on the annotation type."""
 
-    def __init__(self, filename, config, output_file, annotation_files):
-        # Common
+    def __init__(self, filename, config, output_file, other_annotation_files):
         self.filename = filename
-        self.annotation_files = annotation_files
         self.config = config
         self.output_file = output_file
-
-        # New
         self.doc = Document(filename)
-        self.annotations = read_annotation_file2(config, self.output_file, self.doc)
-        self.current_markings = None
+        self.annotations = read_annotation_file(config, self.output_file, self.doc)
 
-        # Old
-        self.tokens = []
-        self.lines = []
-        for line in open(filename):
-            self.tokens.append([])
-            self.lines.append(line.strip())
-            for token in line.split():
-                self.tokens[-1].append(token)
+        # TODO: read other annotations
+        self.other_annotation_files = other_annotation_files
 
-        self.marked = read_annotation_file(config, self.output_file)
-        self.in_link = {}
-        if self.config.annotation_type == AnnType.link:
-            for pos in self.marked:
-                for opos in self.marked[pos]:
-                    if opos not in self.in_link:
-                        self.in_link[opos] = 0
-                    self.in_link[opos] += 1
-
-        self.marked_compare = {}
-        self.markings = []
-        for filename in self.annotation_files:
-            other_marked = read_annotation_file(config, filename, self.doc)
-            self.markings.append(other_marked)
-            for key in other_marked:
-                for label in other_marked[key]:
-                    current = self.marked_compare.setdefault(key, {})
-                    current[label] = current.get(label, 0) + 1
-
-        self.disagree = set()
-        if len(self.annotation_files) > 1:
-            for key in self.marked:
-                for label in self.marked[key]:
-                    if key not in self.marked_compare:
-                        self.disagree.add(key)
-                    elif label not in self.marked_compare[key]:
-                        self.disagree.add(key)
-            for key in self.marked_compare:
-                for label in self.marked_compare[key]:
-                    if key not in self.marked or label not in self.marked[key]:
-                        self.disagree.add(key)
-                    if self.marked_compare[key][label] != len(self.annotation_files):
-                        self.disagree.add(key)
+    def _set_color(self, color_dict, position, color):
+        pass
 
     def get_all_markings(self, cursor, linking_pos):
-        ans2 = self.get_all_markings2(cursor, linking_pos)
+        # TODO: Handle color given use of spans now instead of positions
+        # TODO: Convert to character level
+        # TODO: Convert to use info as spans
         ans = {}
-        for line_no in range(len(self.tokens)):
-            for token_no in range(len(self.tokens[line_no])):
-                pos = (line_no, token_no)
-                ans[pos] = self.get_marked_token(pos, cursor, linking_pos)
 
-        for key in ans:
-            if ans[key][1] != 4:
-                logging.info("Old: {} {}".format(key, ans[key]))
-        for key in ans2:
-            if ans2[key][1] != 4:
-                logging.info("New: {} {}".format(key, ans2[key]))
-###        assert ans == ans2
+        # Set text and default colour
+        for line_no in range(len(self.doc.tokens)):
+            for token_no in range(len(self.doc.tokens[line_no])):
+                pos = (line_no, token_no)
+                token = self.doc.tokens[line_no][token_no]
+                color = DEFAULT_COLOR
+                if pos == cursor:
+                    color = CURSOR_COLOR
+                    if pos == linking_pos:
+                        color = LINK_CURSOR_COLOR
+                elif pos == linking_pos:
+                    color = LINK_COLOR
+                text = None
+                ans[pos] = (token, color, text)
+
+        # Now add base colours
+        for item in self.annotations:
+            # Get the standard color for this item based on its label
+            base_color = None
+            if self.config.annotation_type == AnnType.categorical:
+                # For categorical use the configuration set
+                for key in item.labels:
+                    if key in self.config.keys:
+                        modifier = self.config.keys[key]
+                        if base_color is not None:
+                            base_color = OVERLAP_COLOR
+                        else:
+                            base_color = modifier.color
+            elif self.config.annotation_type == AnnType.link:
+                # For links potentially indicate it is linked
+                if self.config.args.show_linked:
+                    base_color = YELLOW_COLOR
+            
+            has_cursor = False
+            has_link = False
+            for span in item.spans:
+                pos = span.start
+                while pos != span.end:
+                    if pos == cursor:
+                        has_cursor = True
+                    if pos == linking_pos:
+                        has_link = True
+                    pos = self.doc.get_next_pos(pos)
+
+            for span in item.spans:
+                pos = span.start
+                while pos != span.end:
+                    cur_ans = ans[pos]
+                    this_color = cur_ans[1]
+                    if this_color == DEFAULT_COLOR:
+                        this_color = base_color
+                    elif self.config.annotation_type == AnnType.categorical:
+                        if this_color != CURSOR_COLOR:
+                            this_color = OVERLAP_COLOR
+
+                    if len(item.spans) > 1:
+                        if pos == linking_pos:
+                            this_color = LINK_COLOR
+                            if pos == cursor:
+                                this_color = LINK_CURSOR_COLOR
+                        elif has_link:
+                            this_color = REF_COLOR
+                            if pos == cursor:
+                                this_color = REF_CURSOR_COLOR
+
+                    if this_color is not None:
+                        ans[pos] = (cur_ans[0], this_color, cur_ans[2])
+
+                    pos = self.doc.get_next_pos(pos)
+
+        # TODO: Now do disagreement colours
+
         return ans
 
-    def get_all_markings2(self, cursor, linking_pos):
-        # TODO: Convert to character level
-        if self.current_markings is None or True:
-            ans = {}
-
-            # Set text and default colour
-            for line_no in range(len(self.tokens)):
-                for token_no in range(len(self.tokens[line_no])):
-                    pos = (line_no, token_no)
-                    token = self.tokens[line_no][token_no]
-                    color = DEFAULT_COLOR
-                    if pos == cursor:
-                        color = CURSOR_COLOR
-                        if pos == linking_pos:
-                            color = LINK_CURSOR_COLOR
-                    elif pos == linking_pos:
-                        color = LINK_COLOR
-                    text = None
-                    ans[pos] = (token, color, text)
-
-            # Now add base colours
-            for item in self.annotations:
-                # Get the standard color for this item based on its label
-                base_color = None
-                if self.config.annotation_type == AnnType.categorical:
-                    # For categorical use the configuration set
-                    for key in item.labels:
-                        if key in self.config.keys:
-                            modifier = self.config.keys[key]
-                            if base_color is not None:
-                                base_color = OVERLAP_COLOR
-                            else:
-                                base_color = modifier.color
-                elif self.config.annotation_type == AnnType.link:
-                    # For links potentially indicate it is linked
-                    if self.config.args.show_linked:
-                        base_color = YELLOW_COLOR
-                
-                has_cursor = False
-                has_link = False
-                for span in item.spans:
-                    pos = span.start
-                    while pos != span.end:
-                        if pos == cursor:
-                            has_cursor = True
-                        if pos == linking_pos:
-                            has_link = True
-                        pos = self.doc.get_next_pos(pos)
-
-                for span in item.spans:
-                    if has_link or has_cursor:
-                        logging.info("{} {} {}".format(span, has_link, has_cursor))
-                    pos = span.start
-                    while pos != span.end:
-                        cur_ans = ans[pos]
-                        this_color = cur_ans[1]
-                        if this_color == DEFAULT_COLOR:
-                            this_color = base_color
-                        elif self.config.annotation_type == AnnType.categorical:
-                            if this_color != CURSOR_COLOR:
-                                this_color = OVERLAP_COLOR
-
-                        if len(item.spans) > 1:
-                            if pos == linking_pos:
-                                this_color = LINK_COLOR
-                                if pos == cursor:
-                                    this_color = LINK_CURSOR_COLOR
-                            elif has_link:
-                                this_color = REF_COLOR
-                                if pos == cursor:
-                                    this_color = REF_CURSOR_COLOR
-
-                        if this_color is not None:
-                            ans[pos] = (cur_ans[0], this_color, cur_ans[2])
-
-                        pos = self.doc.get_next_pos(pos)
-
-            # TODO: Now do disagreement colours
-
-            self.current_markings = ans
-        return self.current_markings
-
-    def get_marked_token(self, pos, cursor, linking_pos):
-        pos = tuple(pos)
-        linking_pos = tuple(linking_pos)
-
-        token = self.tokens[pos[0]][pos[1]]
-        color = DEFAULT_COLOR
-        text = None
-
-        if self.config.annotation == AnnScope.line:
-            pos = pos[0]
-            linking_pos = linking_pos[0]
-            cursor = cursor[0]
-            # For categorical data, set the text
-            if self.config.annotation_type == AnnType.categorical:
-                text = ' '.join(self.marked.get(cursor, []))
-
-        # If showing linked, set the default colour
-        if self.config.args.show_linked:
-            if pos in self.marked:
-                if len(self.marked[pos]) > 0:
-                    color = YELLOW_COLOR
-            elif self.in_link.get(pos, 0) > 0:
-                color = YELLOW_COLOR
-
-        if pos == cursor:
-            color = CURSOR_COLOR
-            if pos in self.marked.get(linking_pos, []):
-                color = REF_CURSOR_COLOR
-            elif pos == linking_pos:
-                color = LINK_CURSOR_COLOR
-            else:
-                count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
-                if count == len(self.annotation_files):
-                    color = REF_CURSOR_COLOR
-                elif count > 0:
-                    color = COMPARE_REF_CURSOR_COLORS[min(count, 2) - 1]
-
-            if self.config.annotation_type == AnnType.text:
-                text = self.marked.get(pos)
-        elif pos == linking_pos:
-            color = LINK_COLOR
-            if linking_pos in self.marked.get(pos, []):
-                color = REF_COLOR
-        else:
-            if pos in self.disagree:
-                if compare_pos(self.config, pos, cursor) > 0:
-                    if compare_pos(self.config, pos, linking_pos) > 0:
-                        color = COMPARE_DISAGREE_COLOR
-
-            # Changed to give different colours, rather than count
-            count = self.marked_compare.get(linking_pos, {}).get(pos, -1)
-            if 0 < count < len(self.annotation_files):
-                # Colour based on counts
-                color = COMPARE_REF_COLORS[count - 1]
-
-                # Colour based on which annotation has it
-                if self.config.args.alternate_comparisons:
-                    if len(self.markings) == 2:
-                        if pos in self.markings[1].get(linking_pos, {}):
-                            color = COMPARE_REF_COLORS[1]
-
-###            if 0 < count < 1+len(self.annotation_files):
-###                if pos in self.marked.get(linking_pos, []):
-###                    color = COMPARE_REF_COLORS[1]
-###                else:
-###                    color = COMPARE_REF_COLORS[0]
-
-            if pos in self.marked or linking_pos in self.marked:
-                if self.config.annotation_type == AnnType.categorical:
-                   for key in self.marked.get(pos, []):
-                        modifier = self.config.keys[key]
-                        if color != DEFAULT_COLOR:
-                            color = OVERLAP_COLOR
-                        else:
-                            color = modifier.color
-                elif self.config.annotation_type == AnnType.link:
-                    if pos in self.marked.get(linking_pos, []):
-                        color = REF_COLOR
-
-        return (token, color, text)
-
-    def convert_to_key(self, pos):
-        if self.config.annotation == AnnScope.line:
-            return pos[0]
-        else:
-            return (pos[0], pos[1])
-
-    def get_closest_disagreement(self, pos, options, before, check_disagree):
-        closest = None
-        for option in options:
-            # Only consider cases where there was a disagreement
-            if check_disagree:
-                if option not in self.disagree:
-                    continue
-            elif options[option] == 1 + len(self.annotation_files):
-                continue
-
-            comparison = compare_pos(self.config, pos, option)
-            if before and comparison <= 0:
-                continue
-            elif (not before) and comparison >= 0:
-                continue
-
-            if closest is None:
-                closest = option
-            else:
-                comparison = compare_pos(self.config, closest, option)
-                if before and comparison <= 0:
-                    closest = option
-                elif (not before) and comparison >= 0:
-                    closest = option
-        return closest
-
-    def next_match(self, pos, limit, text, reverse):
-        npos = pos[:]
-        delta = -1 if reverse else 1
-        found = False
-        npos[0] += delta
-        while 0 <= npos[0] <= limit[0]:
-            if text in self.lines[npos[0]]:
-                found = True
-                break
-            npos[0] += delta
-
-        if found:
-            return npos
-        else:
-            return pos
-
-    def next_match2(self, span, text, reverse=False):
+    def next_match(self, span, text, reverse=False):
         return self.doc.next_match(span, text, reverse)
 
-    # TODO:
-    def next_disagreement(self, pos, linking_pos, reverse):
-        if self.config.annotation == AnnScope.line:
-            pos = pos[0]
-            linking_pos = linking_pos[0]
-
-        # First, move the pos
-        marked = self.marked_compare
-        if self.config.annotation_type == AnnType.link:
-            marked = marked.get(linking_pos, {})
-        closest = self.get_closest_disagreement(pos, marked, reverse, False)
-        if closest is not None:
-            return (prepare_for_return(self.config, closest),
-                    prepare_for_return(self.config, linking_pos))
-
-        # If that fails, and we are linking, move the linking_pos, then the pos
-        if self.config.annotation_type == AnnType.link:
-            marked = self.marked_compare
-            closest_link = self.get_closest_disagreement(linking_pos, marked,
-                    reverse, True)
-            if closest_link is not None:
-                comparison = (-1, -1)
-                if reverse:
-                    comparison = (sys.maxsize, sys.maxsize)
-                if self.config.annotation == AnnScope.line:
-                    comparison = comparison[0]
-
-                marked = marked[closest_link]
-                closest_pos = self.get_closest_disagreement(comparison,
-                        marked, reverse, False)
-                return (prepare_for_return(self.config, closest_pos),
-                        prepare_for_return(self.config, closest_link))
-
-        # If there are no disagreements, don't move at all
-        return (prepare_for_return(self.config, pos),
-                prepare_for_return(self.config, linking_pos))
-
-    def add_to_in_link(self, pos):
-        if self.config.annotation_type == AnnType.link:
-            if pos not in self.in_link:
-                self.in_link[pos] = 0
-            self.in_link[pos] += 1
-
-    def remove_from_in_link(self, pos):
-        if self.config.annotation_type == AnnType.link:
-            self.in_link[pos] -= 1
-
-    def modify_annotation(self, pos, linking_pos, symbol=None):
-        # Wrap new
-        wrap_pos = tuple(pos)
-        wrap_link = tuple(linking_pos)
-        if self.config.annotation == AnnScope.line:
-            wrap_pos = tuple([pos[0]])
-            wrap_link = tuple([linking_pos[0]])
-        spans = [Span(self.config.annotation, self.doc, wrap_pos)]
-        if self.config.annotation_type == AnnType.link:
-            spans.append(Span(self.config.annotation, self.doc, wrap_link))
-        self.modify_annotation2(spans, symbol)
-
-        # Do not allow links from an item to itself
-        if pos == linking_pos and (not self.config.args.allow_self_links):
-            return
-
-        pos_key = self.convert_to_key(pos)
-        item = symbol
-        if self.config.annotation_type == AnnType.link:
-            item = pos_key
-            pos_key = self.convert_to_key(linking_pos)
-
-        if pos_key not in self.marked:
-            self.marked[pos_key] = {item}
-            self.add_to_in_link(item)
-        elif item not in self.marked[pos_key]:
-            self.marked[pos_key].add(item)
-            self.add_to_in_link(item)
-        elif len(self.marked[pos_key]) == 1:
-            # Given the first two conditions, we know there is a single
-            # mark and it is this symbol.
-            self.marked.pop(pos_key)
-            self.remove_from_in_link(item)
-        else:
-            self.marked[pos_key].remove(item)
-            self.remove_from_in_link(item)
-
-    def get_item_with_spans(self, spans):
-        for item in self.annotations:
-            matched = True
-            for span in spans:
-                if span not in item.spans:
-                    matched = False
-                    break
-            if matched:
-                return item
-        return None
-
-    def modify_annotation2(self, spans, label=None):
+    def modify_annotation(self, spans, label=None):
         to_edit = self.get_item_with_spans(spans)
-        self.current_markings = None
         if to_edit is None:
             # No item with these spans exists, create it
             nspans = [Span(self.config.annotation, self.doc, s) for s in spans]
@@ -960,61 +616,12 @@ class Datum(object):
             else:
                 to_edit.labels.add(label)
 
-    def remove_annotation(self, pos, ref):
-        # Wrap new
-        wrap_pos = tuple(pos)
-        wrap_link = tuple(ref)
-        if self.config.annotation == AnnScope.line:
-            wrap_pos = tuple([pos[0]])
-            wrap_link = tuple([ref[0]])
-        spans = [Span(self.config.annotation, self.doc, wrap_pos)]
-        if self.config.annotation_type == AnnType.link:
-            spans.appaned(Span(self.config.annotation, self.doc, wrap_link))
-        self.remove_annotation2(spans)
-
-        pos_key = self.convert_to_key(pos)
-        if self.config.annotation_type == AnnType.link:
-            pos_key = self.convert_to_key(ref)
-        if pos_key in self.marked:
-            for item in self.marked[pos_key]:
-                self.remove_from_in_link(item)
-            self.marked.pop(pos_key)
-
-    def remove_annotation2(self, spans):
+    def remove_annotation(self, spans):
         to_remove = self.get_item_with_spans(spans)
         if to_remove is not None:
             self.annotations.remove(to_remove)
-            self.current_markings = None
-
-    def check_equal(self, pos0, pos1):
-        if self.config.annotation == AnnScope.line:
-            return pos0[0] == pos1[0]
-        elif self.config.annotation == AnnScope.token:
-            return pos0[0] == pos1[0] and pos0[1] == pos1[1]
-        else:
-            return pos0 == pos1
 
     def write_out(self, filename=None):
-        out_filename = self.output_file
-        if filename is not None:
-            out_filename = filename
-
-        self.write_out2(out_filename +".alt")
-
-        out = open(out_filename, 'w')
-        for key in self.marked:
-            source = str(key)
-            info = self.marked[key]
-            if self.config.annotation_type == AnnType.categorical:
-                info = " ".join([str(v) for v in info])
-            elif self.config.annotation_type == AnnType.link:
-                info = " ".join([str(v) for v in info])
-            elif self.config.annotation_type == AnnType.text:
-                pass
-            print("{} - {}".format(source, info), file=out)
-        out.close()
-
-    def write_out2(self, filename=None):
         out_filename = self.output_file
         if filename is not None:
             out_filename = filename
