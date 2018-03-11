@@ -127,17 +127,18 @@ class View(object):
                 for char_no, char in enumerate(token):
                     # Allow multiple layers of color, with the more specific
                     # domainating
-                    color = DEFAULT_COLOR
+                    color = curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD
                     if not trial:
+                        name = DEFAULT_COLOR
                         if () in markings:
-                            color = markings[()]
+                            name = markings[()]
                         if (line_no,) in markings:
-                            color = markings[(line_no,)]
+                            name = markings[(line_no,)]
                         if (line_no, token_no) in markings:
-                            color = markings[line_no, token_no]
+                            name = markings[line_no, token_no]
                         if (line_no, token_no, char_no) in markings:
-                            color = markings[line_no, token_no, char_no]
-                        color = curses.color_pair(color) + curses.A_BOLD
+                            name = markings[line_no, token_no, char_no]
+                        color = curses.color_pair(name) + curses.A_BOLD
 
                     if self.config.annotation == AnnScope.character:
                         pos = (line_no, token_no, char_no)

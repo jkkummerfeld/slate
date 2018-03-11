@@ -524,6 +524,7 @@ class Datum(object):
 
         logging.info("Markings with {} {}".format(repr(cursor), repr(linking_pos)))
         for item in self.annotations:
+            logging.info("Get colour for item {}".format(item))
             # Get the standard color for this item based on its label
             base_color = None
             if self.config.annotation_type == AnnType.categorical:
@@ -539,6 +540,7 @@ class Datum(object):
                 # For links potentially indicate it is linked
                 if self.config.args.show_linked:
                     base_color = YELLOW_COLOR
+            logging.info("base is {}".format(base_color))
             
             has_cursor = False
             has_link = False
@@ -547,11 +549,11 @@ class Datum(object):
                     has_cursor = True
                 if span == linking_pos:
                     has_link = True
-                pos = self.doc.get_next_pos(pos)
 
             for span in item.spans:
                 pos = span.start
-                while pos != span.end:
+                done_end = False
+                while not done_end:
                     this_color = DEFAULT_COLOR
                     if pos in ans:
                         this_color = ans[pos]
@@ -574,7 +576,10 @@ class Datum(object):
                     if this_color is not None:
                         ans[pos] = this_color
 
-                    pos = self.doc.get_next_pos(pos)
+                    if pos == span.end:
+                        done_end = True
+                    else:
+                        pos = self.doc.get_next_pos(pos)
 
         # TODO: Now do disagreement colours
 
@@ -582,6 +587,16 @@ class Datum(object):
 
     def next_match(self, span, text, reverse=False):
         return self.doc.next_match(span, text, reverse)
+
+    def get_item_with_spans(self, spans):
+        for item in self.annotations:
+            match = 0
+            for span in item.spans:
+                if span in spans:
+                    match += 1
+            if len(item.spans) == len(spans) == match:
+                return item
+        return None
 
     def modify_annotation(self, spans, label=None):
         to_edit = self.get_item_with_spans(spans)

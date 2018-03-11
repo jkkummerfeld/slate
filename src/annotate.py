@@ -133,14 +133,13 @@ def annotate(window, config, filenames):
                     view.must_show_linking_pos = True
             elif user_input == ord("D") and config.mode == Mode.annotate:
                 if config.annotation_type == AnnType.link:
-                    datum.modify_annotation(view.cursor, view.linking_pos)
+                    datum.modify_annotation([view.cursor, view.linking_pos])
             elif user_input == ord("u") and config.mode == Mode.annotate:
                 datum.remove_annotation(view.cursor, view.linking_pos)
             elif user_input in [ord('s'), ord('b'), ord('r')]:
                 if config.mode == Mode.annotate:
                     if config.annotation_type != AnnType.link:
-                        datum.modify_annotation(view.cursor, view.linking_pos,
-                                chr(user_input))
+                        datum.modify_annotation([view.cursor], chr(user_input))
             elif user_input in [ord(c) for c in ",.q"]:
                 # If we can get another file, do
                 if config.mode == Mode.annotate:
