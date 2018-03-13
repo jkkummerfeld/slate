@@ -6,6 +6,7 @@ import re
 import sys
 
 from config import *
+from data import Span, span_compare_ge, span_compare_le
 
 class View(object):
     def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, show_help):
@@ -73,12 +74,10 @@ class View(object):
         # For labels, colour them always, and add beginning / end
         # For freeform text, include it at the bottom
 
-        # Tracks if the cursor is vsible
-        seen_cursor = (self.config.annotation == AnnScope.document)
-        seen_linking_pos = (self.config.annotation == AnnScope.document)
-
         # Row and column indicate the position on the screen, while line and
         # token indicate the position in the text.
+        first_span = None
+        last_span = None
         row = -1
         for line_no, line in enumerate(self.datum.doc.tokens):
             # If this line is above the top of what we are shwoing, skip it
@@ -86,17 +85,8 @@ class View(object):
                 continue
             if row >= height:
                 break
-
-            if self.config.annotation == AnnScope.line:
-                # TODO: Need to make sure the entire line fits
-                pos = (line_no,)
-                cursor = self.cursor.start
-                if pos == cursor:
-                    seen_cursor = True
-                if self.linking_pos is not None:
-                    linking_pos = self.linking_pos.start
-                    if pos == linking_pos:
-                        seen_linking_pos = True
+            if first_span is None:
+                first_span = Span(AnnScope.character, self.datum.doc, (line_no, 0, 0))
 
             # Set
             row += 1
@@ -113,16 +103,7 @@ class View(object):
                 # If this takes us off the screen, stop
                 if row >= height:
                     break
-
-                if self.config.annotation == AnnScope.token:
-                    pos = (line_no, token_no)
-                    cursor = self.cursor.start
-                    if pos == cursor:
-                        seen_cursor = True
-                    if self.linking_pos is not None:
-                        linking_pos = self.linking_pos.start
-                        if pos == linking_pos:
-                            seen_linking_pos = True
+                last_span = Span(AnnScope.character, self.datum.doc, (line_no, token_no, len(token) - 1))
 
                 for char_no, char in enumerate(token):
                     # Allow multiple layers of color, with the more specific
@@ -140,16 +121,6 @@ class View(object):
                             name = markings[line_no, token_no, char_no]
                         color = curses.color_pair(name) + curses.A_BOLD
 
-                    if self.config.annotation == AnnScope.character:
-                        pos = (line_no, token_no, char_no)
-                        cursor = self.cursor.start
-                        if pos == cursor:
-                            seen_cursor = True
-                        if self.linking_pos is not None:
-                            linking_pos = self.linking_pos.start
-                            if pos == linking_pos:
-                                seen_linking_pos = True
-
                     if space_before > 0:
                         if not trial:
                             self.window.addstr(row, column, ' ', color)
@@ -158,6 +129,23 @@ class View(object):
                     if not trial:
                         self.window.addstr(row, column, char, color)
                     column += 1
+
+        # Tracks if the cursor is vsible
+        seen_cursor = False
+        seen_linking_pos = False
+        if first_span is not None and last_span is not None:
+            cmp_first = self.cursor.compare(first_span) 
+            cmp_last = self.cursor.compare(last_span) 
+            seen_cursor = cmp_first in span_compare_ge and \
+                    cmp_last in span_compare_le
+            logging.info("Got {} {}".format(cmp_first, cmp_last))
+
+            if self.linking_pos is not None:
+                cmp_first = self.linking_pos.compare(first_span) 
+                cmp_last = self.linking_pos.compare(last_span) 
+                seen_linking_pos = cmp_first in span_compare_ge and \
+                        cmp_last in span_compare_le
+        logging.info("{} in {} {} ? {}".format(self.cursor, first_span, last_span, seen_cursor))
 
         if self.must_show_linking_pos:
             return seen_linking_pos

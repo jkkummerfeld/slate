@@ -75,6 +75,27 @@ class Document(object):
                 cur.append(token)
         assert self.first_char is not None, "Empty document"
 
+    def get_3tuple(self, partial, start):
+        if len(partial) == 3:
+            return partial
+        elif len(partial) == 0:
+            if start: return self.first_char
+            else: return self.last_char
+        else:
+            line = partial[0]
+
+            token = 0
+            if len(partial) == 1 and (not start):
+                token = len(self.tokens[line]) - 1
+            elif len(partial) == 2:
+                token = partial[1]
+
+            char = 0
+            if not start:
+                char = len(self.tokens[line][token]) - 1
+
+            return (line, token, char)
+
     def next_match(self, pos, text, reverse=False):
         return pos
         # TODO:
@@ -256,6 +277,78 @@ class Document(object):
         else:
             return self.get_moved_pos(pos, -1, 0)
 
+class SpanCompare(Enum):
+  smaller = 0
+  smaller_left = 1
+  overlap_end = 2
+  overlap_right = 3
+  cover = 4
+  left_inside = 5
+  equal = 6
+  left_overlap = 7
+  inside = 8
+  inside_right = 9
+  overlap_start = 10
+  right_larger = 11
+  larger = 12
+  one_smaller = 13
+  one_left = 14
+  one_inside = 15
+  one_right = 16
+  one_larger = 17
+  smaller_one = 18
+  smaller_match = 19
+  cover_one = 20
+  equal_one = 21
+  match_larger = 22
+  larger_one = 23
+
+
+value_from_comparisons = {
+#  s0s1 e0e1 s0e1 e0s1 s0e0 s1e1 SpanCompare                |-------|
+  (1, 1, 1, 1, 1, 1): SpanCompare.smaller,          # .--.                 
+  (1, 1, 1, 0, 1, 1): SpanCompare.smaller_left,     # .-----|              
+  (1, 1, 1, -1, 1, 1): SpanCompare.overlap_end,     # .---------.          
+  (1, 0, 1, -1, 1, 1): SpanCompare.overlap_right,   # .-------------|      
+  (1, -1, 1, -1, 1, 1): SpanCompare.cover,          # .-------------------.
+  (0, 1, 1, -1, 1, 1): SpanCompare.left_inside,     #       |---.          
+  (0, 0, 1, -1, 1, 1): SpanCompare.equal,           #       |-------|      
+  (0, -1, 1, -1, 1, 1): SpanCompare.left_overlap,   #       |-------------.
+  (-1, 1, 1, -1, 1, 1): SpanCompare.inside,         #          .-.         
+  (-1, 0, 1, -1, 1, 1): SpanCompare.inside_right,   #           .---|      
+  (-1, -1, 1, -1, 1, 1): SpanCompare.overlap_start, #           .---------.
+  (-1, -1, 0, -1, 1, 1): SpanCompare.right_larger,  #               |-----.
+  (-1, -1, -1, -1, 1, 1): SpanCompare.larger,       #                  .--.
+  (1, 1, 1, 1, 0, 1): SpanCompare.one_smaller,      # .                    
+  (0, 1, 1, 0, 0, 1): SpanCompare.one_left,         #       |              
+  (-1, 1, 1, -1, 0, 1): SpanCompare.one_inside,     #           .          
+  (-1, 0, 0, -1, 0, 1): SpanCompare.one_right,      #               |      
+  (-1, -1, -1, -1, 0, 1): SpanCompare.one_larger,   #                     .
+  # Now consider cases where the second has width 0
+  #                                                             |          
+  (1, 1, 1, 1, 1, 0): SpanCompare.smaller_one,      #     .--.             
+  (1, 0, 1, 0, 1, 0): SpanCompare.smaller_match,    #     .-----|          
+  (1, -1, 1, -1, 1, 0): SpanCompare.cover_one,      #     .-----------.    
+  (0, 0, 0, 0, 0, 0): SpanCompare.equal_one,        #           |          
+  (0, -1, 0, -1, 1, 0): SpanCompare.match_larger,   #           |-----.    
+  (-1, -1, -1, -1, 1, 0): SpanCompare.larger_one,   #              .--.    
+}
+
+span_compare_ge = [
+    SpanCompare.left_inside, SpanCompare.equal, SpanCompare.left_overlap,
+    SpanCompare.inside, SpanCompare.inside_right, SpanCompare.overlap_start,
+    SpanCompare.right_larger, SpanCompare.larger, SpanCompare.one_left,
+    SpanCompare.one_inside, SpanCompare.one_right, SpanCompare.one_larger,
+    SpanCompare.equal_one, SpanCompare.match_larger, SpanCompare.larger_one,
+]
+span_compare_le = [
+    SpanCompare.smaller, SpanCompare.smaller_left, SpanCompare.overlap_end,
+    SpanCompare.overlap_right, SpanCompare.left_inside, SpanCompare.equal,
+    SpanCompare.inside, SpanCompare.inside_right, SpanCompare.one_smaller,
+    SpanCompare.one_left, SpanCompare.one_inside, SpanCompare.one_right,
+    SpanCompare.smaller_one, SpanCompare.smaller_match, SpanCompare.equal_one,
+]
+
 class Span(object):
     """A continuous span of text.
     
@@ -309,16 +402,48 @@ class Span(object):
                 self.end = span.end
                 self.start = span.start
 
+    def _compare_tuples(self, a, b):
+        # Returns a number that is the kind of delta going from a to b
+        # (positive, negative, or zero)
+        if len(a) == 0 or len(b) == 0:
+            return 0
+        if a[0] == b[0]:
+            if len(a) == 1 or len(b) == 1:
+                return 0
+            if a[1] == b[1]:
+                if len(a) == 2 or len(b) == 2:
+                    return 0
+                if a[2] == b[2]:
+                    return 0
+                elif a[2] < b[2]:
+                    return 1
+                else:
+                    return -1
+            elif a[1] < b[1]:
+                return 1
+            else:
+                return -1
+        elif a[0] < b[0]:
+            return 1
+        else:
+            return -1
+
     def __hash__(self):
         return hash((self.start, self.end))
     def __eq__(self, other):
         if type(self) != type(other):
             return False
-        return self.start == other.start and self.end == other.end
+        elif self._compare_tuples(self.start, other.start) != 0:
+            return False
+        elif self._compare_tuples(self.end, other.end) != 0:
+            return False
+        else:
+            return True
     def __lt__(self, other):
-        if self.start == other.start:
-            return self.end < other.end
-        return self.start < other.start
+        assert type(self) == type(other)
+        if self._compare_tuples(self.start, other.start) == 0:
+            return self._compare_tuples(self.end, other.end) == 1
+        return self._compare_tuples(self.start, other.start) == 1
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -334,6 +459,31 @@ class Span(object):
 
     def __str__(self):
         return str((self.start, self.end))
+
+    def compare(self, other):
+        '''Compares two spans and returns a SpanCompare.'''
+        assert type(self) == type(other)
+
+        s0 = self.doc.get_3tuple(self.start, True)
+        e0 = self.doc.get_3tuple(self.end, False)
+        s1 = other.doc.get_3tuple(other.start, True)
+        e1 = other.doc.get_3tuple(other.end, False)
+
+        s0s1 = self._compare_tuples(s0, s1)
+        s0e1 = self._compare_tuples(s0, e1)
+        e0s1 = self._compare_tuples(e0, s1)
+        e0e1 = self._compare_tuples(e0, e1)
+        s0e0 = self._compare_tuples(s0, e0)
+        s1e1 = self._compare_tuples(s1, e1)
+
+        return value_from_comparisons[s0s1, e0e1, s0e1, e0s1, s0e0, s1e1]
+
+    def to_3tuple(self):
+        if self.scope == AnnScope.character:
+            return self
+        start = self.doc.get_3tuples(start)
+        end = self.doc.get_3tuples(end)
+        return Span(AnnScope.character, self.doc, (start, end))
 
     def edited(self, direction=None, change=None, distance=1, maxjump=False):
         """Change this span, either moving both ends or only one.
