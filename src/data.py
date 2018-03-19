@@ -610,14 +610,14 @@ class Item(object):
         spans = '[' + ', '.join([str(s) for s in self.spans]) +']'
         if len(self.spans) == 1:
             spans = str(self.spans[0])
-            if self.doc.get_next_pos(self.spans[0].start) == self.spans[0].end:
+            if self.spans[0].start == self.spans[0].end:
                 spans = str(self.spans[0].start)
                 if len(self.spans[0].start) == 1:
                     spans = str(self.spans[0].start[0])
         elif len(self.spans) > 1:
             all_single = True
             for s in self.spans:
-                if self.doc.get_next_pos(s.start) != s.end:
+                if s.start != s.end:
                     all_single = False
             if all_single:
                 spans = str([s.start for s in self.spans])
@@ -701,13 +701,26 @@ class Datum(object):
         # TODO: Convert to character level
         # TODO: Convert to use info as spans
         ans = {}
-        if cursor == linking_pos:
-            ans[cursor.start] = LINK_CURSOR_COLOR
-        else:
-            ans[cursor.start] = CURSOR_COLOR
-            if linking_pos is not None:
-                ans[linking_pos.start] = LINK_COLOR
 
+        # Set colors for cursor and linking pos
+        pos = cursor.start
+        while True:
+            ans[pos] = CURSOR_COLOR
+            if pos == cursor.end:
+                break
+            pos = self.doc.get_next_pos(pos)
+        if linking_pos is not None:
+            pos = linking_pos.start
+            while True:
+                color = LINK_COLOR
+                if pos in ans:
+                    color = LINK_CURSOR_COLOR
+                ans[pos] = color
+                if pos == linking_pos.end:
+                    break
+                pos = self.doc.get_next_pos(pos)
+
+        # Set item colors
         logging.info("Markings with {} {}".format(repr(cursor), repr(linking_pos)))
         for item in self.annotations:
             logging.info("Get colour for item {}".format(item))
@@ -750,10 +763,11 @@ class Datum(object):
                             this_color = OVERLAP_COLOR
 
                     if len(item.spans) > 1:
-                        if pos == linking_pos.start:
-                            this_color = LINK_COLOR
-                            if pos == cursor.start:
-                                this_color = LINK_CURSOR_COLOR
+                        if this_color == LINK_COLOR or this_color == LINK_CURSOR_COLOR:
+                            pass
+                        elif this_color == CURSOR_COLOR:
+                            # TODO: Make combination cursor and link
+                            pass
                         elif has_link:
                             this_color = REF_COLOR
                             if pos == cursor.start:

@@ -137,6 +137,8 @@ class View(object):
                             name = markings[line_no, token_no, char_no]
                         color = curses.color_pair(name) + curses.A_BOLD
 
+                    # TODO: Switch cursor to just be an underline
+
                     if not trial:
                         self.window.addstr(row, column, char, color)
                     column += 1
