@@ -49,14 +49,15 @@ class View(object):
         if self.linking_pos is None:
             return True
         elif move_link:
-            return self.cursor >= new_pos
+            return self.cursor <= new_pos
         else:
-            return self.linking_pos <= new_pos
+            return self.linking_pos >= new_pos
 
     def move(self, direction, distance, maxjump=False, move_link=False):
         mover = self.cursor
         if move_link:
             mover = self.linking_pos
+            logging.info("Moving linking pos")
         logging.info("Move {} {} {}".format(self.cursor, direction, distance))
         new_pos = mover.edited(direction, 'move', distance, maxjump)
         logging.info("Moving {} to {}".format(self.cursor, new_pos))
@@ -95,7 +96,7 @@ class View(object):
                 # Check if we are going on to the next line and adjust
                 # accordingly.
                 space_before = 1 if column > 0 else 0
-                if column + len(token) + space_before >= width:
+                if column + len(token) + space_before > width:
                     column = 0
                     row += 1
                     space_before = 0
@@ -108,7 +109,22 @@ class View(object):
                 for char_no, char in enumerate(token):
                     # Allow multiple layers of color, with the more specific
                     # domainating
+                    if space_before > 0:
+                        if not trial:
+                            name = DEFAULT_COLOR
+                            if () in markings:
+                                name = markings[()]
+                            if (line_no,) in markings:
+                                name = markings[(line_no,)]
+                            if (line_no, token_no, -1) in markings:
+                                name = markings[line_no, token_no, -1]
+                            color = curses.color_pair(name) + curses.A_BOLD
+                            self.window.addstr(row, column, ' ', color)
+                        column += 1
+                        space_before = 0
+
                     color = curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD
+
                     if not trial:
                         name = DEFAULT_COLOR
                         if () in markings:
@@ -121,11 +137,6 @@ class View(object):
                             name = markings[line_no, token_no, char_no]
                         color = curses.color_pair(name) + curses.A_BOLD
 
-                    if space_before > 0:
-                        if not trial:
-                            self.window.addstr(row, column, ' ', color)
-                        column += 1
-                        space_before = 0
                     if not trial:
                         self.window.addstr(row, column, char, color)
                     column += 1
@@ -134,6 +145,7 @@ class View(object):
         seen_cursor = False
         seen_linking_pos = False
         if first_span is not None and last_span is not None:
+            logging.info("Trying {} vs. {} {}".format(self.cursor, first_span, last_span))
             cmp_first = self.cursor.compare(first_span) 
             cmp_last = self.cursor.compare(last_span) 
             seen_cursor = cmp_first in span_compare_ge and \
@@ -168,8 +180,8 @@ class View(object):
         # Shift the top up if necessary
         if self.config.annotation != AnnScope.document:
             if self.must_show_linking_pos:
-                if self.top > self.linking_pos[0]:
-                    self.top = self.linking_pos[0]
+                if self.top > self.linking_pos.start[0]:
+                    self.top = self.linking_pos.start[0]
             else:
                 if self.top > self.cursor.start[0]:
                     self.top = self.cursor.start[0]

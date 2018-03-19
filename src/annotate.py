@@ -123,19 +123,22 @@ def annotate(window, config, filenames):
                 pass
             elif user_input == ord("d") and config.mode == Mode.annotate:
                 if config.annotation_type == AnnType.link:
-                    datum.modify_annotation(view.cursor, view.linking_pos)
+                    datum.modify_annotation([view.cursor, view.linking_pos])
                     if config.annotation == AnnScope.line:
-                        view.move('down', 1, True)
+                        view.move('down', 1, False, True)
                         view.put_cursor_beside_link()
                     else:
-                        view.move('right', 1, True)
+                        view.move('right', 1, False, True)
                         view.put_cursor_beside_link()
                     view.must_show_linking_pos = True
             elif user_input == ord("D") and config.mode == Mode.annotate:
                 if config.annotation_type == AnnType.link:
                     datum.modify_annotation([view.cursor, view.linking_pos])
             elif user_input == ord("u") and config.mode == Mode.annotate:
-                datum.remove_annotation(view.cursor, view.linking_pos)
+                spans = [view.cursor]
+                if config.annotation_type == AnnType.link:
+                    spans.append(view.linking_pos)
+                datum.remove_annotation(spans)
             elif user_input in [ord('s'), ord('b'), ord('r')]:
                 if config.mode == Mode.annotate:
                     if config.annotation_type != AnnType.link:
@@ -146,9 +149,11 @@ def annotate(window, config, filenames):
                     datum.write_out()
                 # TODO: Set to linking line rather than cursor where
                 # appropriate
-                # TODO: Save location we were at
-###                filenames[cfilename][1][0] = view.cursor[0]
-###                filenames[cfilename][1][1] = view.cursor[1]
+                cur = filenames[cfilename]
+                pos = view.cursor
+                if config.annotation_type == AnnType.link:
+                    pos = view.linking_pos
+                filenames[cfilename] = (cur[0], pos, cur[2], cur[3])
                 if user_input == ord('q'):
                     break
 
@@ -174,7 +179,7 @@ def annotate(window, config, filenames):
         parts = [
             filename,
             output_file,
-            str(start_pos[0]), str(start_pos[1]),
+            str(start_pos),
             ' '.join(annotation_files)
         ]
         print(" ".join(parts), file=out)
@@ -195,6 +200,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(filename=args.log_prefix + '.log', level=logging.DEBUG)
+
+    logging.info("New run!")
 
     ### Process configuration
     mode = Mode.read if args.readonly else Mode.annotate

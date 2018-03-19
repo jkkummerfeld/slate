@@ -16,19 +16,41 @@ def read_filenames(arg, config):
     filenames = []
     for line in file_info:
         parts = line.split()
+        next_part = 0
+
+        # Input data
         raw_file = parts[0]
+        next_part += 1
+
+        # Output file name
+        output_file = raw_file + ".annotations"
+        if len(parts) > next_part:
+            output_file = parts[next_part]
+            next_part += 1
+
+        # Start somewhere other than the top
         d = Document(raw_file)
         position = Span(config.annotation, d)
-        output_file = raw_file + ".annotations"
+        if len(parts) > next_part:
+            position_text = []
+            depth = 0
+            first = True
+            while depth > 0 or first:
+                for char in parts[next_part]:
+                    if char == '(': depth += 1
+                    if char == ')': depth -= 1
+                position_text.append(parts[next_part])
+                first = False
+                next_part += 1
+            position_text = ' '.join(position_text)
+
+            span = eval(position_text)
+            position = Span(config.annotation, d, span)
+
+        # Additional annotations (used when comparing annotations)
         annotations = []
-        if len(parts) > 1:
-            output_file = parts[1]
-        if len(parts) > 3:
-            # TODO: support non-token cases
-            position = Span(config.annotation, d, (int(parts[2]), int(parts[3])))
-        if len(parts) > 4:
-            # Additional annotations (used when comparing annotations)
-            annotations = parts[4:]
+        if len(parts) > next_part:
+            annotations = parts[next_part:]
         filenames.append((raw_file, position, output_file, annotations))
 
     # Check files exist (or do not exist if being created)
@@ -140,19 +162,20 @@ class Document(object):
         if len(pos) == 0: # This is the whole document, can't move
             return pos
         elif len(pos) == 1: # This is a line, ignore right
-            # Shift (possibly out of bounds)
             npos = pos[0]
             if maxjump:
-                if down < 0: npos = 0
-                elif down > 0: npos = len(self.tokens) - 1
-                down *= -1 # Needed for blank line skipping
-            else: npos += down
-            # Move in bounds
-            npos = min(len(self.tokens) - 1, max(0, npos))
-            # Move further if we are skipping blank lines
-            if skip_blank:
-                while len(self.tokens[npos]) == 0:
-                    npos += down
+                if down < 0: npos = self.first_char[0]
+                elif down > 0: npos = self.last_char[0]
+            else:
+                # Shift incrementally so we can optionally only count lines
+                # that have tokens.
+                shift = down
+                delta = 1 if shift > 0 else -1
+                while shift != 0 and self.first_char[0] <= npos + delta <= self.last_char[0]:
+                    npos += delta
+                    if (not skip_blank) or len(self.tokens[npos]) > 0:
+                        shift -= delta
+
             return (npos,)
         elif len(pos) == 2: # Moving a token
             nline = pos[0]
@@ -169,13 +192,13 @@ class Document(object):
                 # that have tokens.
                 shift = down
                 delta = 1 if shift > 0 else -1
-                while shift != 0 and self.first_char[0] <= nline <= self.last_char[0]:
+                while shift != 0 and self.first_char[0] <= nline + delta <= self.last_char[0]:
                     nline += delta
                     if (not skip_blank) or len(self.tokens[nline]) > 0:
                         shift -= delta
-            ntok = min(ntok, len(self.tokens[nline]) - 1)
 
             # Horizontal movement
+            ntok = min(ntok, len(self.tokens[nline]) - 1)
             if maxjump:
                 if right < 0: ntok = 0
                 elif right > 0: ntok = len(self.tokens[nline]) - 1
@@ -191,8 +214,9 @@ class Document(object):
                         ntok += delta
                     else:
                         # Go forward/back to a line with tokens. Note, we know
-                        # there are later/earlier lines, since otherwise we would
-                        # have been at the last_char/first_char position.
+                        # there are later/earlier lines, since otherwise we
+                        # would have been at the last_char/first_char
+                        # position.
                         nline += delta
                         while len(self.tokens[nline]) == 0:
                             nline += delta
@@ -203,8 +227,8 @@ class Document(object):
             # Vertical movement
             nline = pos[0]
             if maxjump:
-                # We always want to be on a character, so go to the first or last
-                # line with one.
+                # We always want to be on a character, so go to the first or
+                # last line with one.
                 if down < 0: nline = self.first_char[0]
                 elif down > 0: nline = self.last_char[0]
             else:
@@ -212,14 +236,14 @@ class Document(object):
                 # have characters.
                 shift = down
                 delta = 1 if shift > 0 else -1
-                while shift != 0 and self.first_char[0] < nline < self.last_char[0]:
+                while shift != 0 and self.first_char[0] <= nline + delta <= self.last_char[0]:
                     nline += delta
-                    if len(self.tokens[nline]) > 0:
+                    if (not skip_blank) or len(self.tokens[nline]) > 0:
                         shift -= delta
 
             # Horizontal movement
-            ntok = pos[1]
-            nchar = pos[2]
+            ntok = min(len(self.tokens[nline]) - 1, pos[1])
+            nchar = min(len(self.tokens[nline][ntok]) - 1, pos[2])
             if maxjump:
                 if right < 0:
                     ntok = 0
@@ -241,7 +265,7 @@ class Document(object):
                             ntok == self.last_char[1] and \
                             nchar == self.last_char[1]:
                         break
-                    if 0 < nchar + delta < len(self.tokens[nline][ntok]) - 1:
+                    if 0 <= nchar + delta < len(self.tokens[nline][ntok]):
                         nchar += delta
                     elif delta < 0 and ntok > 0:
                         ntok -= 1
@@ -251,13 +275,15 @@ class Document(object):
                         nchar = 0
                     else:
                         # Go forward/back to a line with tokens. Note, we know
-                        # there are later/earlier lines, since otherwise we would
-                        # have been at the last_char/first_char position.
-                        nline += delta
-                        while len(self.tokens[nline]) == 0:
+                        # there are later/earlier lines, since otherwise we
+                        # would have been at the last_char/first_char
+                        # position.
+                        if nline + delta <= self.last_char[0]:
                             nline += delta
-                        ntok = 0 if delta > 0 else len(self.tokens[nline]) - 1
-                        nchar = 0 if delta > 0 else len(self.tokens[nline][ntok]) - 1
+                            while len(self.tokens[nline]) == 0:
+                                nline += delta
+                            ntok = 0 if delta > 0 else len(self.tokens[nline]) - 1
+                            nchar = 0 if delta > 0 else len(self.tokens[nline][ntok]) - 1
                     shift -= delta
             return (nline, ntok, nchar)
 
@@ -302,6 +328,8 @@ class SpanCompare(Enum):
   equal_one = 21
   match_larger = 22
   larger_one = 23
+  smaller_one_one = 24
+  larger_one_one = 25
 
 
 value_from_comparisons = {
@@ -332,6 +360,8 @@ value_from_comparisons = {
   (0, 0, 0, 0, 0, 0): SpanCompare.equal_one,        #           |          
   (0, -1, 0, -1, 1, 0): SpanCompare.match_larger,   #           |-----.    
   (-1, -1, -1, -1, 1, 0): SpanCompare.larger_one,   #              .--.    
+  (1, 1, 1, 1, 0, 0): SpanCompare.smaller_one_one,  #     .                
+  (-1, -1, -1, -1, 0, 0): SpanCompare.larger_one_one, #               .    
 }
 
 span_compare_ge = [
@@ -340,6 +370,7 @@ span_compare_ge = [
     SpanCompare.right_larger, SpanCompare.larger, SpanCompare.one_left,
     SpanCompare.one_inside, SpanCompare.one_right, SpanCompare.one_larger,
     SpanCompare.equal_one, SpanCompare.match_larger, SpanCompare.larger_one,
+    SpanCompare.larger_one_one
 ]
 span_compare_le = [
     SpanCompare.smaller, SpanCompare.smaller_left, SpanCompare.overlap_end,
@@ -347,6 +378,7 @@ span_compare_le = [
     SpanCompare.inside, SpanCompare.inside_right, SpanCompare.one_smaller,
     SpanCompare.one_left, SpanCompare.one_inside, SpanCompare.one_right,
     SpanCompare.smaller_one, SpanCompare.smaller_match, SpanCompare.equal_one,
+    SpanCompare.smaller_one_one
 ]
 
 class Span(object):
@@ -481,8 +513,8 @@ class Span(object):
     def to_3tuple(self):
         if self.scope == AnnScope.character:
             return self
-        start = self.doc.get_3tuples(start)
-        end = self.doc.get_3tuples(end)
+        start = self.doc.get_3tuple(start)
+        end = self.doc.get_3tuple(end)
         return Span(AnnScope.character, self.doc, (start, end))
 
     def edited(self, direction=None, change=None, distance=1, maxjump=False):
@@ -505,23 +537,23 @@ class Span(object):
             new_end = self.doc.get_previous_pos(self.end)
             return Span(self.scope, self.doc, (new_start, new_end))
 
-        right_val = 0
-        down_val = 0
+        right = 0
+        down = 0
         if direction == 'left':
-            right_val = -distance
+            right = -distance
         elif direction == 'right':
-            right_val = distance
+            right = distance
         elif direction == 'up':
-            down_val = -distance
+            down = -distance
         elif direction == 'down':
-            down_val = distance
+            down = distance
         if change == 'contract':
-            right_val *= -distance
-            down_val *= -distance
+            right *= -distance
+            down *= -distance
 
         if change == "move":
-            nstart = self.doc.get_moved_pos(self.start, right_val, down_val, maxjump)
-            nend = self.doc.get_moved_pos(self.end, right_val, down_val, maxjump)
+            nstart = self.doc.get_moved_pos(new_start, right, down, maxjump)
+            nend = self.doc.get_moved_pos(new_end, right, down, maxjump)
             logging.info("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
             # Only move if it will change both (otherwise it is a shift).
             if nstart != self.start and nend != self.end:
@@ -536,11 +568,13 @@ class Span(object):
                     direction == "right" or direction == "down"))
 
             if move_start:
-                new_start = self.doc.get_moved_pos(self.start, right_val, down_val, maxjump)
+                new_start = self.doc.get_moved_pos(new_start, right, down, maxjump)
             else:
-                new_end = self.doc.get_moved_pos(self.end, right_val, down_val, maxjump)
+                new_end = self.doc.get_moved_pos(new_end, right, down, maxjump)
 
-        return Span(self.scope, self.doc, (new_start, new_end))
+        ans = Span(self.scope, self.doc, (new_start, new_end))
+        logging.info("Returning {}".format(ans))
+        return ans
     
     # How to do coreference resolution annotation:
     # - Normal mode is selecting a position using the edit function
@@ -573,7 +607,7 @@ class Item(object):
             labels.append(str(label))
         labels = ' '.join(labels)
 
-        spans = str([str(s) for s in self.spans])
+        spans = '[' + ', '.join([str(s) for s in self.spans]) +']'
         if len(self.spans) == 1:
             spans = str(self.spans[0])
             if self.doc.get_next_pos(self.spans[0].start) == self.spans[0].end:
@@ -628,8 +662,8 @@ def get_labels(text, config):
 def read_annotation_file(config, filename, doc):
     items = []
 
-    if len(glob.glob(filename +".alt")) != 0:
-        for line in open(filename +".alt"):
+    if len(glob.glob(filename)) != 0:
+        for line in open(filename):
             fields = line.strip().split()
 
             # Always lay out as:
@@ -639,6 +673,7 @@ def read_annotation_file(config, filename, doc):
             labels = get_labels('-'.join(line.split('-')[1:]), config)
 
             items.append(Item(doc, spans, labels))
+            logging.info("Read"+ str(items[-1]))
 
     return items
 
@@ -652,6 +687,7 @@ class Datum(object):
         self.config = config
         self.output_file = output_file
         self.doc = Document(filename)
+        logging.info("Reading data from "+ self.output_file)
         self.annotations = read_annotation_file(config, self.output_file, self.doc)
 
         # TODO: read other annotations
@@ -730,6 +766,10 @@ class Datum(object):
                         done_end = True
                     else:
                         pos = self.doc.get_next_pos(pos)
+                        if pos != span.end and this_color is not None:
+                            # Handle the case of a space
+                            if len(pos) < 3 or pos[2] == 0:
+                                ans[pos[0], pos[1], -1] = this_color
 
         # TODO: Now do disagreement colours
 
@@ -744,6 +784,7 @@ class Datum(object):
             for span in item.spans:
                 if span in spans:
                     match += 1
+            logging.info("Compared: {} {} got {}".format(item.spans, spans, match))
             if len(item.spans) == len(spans) == match:
                 return item
         return None
@@ -769,6 +810,7 @@ class Datum(object):
 
     def remove_annotation(self, spans):
         to_remove = self.get_item_with_spans(spans)
+        logging.info("Removing {} for {}".format(to_remove, spans))
         if to_remove is not None:
             self.annotations.remove(to_remove)
 

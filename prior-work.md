@@ -69,4 +69,4 @@ Other interesting, but not directly relevant work
  - Standoff Coordination for Multi-Tool Annotation in a Dialogue Corpus
  - Tools to Address the Interdependence between Tokenisation and Standoff Annotation
  - Towards General-Purpose Annotation Tools: How Far Are We Today?
- - Usability Recommendations for Annotation Tools
+ - Usability Recommendations for Annotation Tools, W12-3613
