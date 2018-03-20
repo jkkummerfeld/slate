@@ -1,8 +1,20 @@
 # SLATE, a Super-Lightweight Annotation Tool for Experts
 
-A lightweight text annotation tool for use in a terminal
+A terminal-based text annotation tool written in Python.
+
+## Why use this tool?
+
+- Trivial installation
+- Focuses all of the screen space on annotation (good for large fonts)
+- Easily scalable font size
+- Fast
+- Works in constrained environments (e.g. only allowed ssh access to a machine)
+- Easily configurable
+
 
 # Usage:
+
+TODO: Update
 
 ```sh
 ./annotation_tool.py <file with a list of files to annotate>
@@ -57,10 +69,14 @@ bottom will cause redrawing so that the current token is always visible.
 
 # Options:
 
+TODO: Update
+
  - `-log <filename>`, default = `files_still_to_do`
  - `-overwrite [tf]`, default = false (annotations for a file will be saved in `<filename>.annotated`)
 
 # Config file format
+
+TODO: Update
 
 A series of lines, each containing ([] are optional):
 
@@ -80,45 +96,34 @@ A series of lines, each containing ([] are optional):
 >> ./annotation_tool.py do_later -log do_even_later
 ```
 
-# What makes this tool good?
-
-- Trivial installation
-- Focuses all of the screen space on annotation (good for large fonts)
-- Fast
-- Works in constrained environments (e.g. only allowed ssh access to a machine)
-- (eventually) easily configurable
-
 # Notes on design choices
-
 
 # TODO:
 
-Experiments:
-- 'Think aloud' user study
-- Compare setup time with other tools for new users
+This week:
+- Labeling with free text
+- Adjustable keybinding
+- Disagreement visualisation
 
 Features:
 - Rather than highlighting text, use columns on the left (block of colour), for line mode at least. Not sure about tokens
 - Add a calibration mode, where people type keys so I can figure out what they mean (and they could customise things).
-- Enable different scales of annotation (e.g. multiword span, or an entire sentence). Have sclaes (character, token, line, sentence, paragraph), types (item, span), labels (categories, free text, directed link, undirected link, set)
+- Add the ability to jump to the start/end of a paragraph (and expand / contract similarly)
 - Allow multiple annotations of the same file at the same time
-- Space between token and label
-- For blank lines, print only one in a row
+- For blank lines, option to print only one in a row
 - Variable location of instructions
-- Adjustable keybinding
 - Allow default key assignment to include 0
-- Make special keys customisable
 - Allow multi-key labels
 - Allow auto-search over labels (i.e. user types characters and we search over labels to get the right one as they type)
 - Allow definition of keys to jump to next match on a regex or even a simple string
 - Add the option to read in the raw data when going back to a seen file
 - Option to load all at start
 - Option to only save on exit (not when changing files)
-- Have instructions be a set of pieces that are adaptively arranged
 - Constrain annotations, e.g. a flag to not allow links to point in one direction
 - Option to specify file names on the command line
-- Modes: editing annotations, comparing annotations (and resolving disagreements?)
+- Make link vs. category vs. text changeable during annotation
 - Write scripts to take standoff and create inline data (don't add inline as an output)
+- Support undo to reverse actions
 - Add logging of all edits to a file, so a crash can be recoverd from easily.
 - Allow different default when resolving disagreements (rather than the union, only have those with agreement, or a majority). Note, this is subtle, as it interacts with the way colouring works.
 - Ability to colour linked items as they are created (to see the history). Either always showing all using different colours, or showing what the cursor is linked to.
@@ -128,20 +133,15 @@ Features:
 - Look into the LAF format for data input / output
 - Show the set of available labels
 - Specify every chunk must be labeled, or only some
-- Move view independently of cursor
 - Be able to annotate with errors (creating new errors along the way) and then sort by label
+- Handling clusters (make the set visible)
 
 Internal:
 - What happens if we hit a word wider than the window?
 - At the moment spacing is being lost (e.g. intentional multiple spaces)
 - More intelligent calculation of view position (avoid dry runs)
 - Nicer argument, error, and logging handling
-- Don't re-render if there is no change to the view
-- Start the link line after the cursor and don't allow them to overlap
 - Saving both cursor and link for linking mode (in todo file) and reading similarly
-- Work out how to get brighter colours (cf vim)
 - Improve speed of jumping back down
 - For help, compose it out of a set of items, with line breaks changing when the screen is narrow
 
-TO think about:
-- Handling clusters (make the set visible)
