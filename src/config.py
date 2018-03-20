@@ -69,6 +69,7 @@ class Mode(Enum):
     calibrate = 2
     write_query = 3
     link = 4
+    no_file = 5
 
 class Config(object):
     def __init__(self, keys, args):
@@ -122,12 +123,12 @@ class Config(object):
                 self.unique_length = i
                 break
 
-def get_config(args, mode=Mode.category):
+def get_config(args):
     return Config(
         {
-            's': KeyConfig('s', 'SELL', 2, '{', '}'),
-            'b': KeyConfig('b', 'BUY', 3, '[', ']'),
-            'r': KeyConfig('r', 'RATE', 7, '|', '|'),
+            'z': KeyConfig('z', 'SELL', 2, '{', '}'),
+            'x': KeyConfig('x', 'BUY', 3, '[', ']'),
+            'c': KeyConfig('c', 'RATE', 7, '|', '|'),
         },
         args
     )
@@ -226,9 +227,9 @@ input_action_list = [
     ('help-toggle', [
         'h', ]),
     ('next-file', [
-        ']', ]),
+        ']', (Mode.no_file, ']'), (Mode.no_file, '.'), ]),
     ('prev-file', [
-        '[', ]),
+        '[', (Mode.no_file, '['), (Mode.no_file, ','), ]),
     ('quit', [
         'Q', ]),
     ('save-and-quit', [
@@ -236,13 +237,13 @@ input_action_list = [
     ('save', [
         's', ]),
     ('create-link', [
-        (Mode.link, 'd'), ]),
-    ('create-link-and-move', [
         (Mode.link, 'D'), ]),
+    ('create-link-and-move', [
+        (Mode.link, 'd'), ]),
     ('edit-annotation', [
-        'z', 'x', 'c', 'v', ]),
+        ]),
     ('remove-annotation', [
-        (Mode.link, 'u'), ]),
+        (None, 'u'), ]),
     ('update-num', [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ]),
 ]
@@ -258,4 +259,8 @@ for action, options in input_action_list:
         assert opt not in input_to_action, "input {} used twice".format(opt)
         input_to_action[opt] = action
 
+for char in string.printable:
+    pair = (Mode.write_query, ord(char))
+    if pair not in input_to_action:
+        input_to_action[pair] = 'add-to-query'
 

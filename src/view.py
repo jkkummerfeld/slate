@@ -76,10 +76,6 @@ class View(object):
         self.cursor = self.linking_pos.edited('previous')
 
     def marking_to_color(self, marking):
-        # TODO: Switch cursor to just be an underline
-        # see http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/attrib.html
-###        if len(marking) > 0:
-###            logging.info("Color query for {}".format(marking))
         name = DEFAULT_COLOR
         modifier = curses.A_BOLD
         for mark in marking:
@@ -260,12 +256,13 @@ class View(object):
 
         self.window.refresh()
 
-    def render_edgecase(self, edge):
+    def render_edgecase(self, at_end):
         self.window.clear()
         height, width = self.window.getmaxyx()
         pos = int(height / 2)
+        edge = 'end' if at_end else 'start'
         line0 = "At "+ edge +" in the files."
-        dir_key = ',' if edge == 'end' else '.'
+        dir_key = ',' if at_end else '.'
         line1 = "Type 'q' to quit, or '"+ dir_key+ "' to go back."
         self.window.addstr(pos, 0, line0, curses.color_pair(HELP_COLOR) + curses.A_BOLD)
         self.window.addstr(pos + 1, 0, line1, curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD)
