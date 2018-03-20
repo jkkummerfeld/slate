@@ -67,6 +67,11 @@ class View(object):
             else:
                 self.cursor = new_pos
     
+    def adjust(self, direction, distance, change, maxjump=False):
+        new_pos = self.cursor.edited(direction, change, distance, maxjump)
+        if self._check_move_allowed(False, new_pos):
+            self.cursor = new_pos
+    
     def put_cursor_beside_link(self):
         self.cursor = self.linking_pos.edited('previous')
 
@@ -138,6 +143,7 @@ class View(object):
                         color = curses.color_pair(name) + curses.A_BOLD
 
                     # TODO: Switch cursor to just be an underline
+                    # see http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/attrib.html
 
                     if not trial:
                         self.window.addstr(row, column, char, color)

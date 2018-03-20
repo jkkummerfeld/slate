@@ -547,6 +547,7 @@ class Span(object):
             down = -distance
         elif direction == 'down':
             down = distance
+
         if change == 'contract':
             right *= -distance
             down *= -distance
@@ -560,17 +561,22 @@ class Span(object):
                 new_start = nstart
                 new_end = nend
         else:
-            move_start = (
-                change == "extend" and (
-                    direction == "left" or direction == "up")
-            ) or (
-                change == "contract" and (
-                    direction == "right" or direction == "down"))
+            logging.info("From {} do {} {} {} {} {} {}".format(self, direction, change, distance, maxjump, right, down))
+            move_start = direction == "left" or direction == "up"
 
+            to_move = new_end
             if move_start:
-                new_start = self.doc.get_moved_pos(new_start, right, down, maxjump)
-            else:
-                new_end = self.doc.get_moved_pos(new_end, right, down, maxjump)
+                to_move = new_start
+            moved = self.doc.get_moved_pos(to_move, right, down, maxjump)
+
+            nstart = new_start
+            nend = new_end
+            if move_start: nstart = moved
+            else: nend = moved
+
+            if self._compare_tuples(nstart, nend) >= 0:
+                new_start = nstart
+                new_end = nend
 
         ans = Span(self.scope, self.doc, (new_start, new_end))
         logging.info("Returning {}".format(ans))
@@ -709,6 +715,9 @@ class Datum(object):
             if pos == cursor.end:
                 break
             pos = self.doc.get_next_pos(pos)
+            # Handle the case of a space
+            if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
+                ans[pos[0], pos[1], -1] = CURSOR_COLOR
         if linking_pos is not None:
             pos = linking_pos.start
             while True:
@@ -719,6 +728,9 @@ class Datum(object):
                 if pos == linking_pos.end:
                     break
                 pos = self.doc.get_next_pos(pos)
+                # Handle the case of a space
+                if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
+                    ans[pos[0], pos[1], -1] = color
 
         # Set item colors
         logging.info("Markings with {} {}".format(repr(cursor), repr(linking_pos)))
@@ -766,7 +778,7 @@ class Datum(object):
                         if this_color == LINK_COLOR or this_color == LINK_CURSOR_COLOR:
                             pass
                         elif this_color == CURSOR_COLOR:
-                            # TODO: Make combination cursor and link
+                            # TODO: Make combination cursor and ref
                             pass
                         elif has_link:
                             this_color = REF_COLOR
@@ -780,10 +792,10 @@ class Datum(object):
                         done_end = True
                     else:
                         pos = self.doc.get_next_pos(pos)
-                        if pos != span.end and this_color is not None:
-                            # Handle the case of a space
-                            if len(pos) < 3 or pos[2] == 0:
-                                ans[pos[0], pos[1], -1] = this_color
+                        logging.info("Space for {}?".format(pos))
+                        # Handle the case of a space
+                        if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
+                            ans[pos[0], pos[1], -1] = this_color
 
         # TODO: Now do disagreement colours
 

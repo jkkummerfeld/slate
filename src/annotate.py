@@ -31,6 +31,7 @@ def annotate(window, config, filenames):
     view = get_view(window, datum, config, cfilename, len(filenames),
             start_pos, True)
 
+    last_num = None
     at_end = None
     search_term = ''
     typing_command = False
@@ -70,48 +71,77 @@ def annotate(window, config, filenames):
             view.must_show_linking_pos = False
             # Get input
             user_input = window.getch()
+            logging.info("User gave: {}".format(user_input))
             nsteps += 1
             if nsteps % 100 == 0 and config.mode == Mode.annotate:
                 datum.write_out()
 
-            if user_input == ord('/'):
+            if user_input == ord('\\'):
                 typing_command = True
                 search_term = ''
-            elif user_input in [ord('c'), 337]:
+            elif user_input in [
+                    curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT,
+                    curses.KEY_RIGHT, ord('j'), ord('i'), ord('o'), ord(';')
+                    ]:
+                direction = 'up'
+                if user_input == curses.KEY_DOWN: direction = 'down'
+                if user_input == curses.KEY_LEFT: direction = 'left'
+                if user_input == curses.KEY_RIGHT: direction = 'right'
+                if user_input == ord('o'): direction = 'down'
+                if user_input == ord('j'): direction = 'left'
+                if user_input == ord(';'): direction = 'right'
+
+                num = 1
+                jump = False
+                if last_num == 0:
+                    jump = True
+                elif last_num is not None:
+                    num = last_num
+
+                view.move(direction, num, jump)
+            elif user_input in [ord('I'), 337]:
                 # Note - 337 is SHIFT + UP on a mac keyboard
                 if config.annotation_type == AnnType.link:
                     view.move('up', 1, False, True)
                     view.must_show_linking_pos = True
                 else:
                     view.move('up', 1, True)
-            elif user_input in [ord('v'), 336]:
+            elif user_input in [ord('O'), 336]:
                 # Note - 336 is SHIFT + DOWN on a mac keyboard
                 if config.annotation_type == AnnType.link:
                     view.move('down', 1, False, True)
                     view.must_show_linking_pos = True
                 else:
                     view.move('down', 1, True)
-            elif user_input == curses.KEY_SLEFT:
+            elif user_input in [curses.KEY_SLEFT, ord('J')]:
                 if config.annotation_type == AnnType.link:
                     view.move('left', 1, False, True)
                 else:
                     view.move('left', 1, True)
-            elif user_input == curses.KEY_SRIGHT:
+            elif user_input in [curses.KEY_SRIGHT, ord(':')]:
                 if config.annotation_type == AnnType.link:
                     view.move('right', 1, False, True)
                 else:
                     view.move('right', 1, True)
-            elif user_input == curses.KEY_UP:
-                view.move('up', 1)
-            elif user_input == curses.KEY_DOWN:
-                view.move('down', 1)
-            elif user_input == curses.KEY_LEFT:
-                view.move('left', 1)
-            elif user_input == curses.KEY_RIGHT:
-                view.move('right', 1)
-            elif user_input == ord("o"):
+            elif user_input in [ord('m'), ord('M'), ord('k'), ord('K'),
+                    ord('l'), ord('L'), ord('/'), ord('?')
+                    ]:
+                symbol = chr(user_input)
+                direction = 'right'
+                change = 'extend' if symbol in 'mkl/' else 'contract'
+                if symbol.lower() == 'm': direction = 'left'
+                if symbol.lower() == 'k': direction = 'up'
+                if symbol.lower() == 'l': direction = 'down'
+                num = 1
+                jump = False
+                if last_num == 0:
+                    jump = True
+                elif last_num is not None:
+                    num = last_num
+                view.adjust(direction, num, change, jump)
+            elif user_input in [curses.KEY_PPAGE, ord("o")]:
                 view.shift_view()
-            elif user_input == ord("l"):
+            elif user_input in [curses.KEY_NPAGE, ord("l")]:
                 view.shift_view(True)
             elif user_input == ord("h"):
                 view.toggle_help()
@@ -170,6 +200,11 @@ def annotate(window, config, filenames):
                     at_end = 'end'
                 else:
                     at_end = 'start'
+
+            if user_input in [ord(n) for n in '0123456789']:
+                last_num = int(chr(user_input))
+            else:
+                last_num = None
 
         window.clear()
 
