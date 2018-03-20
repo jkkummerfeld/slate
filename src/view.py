@@ -75,6 +75,32 @@ class View(object):
     def put_cursor_beside_link(self):
         self.cursor = self.linking_pos.edited('previous')
 
+    def marking_to_color(self, marking):
+        # TODO: Switch cursor to just be an underline
+        # see http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/attrib.html
+        if len(marking) > 0:
+            logging.info("Color query for {}".format(marking))
+        name = DEFAULT_COLOR
+        modifier = curses.A_BOLD
+        for mark in marking:
+            if mark == 'cursor':
+                modifier += curses.A_UNDERLINE
+            elif mark == 'link':
+                name = LINK_COLOR
+            elif mark == 'ref':
+                if name != LINK_COLOR:
+                    name = REF_COLOR
+            elif mark == 'linked':
+                if name != LINK_COLOR and name != REF_COLOR:
+                    name = IS_LINKED_COLOR
+            elif mark in self.config.keys:
+                if name != DEFAULT_COLOR:
+                    name = OVERLAP_COLOR
+                else:
+                    name = self.config.keys[mark].color
+
+        return curses.color_pair(name) + modifier
+
     def do_contents(self, height, width, markings, trial=False):
         # For linked items, colour them to indicate it
         # For labels, colour them always, and add beginning / end
@@ -116,34 +142,31 @@ class View(object):
                     # domainating
                     if space_before > 0:
                         if not trial:
-                            name = DEFAULT_COLOR
+                            mark = []
                             if () in markings:
-                                name = markings[()]
+                                mark = markings[()]
                             if (line_no,) in markings:
-                                name = markings[(line_no,)]
+                                mark = markings[(line_no,)]
                             if (line_no, token_no, -1) in markings:
-                                name = markings[line_no, token_no, -1]
-                            color = curses.color_pair(name) + curses.A_BOLD
+                                mark = markings[line_no, token_no, -1]
+                            color = self.marking_to_color(mark)
                             self.window.addstr(row, column, ' ', color)
                         column += 1
                         space_before = 0
 
-                    color = curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD
+                    color = self.marking_to_color([])
 
                     if not trial:
-                        name = DEFAULT_COLOR
+                        mark = []
                         if () in markings:
-                            name = markings[()]
+                            mark = markings[()]
                         if (line_no,) in markings:
-                            name = markings[(line_no,)]
+                            mark = markings[(line_no,)]
                         if (line_no, token_no) in markings:
-                            name = markings[line_no, token_no]
+                            mark = markings[line_no, token_no]
                         if (line_no, token_no, char_no) in markings:
-                            name = markings[line_no, token_no, char_no]
-                        color = curses.color_pair(name) + curses.A_BOLD
-
-                    # TODO: Switch cursor to just be an underline
-                    # see http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/attrib.html
+                            mark = markings[line_no, token_no, char_no]
+                        color = self.marking_to_color(mark)
 
                     if not trial:
                         self.window.addstr(row, column, char, color)

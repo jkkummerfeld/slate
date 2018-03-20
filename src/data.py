@@ -711,91 +711,63 @@ class Datum(object):
         # Set colors for cursor and linking pos
         pos = cursor.start
         while True:
-            ans[pos] = CURSOR_COLOR
+            ans.setdefault(pos, []).append('cursor')
             if pos == cursor.end:
                 break
             pos = self.doc.get_next_pos(pos)
             # Handle the case of a space
             if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
-                ans[pos[0], pos[1], -1] = CURSOR_COLOR
+                ans.setdefault((pos[0], pos[1], -1), []).append('cursor')
         if linking_pos is not None:
             pos = linking_pos.start
             while True:
-                color = LINK_COLOR
-                if pos in ans:
-                    color = LINK_CURSOR_COLOR
-                ans[pos] = color
+                ans.setdefault(pos, []).append('link')
                 if pos == linking_pos.end:
                     break
                 pos = self.doc.get_next_pos(pos)
                 # Handle the case of a space
                 if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
-                    ans[pos[0], pos[1], -1] = color
+                    ans.setdefault((pos[0], pos[1], -1), []).append('link')
 
         # Set item colors
-        logging.info("Markings with {} {}".format(repr(cursor), repr(linking_pos)))
         for item in self.annotations:
-            logging.info("Get colour for item {}".format(item))
             # Get the standard color for this item based on its label
-            base_color = None
+            base_labels = []
             if self.config.annotation_type == AnnType.categorical:
                 # For categorical use the configuration set
                 for key in item.labels:
                     if key in self.config.keys:
-                        modifier = self.config.keys[key]
-                        if base_color is not None:
-                            base_color = OVERLAP_COLOR
-                        else:
-                            base_color = modifier.color
+                        base_labels.append(key)
             elif self.config.annotation_type == AnnType.link:
                 # For links potentially indicate it is linked
                 if self.config.args.show_linked:
-                    base_color = YELLOW_COLOR
-            logging.info("base is {}".format(base_color))
+                    base_labels.append('linked')
             
-            has_cursor = False
             has_link = False
             for span in item.spans:
-                if span == cursor:
-                    has_cursor = True
                 if span == linking_pos:
                     has_link = True
 
             for span in item.spans:
                 pos = span.start
-                done_end = False
-                while not done_end:
-                    this_color = DEFAULT_COLOR
-                    if pos in ans:
-                        this_color = ans[pos]
-                    if this_color == DEFAULT_COLOR:
-                        this_color = base_color
-                    elif self.config.annotation_type == AnnType.categorical:
-                        if this_color != CURSOR_COLOR:
-                            this_color = OVERLAP_COLOR
+                while True:
+                    cur = ans.setdefault(pos, [])
+                    for label in base_labels:
+                        cur.append(label)
 
-                    if len(item.spans) > 1:
-                        if this_color == LINK_COLOR or this_color == LINK_CURSOR_COLOR:
-                            pass
-                        elif this_color == CURSOR_COLOR:
-                            # TODO: Make combination cursor and ref
-                            pass
-                        elif has_link:
-                            this_color = REF_COLOR
-                            if pos == cursor.start:
-                                this_color = REF_CURSOR_COLOR
-
-                    if this_color is not None:
-                        ans[pos] = this_color
+                    if len(item.spans) > 1 and has_link:
+                        cur.append('ref')
 
                     if pos == span.end:
-                        done_end = True
-                    else:
-                        pos = self.doc.get_next_pos(pos)
-                        logging.info("Space for {}?".format(pos))
-                        # Handle the case of a space
-                        if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
-                            ans[pos[0], pos[1], -1] = this_color
+                        break
+                    pos = self.doc.get_next_pos(pos)
+                    # Handle the case of a space
+                    if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
+                        cur = ans.setdefault((pos[0], pos[1], -1), [])
+                        for label in base_labels:
+                            cur.append(label)
+                        if len(item.spans) > 1 and has_link:
+                            cur.append('ref')
 
         # TODO: Now do disagreement colours
 
