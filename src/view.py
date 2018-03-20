@@ -57,10 +57,10 @@ class View(object):
         mover = self.cursor
         if move_link:
             mover = self.linking_pos
-            logging.info("Moving linking pos")
-        logging.info("Move {} {} {}".format(self.cursor, direction, distance))
+###            logging.info("Moving linking pos")
+###        logging.info("Move {} {} {}".format(self.cursor, direction, distance))
         new_pos = mover.edited(direction, 'move', distance, maxjump)
-        logging.info("Moving {} to {}".format(self.cursor, new_pos))
+###        logging.info("Moving {} to {}".format(self.cursor, new_pos))
         if self._check_move_allowed(move_link, new_pos):
             if move_link:
                 self.linking_pos = new_pos
@@ -78,8 +78,8 @@ class View(object):
     def marking_to_color(self, marking):
         # TODO: Switch cursor to just be an underline
         # see http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/attrib.html
-        if len(marking) > 0:
-            logging.info("Color query for {}".format(marking))
+###        if len(marking) > 0:
+###            logging.info("Color query for {}".format(marking))
         name = DEFAULT_COLOR
         modifier = curses.A_BOLD
         for mark in marking:
@@ -176,19 +176,19 @@ class View(object):
         seen_cursor = False
         seen_linking_pos = False
         if first_span is not None and last_span is not None:
-            logging.info("Trying {} vs. {} {}".format(self.cursor, first_span, last_span))
+###            logging.info("Trying {} vs. {} {}".format(self.cursor, first_span, last_span))
             cmp_first = self.cursor.compare(first_span) 
             cmp_last = self.cursor.compare(last_span) 
             seen_cursor = cmp_first in span_compare_ge and \
                     cmp_last in span_compare_le
-            logging.info("Got {} {}".format(cmp_first, cmp_last))
+###            logging.info("Got {} {}".format(cmp_first, cmp_last))
 
             if self.linking_pos is not None:
                 cmp_first = self.linking_pos.compare(first_span) 
                 cmp_last = self.linking_pos.compare(last_span) 
                 seen_linking_pos = cmp_first in span_compare_ge and \
                         cmp_last in span_compare_le
-        logging.info("{} in {} {} ? {}".format(self.cursor, first_span, last_span, seen_cursor))
+###        logging.info("{} in {} {} ? {}".format(self.cursor, first_span, last_span, seen_cursor))
 
         if self.must_show_linking_pos:
             return seen_linking_pos
@@ -219,7 +219,7 @@ class View(object):
 
         # Get colors for content
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
-        logging.info(markings)
+###        logging.info(markings)
 
         # Do dry runs, shifting top down until the position is visible
         while not self.do_contents(main_height, width, markings, True):

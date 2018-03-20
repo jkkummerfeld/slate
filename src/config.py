@@ -1,5 +1,8 @@
 from __future__ import print_function
 
+import string
+import logging
+
 from enum import Enum
 
 import curses # Needed for colours
@@ -61,9 +64,11 @@ class AnnType(Enum):
     # TODO: sets
 
 class Mode(Enum):
-    annotate = 0
+    category = 0
     read = 1
     calibrate = 2
+    write_query = 3
+    link = 4
 
 class Config(object):
     def __init__(self, keys, args):
@@ -71,7 +76,6 @@ class Config(object):
         self.keys = keys
         self.annotation = AnnScope[args.ann_scope]
         self.annotation_type = AnnType[args.ann_type]
-        self.mode = Mode[args.mode]
 
     def set_by_file(self, filename):
         self.keys = {}
@@ -118,7 +122,7 @@ class Config(object):
                 self.unique_length = i
                 break
 
-def get_config(args, mode=Mode.annotate):
+def get_config(args, mode=Mode.category):
     return Config(
         {
             's': KeyConfig('s', 'SELL', 2, '{', '}'),
@@ -129,9 +133,6 @@ def get_config(args, mode=Mode.annotate):
     )
 
 SPECIAL_KEYS = {'u', 'q', 'h', 'p', 'n'}
-# TODO: Consider simplifying, with the cursor being white background always
-# (and being a modulator on top of whatever else is going on). Reason for
-# caution is that in token level mode it can look bad.
 COLORS = [
     # Color combinations, (ID#, foreground, background)
     (1, curses.COLOR_BLACK, curses.COLOR_WHITE),
@@ -161,3 +162,100 @@ IS_LINKED_COLOR = 16
 
 COMPARE_DISAGREE_COLOR = 10
 COMPARE_REF_COLORS = [12, 13]
+
+input_action_list = [
+    ('leave-query-mode', [
+        (Mode.write_query, 10), # 10 is enter on OS X
+        (Mode.write_query, '?'), ]),
+    ('delete-query-char', [
+        (Mode.write_query, 263),
+        (Mode.write_query, 127), # 263 and 127 are backspace on OS X
+        (Mode.write_query, '!'), ]), 
+    ('enter-query-mode', [
+        '\\', ]), 
+    ('move-up', [
+        curses.KEY_UP, 'i', ]),
+    ('move-down', [
+        curses.KEY_DOWN, 'o', ]),
+    ('move-left', [
+        curses.KEY_LEFT, 'j', ]),
+    ('move-right', [
+        curses.KEY_RIGHT, ';', ]),
+    ('jump-up', [
+        337, # 337 is shift up on OS X
+        'I', ]),
+    ('jump-down', [
+        336, # 336 is shift down on OS X
+        'O', ]),
+    ('jump-left', [
+        curses.KEY_SLEFT, 'J', ]),
+    ('jump-right', [
+        curses.KEY_SRIGHT, ':', ]),
+    ('move-link-up', [
+        (Mode.link, 337), (Mode.link, 'I'), ]),
+    ('move-link-down', [
+        (Mode.link, 336), (Mode.link, 'O'), ]),
+    ('move-link-left', [
+        (Mode.link, curses.KEY_SLEFT), (Mode.link, 'J'), ]),
+    ('move-link-right', [
+        (Mode.link, curses.KEY_SRIGHT), (Mode.link, ':'), ]),
+    ('page-up', [
+        curses.KEY_PPAGE, ]),
+    ('page-down', [
+        curses.KEY_NPAGE, ]),
+    ('extend-up', [
+        'k', ]),
+    ('extend-down', [
+        'l', ]),
+    ('extend-left', [
+        'm', ]),
+    ('extend-right', [
+        '/', ]),
+    ('contract-up', [
+        'K', ]),
+    ('contract-down', [
+        'L', ]),
+    ('contract-left', [
+        'M', ]),
+    ('contract-right', [
+        '?', ]),
+    ('next-match', [
+        'n', 'P', ]),
+    ('prev-match', [
+        'p', 'N', ]),
+    ('help-toggle', [
+        'h', ]),
+    ('next-file', [
+        ']', ]),
+    ('prev-file', [
+        '[', ]),
+    ('quit', [
+        'Q', ]),
+    ('save-and-quit', [
+        'q', ]),
+    ('save', [
+        's', ]),
+    ('create-link', [
+        (Mode.link, 'd'), ]),
+    ('create-link-and-move', [
+        (Mode.link, 'D'), ]),
+    ('edit-annotation', [
+        'z', 'x', 'c', 'v', ]),
+    ('remove-annotation', [
+        (Mode.link, 'u'), ]),
+    ('update-num', [
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ]),
+]
+input_to_action = {}
+for action, options in input_action_list:
+    for opt in options:
+        if type(opt) == int:
+            opt = (None, opt)
+        elif type(opt) == str:
+            opt = (None, ord(opt))
+        elif type(opt) == tuple and type(opt[1]) == str:
+            opt = (opt[0], ord(opt[1]))
+        assert opt not in input_to_action, "input {} used twice".format(opt)
+        input_to_action[opt] = action
+
+

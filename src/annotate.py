@@ -12,12 +12,73 @@ from data import *
 from config import *
 from view import *
 
+current_mode = Mode.category
+current_num = None
+
+def action_move(action, view, config):
+    global current_num, current_mode
+
+    direction = action.split('-')[-1]
+    jump = 'jump' in action
+    link = 'link' in action
+
+    num = 1
+    if current_num == 0:
+        jump = True
+    elif current_num is not None:
+        num = current_num
+        current_num = None
+
+    view.move(direction, num, jump, link)
+
+action_to_function = {
+    'delete-query-char': None,
+    'leave-query-mode': None,
+    'enter-query-mode': None,
+    'move-up': action_move,
+    'move-down': action_move,
+    'move-left': action_move,
+    'move-right': action_move,
+    'move-link-up': action_move,
+    'move-link-down': action_move,
+    'move-link-left': action_move,
+    'move-link-right': action_move,
+    'jump-up': action_move,
+    'jump-down': action_move,
+    'jump-left': action_move,
+    'jump-right': action_move,
+    'extend-up': None,
+    'extend-down': None,
+    'extend-left': None,
+    'extend-right': None,
+    'contract-up': None,
+    'contract-down': None,
+    'contract-left': None,
+    'contract-right': None,
+    'next-match': None,
+    'prev-match': None,
+    'page-up': None,
+    'page-down': None,
+    'help-toggle': None,
+    'next-file': None,
+    'prev-file': None,
+    'quit': None, # Have an 'are you sure?' step
+    'save-and-quit': None,
+    'save': None,
+    'create-link': None,
+    'create-link-and-move': None,
+    'remove-annotation': None,
+    'update-num': None,
+}
+
 def get_view(window, datum, config, file_num, total_files, position, show_help):
     cursor = position
     link = position if config.annotation_type == AnnType.link else None
     return View(window, cursor, link, datum, config, file_num, total_files, show_help)
 
 def annotate(window, config, filenames):
+    global current_mode
+
     # Set color combinations
     for num, fore, back in COLORS:
         curses.init_pair(num, fore, back)
@@ -55,7 +116,7 @@ def annotate(window, config, filenames):
             # Get input
             user_input = window.getch()
             nsteps += 1
-            if nsteps % 100 == 0 and config.mode == Mode.annotate:
+            if nsteps % 100 == 0 and config.mode == Mode.category:
                 datum.write_out()
 
             # TODO: Hacky, these numbers were worked out by hand.
@@ -71,12 +132,27 @@ def annotate(window, config, filenames):
             view.must_show_linking_pos = False
             # Get input
             user_input = window.getch()
-            logging.info("User gave: {}".format(user_input))
+            logging.info("Read {} in mode {}".format(user_input, current_mode))
             nsteps += 1
-            if nsteps % 100 == 0 and config.mode == Mode.annotate:
+            if nsteps % 100 == 0 and config.mode == Mode.category:
                 datum.write_out()
 
-            if user_input == ord('\\'):
+            action = None
+            function = None
+            if (current_mode, user_input) in input_to_action:
+                action = input_to_action[current_mode, user_input]
+                if action in action_to_function:
+                    function = action_to_function[action]
+            elif (None, user_input) in input_to_action:
+                action = input_to_action[None, user_input]
+                if action in action_to_function:
+                    function = action_to_function[action]
+
+            logging.info("{} {} -> {} {}".format(current_mode, user_input, action, function))
+
+            if function is not None:
+                function(action, view, config)
+            elif user_input == ord('\\'):
                 typing_command = True
                 search_term = ''
             elif user_input in [
@@ -97,6 +173,7 @@ def annotate(window, config, filenames):
                     jump = True
                 elif last_num is not None:
                     num = last_num
+                    last_num = None
 
                 view.move(direction, num, jump)
             elif user_input in [ord('I'), 337]:
@@ -151,7 +228,7 @@ def annotate(window, config, filenames):
             elif user_input in [ord("N"), ord("p")]:
                 # TODO: next search term or disagreement
                 pass
-            elif user_input == ord("d") and config.mode == Mode.annotate:
+            elif user_input == ord("d") and config.mode == Mode.category:
                 if config.annotation_type == AnnType.link:
                     datum.modify_annotation([view.cursor, view.linking_pos])
                     if config.annotation == AnnScope.line:
@@ -161,21 +238,21 @@ def annotate(window, config, filenames):
                         view.move('right', 1, False, True)
                         view.put_cursor_beside_link()
                     view.must_show_linking_pos = True
-            elif user_input == ord("D") and config.mode == Mode.annotate:
+            elif user_input == ord("D") and config.mode == Mode.category:
                 if config.annotation_type == AnnType.link:
                     datum.modify_annotation([view.cursor, view.linking_pos])
-            elif user_input == ord("u") and config.mode == Mode.annotate:
+            elif user_input == ord("u") and config.mode == Mode.category:
                 spans = [view.cursor]
                 if config.annotation_type == AnnType.link:
                     spans.append(view.linking_pos)
                 datum.remove_annotation(spans)
             elif user_input in [ord('s'), ord('b'), ord('r')]:
-                if config.mode == Mode.annotate:
+                if config.mode == Mode.category:
                     if config.annotation_type != AnnType.link:
                         datum.modify_annotation([view.cursor], chr(user_input))
             elif user_input in [ord(c) for c in ",.q"]:
                 # If we can get another file, do
-                if config.mode == Mode.annotate:
+                if config.mode == Mode.category:
                     datum.write_out()
                 # TODO: Set to linking line rather than cursor where
                 # appropriate
@@ -231,15 +308,20 @@ if __name__ == '__main__':
     parser.add_argument('--alternate_comparisons', help='Activate alternative way of showing different annotations (one colour per set of markings, rather than counts).', default=False, action='store_true')
     parser.add_argument('--ann_type', help='The type of annotation being done.', choices=[v for v in AnnType.__members__], default='link')
     parser.add_argument('--ann_scope', help='The scope of annotation being done.', choices=[v for v in AnnScope.__members__], default='line')
-    parser.add_argument('--mode', help='High-level control of what the tool does.', choices=[v for v in Mode.__members__], default='annotate')
+    parser.add_argument('--mode', help='High-level control of what the tool does.', choices=[v for v in Mode.__members__], default='link')
     args = parser.parse_args()
 
     logging.basicConfig(filename=args.log_prefix + '.log', level=logging.DEBUG)
 
     logging.info("New run!")
 
+    for opt in input_to_action:
+        logging.info("{} is {}".format(opt, input_to_action[opt]))
+
+    current_mode = Mode[args.mode]
+
     ### Process configuration
-    mode = Mode.read if args.readonly else Mode.annotate
+    mode = Mode.read if args.readonly else Mode.category
     config = get_config(args, mode)
     filenames = read_filenames(args.data, config)
     if len(filenames) == 0:

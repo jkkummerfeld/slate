@@ -524,7 +524,7 @@ class Span(object):
         change is move, expand, or contract
         distance is an integer, with negative numbers meaning max
         """
-        logging.info("{} {} {} {}".format(self, direction, change, distance))
+###        logging.info("{} {} {} {}".format(self, direction, change, distance))
         new_start = self.start
         new_end = self.end
 
@@ -555,13 +555,13 @@ class Span(object):
         if change == "move":
             nstart = self.doc.get_moved_pos(new_start, right, down, maxjump)
             nend = self.doc.get_moved_pos(new_end, right, down, maxjump)
-            logging.info("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
+###            logging.info("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
             # Only move if it will change both (otherwise it is a shift).
             if nstart != self.start and nend != self.end:
                 new_start = nstart
                 new_end = nend
         else:
-            logging.info("From {} do {} {} {} {} {} {}".format(self, direction, change, distance, maxjump, right, down))
+###            logging.info("From {} do {} {} {} {} {} {}".format(self, direction, change, distance, maxjump, right, down))
             move_start = direction == "left" or direction == "up"
 
             to_move = new_end
@@ -579,7 +579,7 @@ class Span(object):
                 new_end = nend
 
         ans = Span(self.scope, self.doc, (new_start, new_end))
-        logging.info("Returning {}".format(ans))
+###        logging.info("Returning {}".format(ans))
         return ans
     
     # How to do coreference resolution annotation:
@@ -782,7 +782,7 @@ class Datum(object):
             for span in item.spans:
                 if span in spans:
                     match += 1
-            logging.info("Compared: {} {} got {}".format(item.spans, spans, match))
+###            logging.info("Compared: {} {} got {}".format(item.spans, spans, match))
             if len(item.spans) == len(spans) == match:
                 return item
         return None
@@ -808,7 +808,7 @@ class Datum(object):
 
     def remove_annotation(self, spans):
         to_remove = self.get_item_with_spans(spans)
-        logging.info("Removing {} for {}".format(to_remove, spans))
+###        logging.info("Removing {} for {}".format(to_remove, spans))
         if to_remove is not None:
             self.annotations.remove(to_remove)
 
