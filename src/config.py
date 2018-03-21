@@ -7,47 +7,45 @@ from enum import Enum
 
 import curses # Needed for colours
 
-class KeyConfig(object):
-    def __init__(self, key, label, color=2, start='{', end='}'):
-        self.key = key
-        self.label = label
-        self.color = color
-        self.start_mark = start
-        self.end_mark = end
+COLORS = [
+    # Color combinations, (ID#, foreground, background)
+    (1, curses.COLOR_BLACK, curses.COLOR_WHITE),
+    (2, curses.COLOR_GREEN, curses.COLOR_BLACK),
+    (3, curses.COLOR_BLUE, curses.COLOR_BLACK),
+    (4, curses.COLOR_WHITE, curses.COLOR_BLACK),
+    (5, curses.COLOR_BLACK, curses.COLOR_WHITE),
+    (6, curses.COLOR_CYAN, curses.COLOR_BLACK),
+    (7, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
+    (8, curses.COLOR_BLUE, curses.COLOR_WHITE),
+    (9, curses.COLOR_GREEN, curses.COLOR_WHITE),
+    (10, curses.COLOR_RED, curses.COLOR_BLACK),
+    (11, curses.COLOR_RED, curses.COLOR_WHITE),
+    (12, curses.COLOR_CYAN, curses.COLOR_BLACK),
+    (13, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
+    (14, curses.COLOR_CYAN, curses.COLOR_WHITE),
+    (15, curses.COLOR_MAGENTA, curses.COLOR_WHITE),
+    (16, curses.COLOR_YELLOW, curses.COLOR_BLACK),
+]
 
-    def start(self, token, length=-1):
-        ans = self.start_mark
-        if length < 0:
-            ans += self.label
-        elif length > 0:
-            ans += self.label[:length+1]
-        ans += token
-        return ans, self.color
+name_to_color = {
+    "green": 2,
+    "blue": 3,
+    "white": 4,
+    "cyan": 6,
+    "magenta": 7,
+    "red": 10,
+    "yellow": 16,
+}
 
-    def end(self, token, length=-1):
-        ans = token
-        if length < 0:
-            ans += self.label
-        elif length > 0:
-            ans += self.label[:length+1]
-        ans += self.end_mark
-        return ans, self.color
+DEFAULT_COLOR = 4
+OVERLAP_COLOR = 6
+LINK_COLOR = 2
+HELP_COLOR = 4
+REF_COLOR = 3
+IS_LINKED_COLOR = 16
 
-    def start_and_end(self, token, length=-1):
-        ans = self.start_mark
-        if length < 0:
-            ans += self.label
-        elif length > 0:
-            ans += self.label[:length+1]
-
-        ans += token
-
-        if length < 0:
-            ans += self.label
-        elif length > 0:
-            ans += self.label[:length+1]
-        ans += self.end_mark
-        return ans, self.color
+COMPARE_DISAGREE_COLOR = 10
+COMPARE_REF_COLORS = [12, 13]
 
 class AnnScope(Enum):
     character = 0
@@ -71,196 +69,191 @@ class Mode(Enum):
     link = 4
     no_file = 5
 
-class Config(object):
-    def __init__(self, keys, args):
-        self.args = args
-        self.keys = keys
-        self.annotation = AnnScope[args.ann_scope]
-        self.annotation_type = AnnType[args.ann_type]
 
-    def set_by_file(self, filename):
-        self.keys = {}
-        for line in open(filename):
-            parts = line.strip().split()
-
-            label = parts[0]
-
-            # Default is to numerically assign keys in order, starting at 1
-            key = str(len(self.keys) + 1)
-            if len(parts) > 1:
-                key = parts[1]
-            if len(key) > 1:
-                raise Exception("This key is too long: "+ key)
-            if key in SPECIAL_KEYS:
-                raise Exception("This key is a reserved value: "+ key)
-
-            start = '{'
-            if len(parts) > 2:
-                start = parts[2]
-            end = '}'
-            if len(parts) > 3:
-                end = parts[3]
-
-            color = 0
-            if len(parts) > 4:
-                # TODO
-                pass
-
-            config = KeyConfig(key, label, color, start, end)
-
-        # Find the shortest length at which prefixes of the labels are unique
-        self.unique_length = -1
-        for i in range(1, min(len(self.keys[key]) for key in self.keys)):
-            done = True
-            seen = set()
-            for key in self.keys:
-                start = self.keys[key][:i+1]
-                if start in seen:
-                    done = False
-                    break
-                seen.add(start)
-            if done:
-                self.unique_length = i
-                break
-
-def get_config(args):
-    return Config(
-        {
-            'z': KeyConfig('z', 'SELL', 2, '{', '}'),
-            'x': KeyConfig('x', 'BUY', 3, '[', ']'),
-            'c': KeyConfig('c', 'RATE', 7, '|', '|'),
-        },
-        args
-    )
-
-SPECIAL_KEYS = {'u', 'q', 'h', 'p', 'n'}
-COLORS = [
-    # Color combinations, (ID#, foreground, background)
-    (1, curses.COLOR_BLACK, curses.COLOR_WHITE),
-    (2, curses.COLOR_GREEN, curses.COLOR_BLACK),
-    (3, curses.COLOR_BLUE, curses.COLOR_BLACK),
-    (4, curses.COLOR_WHITE, curses.COLOR_BLACK),
-    (5, curses.COLOR_BLACK, curses.COLOR_WHITE),
-    (6, curses.COLOR_CYAN, curses.COLOR_BLACK),
-    (7, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
-    (8, curses.COLOR_BLUE, curses.COLOR_WHITE),
-    (9, curses.COLOR_GREEN, curses.COLOR_WHITE),
-    (10, curses.COLOR_RED, curses.COLOR_BLACK),
-    (11, curses.COLOR_RED, curses.COLOR_WHITE),
-    (12, curses.COLOR_CYAN, curses.COLOR_BLACK),
-    (13, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
-    (14, curses.COLOR_CYAN, curses.COLOR_WHITE),
-    (15, curses.COLOR_MAGENTA, curses.COLOR_WHITE),
-    (16, curses.COLOR_YELLOW, curses.COLOR_BLACK),
-]
-
-DEFAULT_COLOR = 4
-OVERLAP_COLOR = 6
-LINK_COLOR = 2
-HELP_COLOR = 4
-REF_COLOR = 3
-IS_LINKED_COLOR = 16
-
-COMPARE_DISAGREE_COLOR = 10
-COMPARE_REF_COLORS = [12, 13]
-
-input_action_list = [
-    ('leave-query-mode', [
+input_action_list = {
+    'leave-query-mode': [
         (Mode.write_query, 10), # 10 is enter on OS X
-        (Mode.write_query, '?'), ]),
-    ('delete-query-char', [
+        (Mode.write_query, '?'), ],
+    'delete-query-char': [
         (Mode.write_query, 263),
         (Mode.write_query, 127), # 263 and 127 are backspace on OS X
-        (Mode.write_query, '!'), ]), 
-    ('enter-query-mode', [
-        '\\', ]), 
-    ('move-up', [
-        curses.KEY_UP, 'i', ]),
-    ('move-down', [
-        curses.KEY_DOWN, 'o', ]),
-    ('move-left', [
-        curses.KEY_LEFT, 'j', ]),
-    ('move-right', [
-        curses.KEY_RIGHT, ';', ]),
-    ('jump-up', [
+        (Mode.write_query, '!'), ], 
+    'enter-query-mode': [
+        '\\', ], 
+    'move-up': [
+        curses.KEY_UP, 'i', ],
+    'move-down': [
+        curses.KEY_DOWN, 'o', ],
+    'move-left': [
+        curses.KEY_LEFT, 'j', ],
+    'move-right': [
+        curses.KEY_RIGHT, ';', ],
+    'jump-up': [
         337, # 337 is shift up on OS X
-        'I', ]),
-    ('jump-down', [
+        'I', ],
+    'jump-down': [
         336, # 336 is shift down on OS X
-        'O', ]),
-    ('jump-left', [
-        curses.KEY_SLEFT, 'J', ]),
-    ('jump-right', [
-        curses.KEY_SRIGHT, ':', ]),
-    ('move-link-up', [
-        (Mode.link, 337), (Mode.link, 'I'), ]),
-    ('move-link-down', [
-        (Mode.link, 336), (Mode.link, 'O'), ]),
-    ('move-link-left', [
-        (Mode.link, curses.KEY_SLEFT), (Mode.link, 'J'), ]),
-    ('move-link-right', [
-        (Mode.link, curses.KEY_SRIGHT), (Mode.link, ':'), ]),
-    ('page-up', [
-        curses.KEY_PPAGE, ]),
-    ('page-down', [
-        curses.KEY_NPAGE, ]),
-    ('extend-up', [
-        'k', ]),
-    ('extend-down', [
-        'l', ]),
-    ('extend-left', [
-        'm', ]),
-    ('extend-right', [
-        '/', ]),
-    ('contract-up', [
-        'K', ]),
-    ('contract-down', [
-        'L', ]),
-    ('contract-left', [
-        'M', ]),
-    ('contract-right', [
-        '?', ]),
-    ('next-match', [
-        'n', 'P', ]),
-    ('prev-match', [
-        'p', 'N', ]),
-    ('help-toggle', [
-        'h', ]),
-    ('next-file', [
-        ']', (Mode.no_file, ']'), (Mode.no_file, '.'), ]),
-    ('prev-file', [
-        '[', (Mode.no_file, '['), (Mode.no_file, ','), ]),
-    ('quit', [
-        'Q', ]),
-    ('save-and-quit', [
-        'q', ]),
-    ('save', [
-        's', ]),
-    ('create-link', [
-        (Mode.link, 'D'), ]),
-    ('create-link-and-move', [
-        (Mode.link, 'd'), ]),
-    ('edit-annotation', [
-        ]),
-    ('remove-annotation', [
-        (None, 'u'), ]),
-    ('update-num', [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ]),
-]
-input_to_action = {}
-for action, options in input_action_list:
-    for opt in options:
-        if type(opt) == int:
-            opt = (None, opt)
-        elif type(opt) == str:
-            opt = (None, ord(opt))
-        elif type(opt) == tuple and type(opt[1]) == str:
-            opt = (opt[0], ord(opt[1]))
-        assert opt not in input_to_action, "input {} used twice".format(opt)
-        input_to_action[opt] = action
+        'O', ],
+    'jump-left': [
+        curses.KEY_SLEFT, 'J', ],
+    'jump-right': [
+        curses.KEY_SRIGHT, ':', ],
+    'move-link-up': [
+        (Mode.link, 337), (Mode.link, 'I'), ],
+    'move-link-down': [
+        (Mode.link, 336), (Mode.link, 'O'), ],
+    'move-link-left': [
+        (Mode.link, curses.KEY_SLEFT), (Mode.link, 'J'), ],
+    'move-link-right': [
+        (Mode.link, curses.KEY_SRIGHT), (Mode.link, ':'), ],
+    'page-up': [
+        curses.KEY_PPAGE, ],
+    'page-down': [
+        curses.KEY_NPAGE, ],
+    'extend-up': [
+        'k', ],
+    'extend-down': [
+        'l', ],
+    'extend-left': [
+        'm', ],
+    'extend-right': [
+        '/', ],
+    'contract-up': [
+        'K', ],
+    'contract-down': [
+        'L', ],
+    'contract-left': [
+        'M', ],
+    'contract-right': [
+        '?', ],
+    'next-match': [
+        'n', 'P', ],
+    'prev-match': [
+        'p', 'N', ],
+    'help-toggle': [
+        'h', ],
+    'next-file': [
+        ']', (Mode.no_file, ']'), (Mode.no_file, '.'), ],
+    'prev-file': [
+        '[', (Mode.no_file, '['), (Mode.no_file, ','), ],
+    'quit': [
+        'Q', ],
+    'save-and-quit': [
+        'q', ],
+    'save': [
+        's', ],
+    'create-link': [
+        (Mode.link, 'D'), ],
+    'create-link-and-move': [
+        (Mode.link, 'd'), ],
+    'edit-annotation': [
+        ],
+    'remove-annotation': [
+        (None, 'u'), ],
+    'update-num': [
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ],
+}
 
-for char in string.printable:
-    pair = (Mode.write_query, ord(char))
-    if pair not in input_to_action:
-        input_to_action[pair] = 'add-to-query'
+key_names = {
+    curses.KEY_UP: "UP",
+    curses.KEY_DOWN: "DOWN",
+    curses.KEY_LEFT: "LEFT",
+    curses.KEY_RIGHT: "RIGHT",
+    curses.KEY_SLEFT: "SHIFT-LEFT",
+    curses.KEY_SRIGHT: "SHIFT-RIGHT",
+    curses.KEY_NPAGE: "NPAGE",
+    curses.KEY_PPAGE: "PPAGE",
+}
+for c in string.printable:
+    if c not in string.whitespace:
+        key_names[ord(c)] = c
+    elif c == ' ':
+        key_names[ord(c)] = 'SPACE'
+    elif c == '\n':
+        key_names[ord(c)] = 'ENTER'
+
+class Config(object):
+    def __init__(self, args, labels={}):
+        self.args = args
+        self.labels = labels
+        self.annotation = AnnScope[args.ann_scope]
+        self.annotation_type = AnnType[args.ann_type]
+        self.input_to_action = {}
+
+        # Core key set as defined above
+        for action in input_action_list:
+            for opt in input_action_list[action]:
+                if type(opt) == int:
+                    self.add_keybinding(None, opt, action)
+                elif type(opt) == str:
+                    self.add_keybinding(None, ord(opt), action)
+                elif type(opt) == tuple and type(opt[1]) == str:
+                    self.add_keybinding(opt[0], ord(opt[1]), action)
+                elif type(opt) == tuple and type(opt[1]) == int:
+                    self.add_keybinding(opt[0], opt[1], action)
+
+        # Fill in all other characters for searching
+        for char in string.printable:
+            if char != ' ' and char in string.whitespace:
+                continue
+            self.add_keybinding(Mode.write_query, ord(char), 'add-to-query',
+                    False, True)
+
+        # Fill annotation keys
+        for key in self.labels:
+            self.add_keybinding(Mode.category, ord(key), 'edit-annotation')
+
+        if args.config_file is not None:
+            for line in open(args.config_file):
+                # Set general command keybindings
+                if line.startswith("Input:"):
+                    _, action, mode, key = line.strip().split()
+                    if len(key) > 2 and key[0] == key[-1] == '`':
+                        key = int(key[1:-1])
+                    elif len(key) > 1:
+                        for name in key_names:
+                            if key_names[name] == key:
+                                key = name
+                    else:
+                        key = ord(key)
+                    if mode == 'None':
+                        mode = None
+                    else:
+                        mode = Mode[mode]
+                    self.add_keybinding(mode, key, action, True)
+                elif line.startswith("Label:"):
+                    _, key, name, color = line.strip().split()
+                    self.labels[key] = (name, color)
+
+    def get_color_for_label(self, mark):
+        name = self.labels[mark][1]
+        return name_to_color[name]
+
+    def add_keybinding(self, mode, key, action, overwrite=False, skip_ok=False):
+        pair = (mode, key)
+        if pair in self.input_to_action:
+            if skip_ok:
+                return
+            if not overwrite:
+                raise Exception("input {} used twice".format(pair))
+        self.input_to_action[pair] = action
+
+    def __str__(self):
+        ans = []
+
+        for mode, key in self.input_to_action:
+            action = self.input_to_action[mode, key]
+            if mode is None:
+                mode = 'None'
+            else:
+                mode = mode.name
+            key = key_names.get(key, "`{}`".format(str(key)))
+
+            ans.append("Input: {:<25} {:<20} {}".format(action, mode, key))
+
+        for key in self.labels:
+            name, color = self.labels[key]
+            ans.append("Label: {} {} {}".format(key, name, color))
+
+        return "\n".join(ans)
 

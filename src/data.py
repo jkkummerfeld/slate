@@ -666,20 +666,17 @@ def get_labels(text, config):
     return labels
 
 def read_annotation_file(config, filename, doc):
+    assert len(glob.glob(filename)) == 1, "{} not found".format(filename)
+
     items = []
-
-    if len(glob.glob(filename)) != 0:
-        for line in open(filename):
-            fields = line.strip().split()
-
-            # Always lay out as:
-            # [spans] - [labels]
-
-            spans = get_spans(line.split('-')[0], doc, config)
-            labels = get_labels('-'.join(line.split('-')[1:]), config)
-
-            items.append(Item(doc, spans, labels))
-            logging.info("Read"+ str(items[-1]))
+    for line in open(filename):
+        # Each line is:
+        # [spans] - [labels]
+        fields = line.strip().split()
+        spans = get_spans(line.split('-')[0], doc, config)
+        labels = get_labels('-'.join(line.split('-')[1:]), config)
+        items.append(Item(doc, spans, labels))
+    logging.info("Read {}".format(filename))
 
     return items
 
@@ -696,16 +693,12 @@ class Datum(object):
         logging.info("Reading data from "+ self.output_file)
         self.annotations = read_annotation_file(config, self.output_file, self.doc)
 
-        # TODO: read other annotations
         self.other_annotation_files = other_annotation_files
-
-    def _set_color(self, color_dict, position, color):
-        pass
+        self.other_annotations = []
+        for filename in other_annotation_files:
+            self.other_annotations = read_annotation_file(config, filename, self.doc)
 
     def get_all_markings(self, cursor, linking_pos):
-        # TODO: Handle color given use of spans now instead of positions
-        # TODO: Convert to character level
-        # TODO: Convert to use info as spans
         ans = {}
 
         # Set colors for cursor and linking pos
@@ -736,7 +729,7 @@ class Datum(object):
             if self.config.annotation_type == AnnType.categorical:
                 # For categorical use the configuration set
                 for key in item.labels:
-                    if key in self.config.keys:
+                    if key in self.config.labels:
                         base_labels.append(key)
             elif self.config.annotation_type == AnnType.link:
                 # For links potentially indicate it is linked
@@ -782,7 +775,6 @@ class Datum(object):
             for span in item.spans:
                 if span in spans:
                     match += 1
-###            logging.info("Compared: {} {} got {}".format(item.spans, spans, match))
             if len(item.spans) == len(spans) == match:
                 return item
         return None

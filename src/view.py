@@ -89,11 +89,11 @@ class View(object):
             elif mark == 'linked':
                 if name != LINK_COLOR and name != REF_COLOR:
                     name = IS_LINKED_COLOR
-            elif mark in self.config.keys:
+            elif mark in self.config.labels:
                 if name != DEFAULT_COLOR:
                     name = OVERLAP_COLOR
                 else:
-                    name = self.config.keys[mark].color
+                    name = self.config.get_color_for_label(mark)
 
         return curses.color_pair(name) + modifier
 

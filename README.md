@@ -102,10 +102,9 @@ A series of lines, each containing ([] are optional):
 
 This week:
 - Labeling with free text
-- Adjustable keybinding
 - Disagreement visualisation
 
-Features:
+Future improvements:
 - Rather than highlighting text, use columns on the left (block of colour), for line mode at least. Not sure about tokens
 - Add a calibration mode, where people type keys so I can figure out what they mean (and they could customise things).
 - Add the ability to jump to the start/end of a paragraph (and expand / contract similarly)
@@ -135,12 +134,12 @@ Features:
 - Specify every chunk must be labeled, or only some
 - Be able to annotate with errors (creating new errors along the way) and then sort by label
 - Handling clusters (make the set visible)
+- Nicer argument, error, and logging handling
 
 Internal:
-- What happens if we hit a word wider than the window?
-- At the moment spacing is being lost (e.g. intentional multiple spaces)
+- Bug: If a word is wider than the screen, we crash
+- Bug? More than one space in a row becomes one
 - More intelligent calculation of view position (avoid dry runs)
-- Nicer argument, error, and logging handling
 - Saving both cursor and link for linking mode (in todo file) and reading similarly
 - Improve speed of jumping back down
 - For help, compose it out of a set of items, with line breaks changing when the screen is narrow

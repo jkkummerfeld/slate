@@ -300,15 +300,15 @@ def annotate(window_in, config, filenames):
         # Determine what to do for the input
         action = None
         function = None
-        if (mode, user_input) in input_to_action:
-            action = input_to_action[mode, user_input]
+        if (current_mode, user_input) in config.input_to_action:
+            action = config.input_to_action[current_mode, user_input]
             if action in action_to_function:
                 function = action_to_function[action]
-        elif (None, user_input) in input_to_action:
-            action = input_to_action[None, user_input]
+        elif (None, user_input) in config.input_to_action:
+            action = config.input_to_action[None, user_input]
             if action in action_to_function:
                 function = action_to_function[action]
-        logging.info("{} {} -> {} {}".format(mode, user_input, action, function))
+        logging.info("{} {} -> {} {}".format(current_mode, user_input, action, function))
 
         # Do it!
         if function is not None:
@@ -338,57 +338,62 @@ if __name__ == '__main__':
             fromfile_prefix_chars='@')
     parser.add_argument('data',
             help='File containing a list of files to annotate')
-    parser.add_argument('--log_prefix', default="annotation_log",
+    parser.add_argument('--log-prefix', default="annotation_log",
             help='Prefix for logging files (otherwise none)')
     parser.add_argument('--readonly', default=False,
             help='Do not allow changes or save annotations.')
     parser.add_argument('--overwrite', default=False, action='store_true',
             help='If they exist already, overwrite output files.')
-    parser.add_argument('--show_linked', default=False, action='store_true')
+    parser.add_argument('--show-linked', default=False, action='store_true',
             help='Have a highlight to indicate any linked token.')
-    parser.add_argument('--allow_self_links', default=False,
+    parser.add_argument('--allow-self-links', default=False,
             action='store_true',
             help='Allow an item to be linked to itself.')
-    parser.add_argument('--alternate_comparisons', default=False,
+    parser.add_argument('--alternate-comparisons', default=False,
             action='store_true',
             help='Activate alternative way of showing different annotations (one colour per set of markings, rather than counts).')
-    parser.add_argument('--ann_type',
+    parser.add_argument('--ann-type',
             choices=[v for v in AnnType.__members__], default='link',
             help='The type of annotation being done.')
-    parser.add_argument('--ann_scope',
+    parser.add_argument('--ann-scope',
             choices=[v for v in AnnScope.__members__], default='line',
             help='The scope of annotation being done.')
     parser.add_argument('--mode',
             choices=[v for v in Mode.__members__], default='link',
             help='High-level control of what the tool does.')
+    parser.add_argument('--config-file',
+            help='A file containing configuration information.')
 
     args = parser.parse_args()
 
     logging.basicConfig(filename=args.log_prefix + '.log', level=logging.DEBUG)
-
     logging.info("New run!")
-
-    for opt in input_to_action:
-        logging.info("{} is {}".format(opt, input_to_action[opt]))
-
 
     ### Process configuration
     current_mode = Mode[args.mode]
     if args.readonly:
         current_mode = Mode.read
 
-    config = get_config(args)
-    for key in config.keys:
-        logging.info(key)
-        opt = (Mode.category, ord(key))
-        assert opt not in input_to_action, "{} as input and key".format(opt)
-        input_to_action[opt] = 'edit-annotation'
-
+    config = None
+    if args.config_file is not None:
+        config = Config(args)
+    else:
+        config = Config(args, 
+            {
+                'z': ('SELL', 'green'),
+                'x': ('BUY', 'blue'),
+                'c': ('RATE', 'magenta'),
+            }
+        )
 
     filenames = read_filenames(args.data, config)
     if len(filenames) == 0:
         print("File '{}' contained no filenames".format(args.data))
         sys.exit(0)
+
+    config_out = open(args.log_prefix + '.config', 'w')
+    print(config, file=config_out)
+    config_out.close()
 
     ### Start interface
     curses.wrapper(annotate, config, filenames)
