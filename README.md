@@ -102,7 +102,11 @@ A series of lines, each containing ([] are optional):
 
 This week:
 - Labeling with free text
+- Bug: If a word is wider than the screen, we crash
+- Option to specify file names on the command line
 - Disagreement visualisation
+- Add timestamp to default output prefix
+- Splash page of help rather than at the bottom
 
 Future improvements:
 - Rather than highlighting text, use columns on the left (block of colour), for line mode at least. Not sure about tokens
@@ -135,9 +139,9 @@ Future improvements:
 - Be able to annotate with errors (creating new errors along the way) and then sort by label
 - Handling clusters (make the set visible)
 - Nicer argument, error, and logging handling
+- Look into Pythonista to make an iOS version
 
 Internal:
-- Bug: If a word is wider than the screen, we crash
 - Bug? More than one space in a row becomes one
 - More intelligent calculation of view position (avoid dry runs)
 - Saving both cursor and link for linking mode (in todo file) and reading similarly
