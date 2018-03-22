@@ -129,17 +129,31 @@ class View(object):
                 # Check if we are going on to the next line and adjust
                 # accordingly.
                 space_before = 1 if column > 0 else 0
+                wide_token = False
                 if column + len(token) + space_before > width:
-                    column = 0
-                    row += 1
-                    space_before = 0
+                    if token_no != 0:
+                        column = 0
+                        row += 1
+                        space_before = 0
+                    else:
+                        wide_token = True
 
                 # If this takes us off the screen, stop
                 if row >= height:
                     break
-                last_span = Span(AnnScope.character, self.datum.doc, (line_no, token_no, len(token) - 1))
+
+                end_pos = len(token) - 1
+                if wide_token:
+                    end_pos = width - column - space_before - 1
+                last_span = Span(AnnScope.character, self.datum.doc, (line_no, token_no, end_pos))
 
                 for char_no, char in enumerate(token):
+                    if column >= width:
+                        column = 0
+                        row += 1
+                        if row >= height:
+                            break
+
                     # Allow multiple layers of color, with the more specific
                     # domainating
                     if space_before > 0:
@@ -152,6 +166,7 @@ class View(object):
                             if (line_no, token_no, -1) in markings:
                                 mark = markings[line_no, token_no, -1]
                             color = self.marking_to_color(mark)
+###                            logging.info("{} {} s".format(row, column))
                             self.window.addstr(row, column, ' ', color)
                         column += 1
                         space_before = 0
@@ -168,11 +183,17 @@ class View(object):
                             mark = markings[line_no, token_no]
                         if (line_no, token_no, char_no) in markings:
                             mark = markings[line_no, token_no, char_no]
+                        if 'cursor' in mark:
+                            logging.info("{} {} {}".format(row, column, char))
                         color = self.marking_to_color(mark)
 
                     if not trial:
+###                        logging.info("{} {} vs. {} {}".format(row, column, height, width))
                         self.window.addstr(row, column, char, color)
                     column += 1
+
+                if row >= height:
+                    break
 
         # Tracks if the cursor is vsible
         seen_cursor = False
