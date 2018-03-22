@@ -46,12 +46,18 @@ class View(object):
         else: self.top -= 10
 
     def _check_move_allowed(self, move_link, new_pos):
-        if self.linking_pos is None:
+        if self.linking_pos is None or self.config.args.allow_all_links:
             return True
         elif move_link:
-            return self.cursor <= new_pos
+            if self.config.args.allow_self_links:
+                return self.cursor <= new_pos
+            else:
+                return self.cursor < new_pos
         else:
-            return self.linking_pos >= new_pos
+            if self.config.args.allow_self_links:
+                return self.linking_pos >= new_pos
+            else:
+                return self.linking_pos > new_pos
 
     def move(self, direction, distance, maxjump=False, move_link=False):
         mover = self.cursor

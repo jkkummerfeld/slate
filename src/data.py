@@ -666,17 +666,16 @@ def get_labels(text, config):
     return labels
 
 def read_annotation_file(config, filename, doc):
-    assert len(glob.glob(filename)) == 1, "{} not found".format(filename)
-
     items = []
-    for line in open(filename):
-        # Each line is:
-        # [spans] - [labels]
-        fields = line.strip().split()
-        spans = get_spans(line.split('-')[0], doc, config)
-        labels = get_labels('-'.join(line.split('-')[1:]), config)
-        items.append(Item(doc, spans, labels))
-    logging.info("Read {}".format(filename))
+    if len(glob.glob(filename)) == 1:
+        for line in open(filename):
+            # Each line is:
+            # [spans] - [labels]
+            fields = line.strip().split()
+            spans = get_spans(line.split('-')[0], doc, config)
+            labels = get_labels('-'.join(line.split('-')[1:]), config)
+            items.append(Item(doc, spans, labels))
+        logging.info("Read {}".format(filename))
 
     return items
 
@@ -764,6 +763,14 @@ class Datum(object):
 
         # TODO: Now do disagreement colours
 
+        # Classification:
+        #   If an item has a label, ignore
+        #   If it has no label and they agree, ignore
+        #   Otherwise, colour to indicate disagreement
+        #
+        # Linking:
+        #   
+
         return ans
 
     def next_match(self, span, text, reverse=False):
@@ -780,6 +787,7 @@ class Datum(object):
         return None
 
     def modify_annotation(self, spans, label=None):
+        # TODO: switch link to be like the old style
         to_edit = self.get_item_with_spans(spans)
         if to_edit is None:
             # No item with these spans exists, create it

@@ -349,6 +349,9 @@ if __name__ == '__main__':
     parser.add_argument('--allow-self-links', default=False,
             action='store_true',
             help='Allow an item to be linked to itself.')
+    parser.add_argument('--allow-all-links', default=False,
+            action='store_true',
+            help='Allow an item to be linked to one after itself.')
     parser.add_argument('--alternate-comparisons', default=False,
             action='store_true',
             help='Activate alternative way of showing different annotations (one colour per set of markings, rather than counts).')
