@@ -23,16 +23,13 @@ class View(object):
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
             return [
-                "----------------------------------------------------------------------------",
                 self.progress + "  Colors are highlight:possible-link green:current blue:link",
                 "arrows (move blue about), shift + arrows (move green)",
                 "d + shift (mark as linked), d (mark as linked and move green down)",
                 "u (undo visible links), / \\ (next & previous file), q (quit), h (help)",
-                "Colours: match file0 file1 current",
             ]
         else:
             return [
-                "----------------------------------------------------------------------------",
                 self.progress + "  Colors are highlight-current blue-linked (TODO update)",
                 "arrows (move about), n p (next & previous number, via regex)",
                 "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)",
@@ -166,7 +163,6 @@ class View(object):
                             if (line_no, token_no, -1) in markings:
                                 mark = markings[line_no, token_no, -1]
                             color = self.marking_to_color(mark)
-###                            logging.info("{} {} s".format(row, column))
                             self.window.addstr(row, column, ' ', color)
                         column += 1
                         space_before = 0
@@ -183,12 +179,9 @@ class View(object):
                             mark = markings[line_no, token_no]
                         if (line_no, token_no, char_no) in markings:
                             mark = markings[line_no, token_no, char_no]
-                        if 'cursor' in mark:
-                            logging.info("{} {} {}".format(row, column, char))
                         color = self.marking_to_color(mark)
 
                     if not trial:
-###                        logging.info("{} {} vs. {} {}".format(row, column, height, width))
                         self.window.addstr(row, column, char, color)
                     column += 1
 
@@ -219,15 +212,33 @@ class View(object):
             return seen_cursor
 
 
-    def render(self, current_search):
+    def render(self, current_search, current_typing):
+        logging.info("Render with '{}' and '{}'".format(current_search, current_typing))
         height, width = self.window.getmaxyx()
+
+        # Get content for extra lines
+        extra_text_lines = []
+        if len(current_search) > 0: extra_text_lines.append(current_search)
+        if len(current_typing) > 0: extra_text_lines.append(current_typing)
+
+        # Get colors for content
+        markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
+        for key in markings:
+            marks = markings[key]
+            if 'cursor' in marks:
+                for mark in marks:
+                    if mark.startswith("label:"):
+                        extra_text_lines.append(mark)
 
         # First, plan instructions
         main_height = height - 1
         inst = self.instructions()
-        space_needed = 0
-        if self.show_help: space_needed += len(inst)
-        if len(current_search) > 0: space_needed += 1
+        space_needed = len(extra_text_lines)
+        if self.show_help:
+            space_needed += len(inst)
+        if space_needed > 0:
+            space_needed += 1
+
         if height >= space_needed:
             main_height = main_height - space_needed
 
@@ -240,10 +251,6 @@ class View(object):
                 if self.top > self.cursor.start[0]:
                     self.top = self.cursor.start[0]
 
-        # Get colors for content
-        markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
-###        logging.info(markings)
-
         # Do dry runs, shifting top down until the position is visible
         while not self.do_contents(main_height, width, markings, True):
             self.top += 1
@@ -251,35 +258,27 @@ class View(object):
         # Next, draw contents
         self.do_contents(main_height, width, markings)
 
-        # Then, draw instructions
-        if main_height < (height - 1) and self.show_help:
-            cur = main_height
-            for line in inst:
-                if line.startswith("Colours"):
-                    words = line.strip().split()
-                    cur_col = 0
-                    for word in words:
-                        content = word +" "
-                        base_color = curses.color_pair(HELP_COLOR)
-                        if word == 'match': base_color = curses.color_pair(COMPARE_REF_COLORS[1])
-                        elif word == 'file0': base_color = curses.color_pair(REF_COLOR)
-                        elif word == 'file1': base_color = curses.color_pair(COMPARE_REF_COLORS[0])
-                        elif word == 'current': base_color = curses.color_pair(LINK_COLOR)
-                        self.window.addstr(cur, cur_col, content, base_color + curses.A_BOLD)
-                        cur_col += len(content)
-                    cur += 1
-                else:
-                    fmt = "{:<"+ str(width) +"}"
-                    self.window.addstr(cur, 0, fmt.format(line), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
-                    cur += 1
+        if main_height < height:
+            if self.show_help or len(extra_text_lines) > 0:
+                row = main_height
+                self.window.addstr(row, 0, "-" * width)
+                row += 1
 
-        # Last, draw the text being typed
-        if main_height < (height - 1) and len(current_search) > 0:
-            cur = main_height
-            if self.show_help: cur += len(inst)
-            text = current_search
-            fmt = "{:<"+ str(width) +"}"
-            self.window.addstr(cur, 0, fmt.format(text), curses.color_pair(HELP_COLOR) + curses.A_BOLD)
+                color = curses.color_pair(HELP_COLOR) + curses.A_BOLD
+
+                # Then, draw instructions
+                if self.show_help:
+                    for line in inst:
+                        fmt = "{:<"+ str(width) +"}"
+                        self.window.addstr(row, 0, fmt.format(line), color)
+                        row += 1
+
+                # Last, draw the text being typed
+                for content in extra_text_lines:
+                    text = content
+                    fmt = "{:<"+ str(width) +"}"
+                    self.window.addstr(row, 0, fmt.format(text), color)
+                    row += 1
 
         self.window.refresh()
 

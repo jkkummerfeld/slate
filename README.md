@@ -101,11 +101,7 @@ A series of lines, each containing ([] are optional):
 # TODO:
 
 This week:
-- Labeling with free text
-- Bug: If a word is wider than the screen, we crash
-- Option to specify file names on the command line
 - Disagreement visualisation
-- Add timestamp to default output prefix
 - Splash page of help rather than at the bottom
 
 Future improvements:
@@ -142,6 +138,7 @@ Future improvements:
 - Look into Pythonista to make an iOS version
 
 Internal:
+- Bug: Long text labels will cause a crash (if they span more than the width)
 - Bug? More than one space in a row becomes one
 - More intelligent calculation of view position (avoid dry runs)
 - Saving both cursor and link for linking mode (in todo file) and reading similarly

@@ -58,7 +58,6 @@ class AnnScope(Enum):
 class AnnType(Enum):
     categorical = 0
     link = 1 #TODO: directed or undirected
-    text = 2
     # TODO: sets
 
 class Mode(Enum):
@@ -68,6 +67,7 @@ class Mode(Enum):
     write_query = 3
     link = 4
     no_file = 5
+    write_label = 6
 
 
 input_action_list = {
@@ -78,8 +78,17 @@ input_action_list = {
         (Mode.write_query, 263),
         (Mode.write_query, 127), # 263 and 127 are backspace on OS X
         (Mode.write_query, '!'), ], 
+    'assign-text-label': [
+        (Mode.write_label, 10), # 10 is enter on OS X
+        (Mode.write_label, '?'), ],
+    'delete-label-char': [
+        (Mode.write_label, 263),
+        (Mode.write_label, 127), # 263 and 127 are backspace on OS X
+        (Mode.write_label, '!'), ], 
     'enter-query-mode': [
         '\\', ], 
+    'enter-label-mode': [
+        't', ], 
     'move-up': [
         curses.KEY_UP, 'i', ],
     'move-down': [
@@ -197,6 +206,8 @@ class Config(object):
             if char != ' ' and char in string.whitespace:
                 continue
             self.add_keybinding(Mode.write_query, ord(char), 'add-to-query',
+                    False, True)
+            self.add_keybinding(Mode.write_label, ord(char), 'add-to-label',
                     False, True)
 
         # Fill annotation keys

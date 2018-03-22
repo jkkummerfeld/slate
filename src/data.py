@@ -6,15 +6,11 @@ import sys
 
 from config import *
 
-def read_filenames(arg, config):
-    # File containing lines of the form:
-    #  raw_filename [output_filename [cur_line cur_token [other_annotations]]]
-    #
-    if len(glob.glob(arg)) == 0:
-        raise Exception("Cannot open / find '{}'".format(arg))
-    file_info = [line.strip() for line in open(arg).readlines()]
+def process_fileinfo(file_info, config):
     filenames = []
     for line in file_info:
+        # A line describing a file in the form:
+        #  raw_file [output_file [cur_line cur_token [other_annotations]]]
         parts = line.split()
         next_part = 0
 
@@ -730,6 +726,8 @@ class Datum(object):
                 for key in item.labels:
                     if key in self.config.labels:
                         base_labels.append(key)
+                    else:
+                        base_labels.append("label:"+ key)
             elif self.config.annotation_type == AnnType.link:
                 # For links potentially indicate it is linked
                 if self.config.args.show_linked:
