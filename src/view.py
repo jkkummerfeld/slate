@@ -23,14 +23,16 @@ class View(object):
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
             return [
-                self.progress + "  Colors are highlight:possible-link green:current blue:link",
+                self.progress,
+                "Colors are highlight:possible-link green:current blue:link",
                 "arrows (move blue about), shift + arrows (move green)",
                 "d + shift (mark as linked), d (mark as linked and move green down)",
                 "u (undo visible links), / \\ (next & previous file), q (quit), h (help)",
             ]
         else:
             return [
-                self.progress + "  Colors are highlight-current blue-linked (TODO update)",
+                self.progress,
+                "Colors are highlight-current blue-linked (TODO update)",
                 "arrows (move about), n p (next & previous number, via regex)",
                 "b (mark / unmark []), / \\ (next & previous file), q (quit), h (help)",
             ]
@@ -232,6 +234,10 @@ class View(object):
 
     def render(self, current_search, current_typing):
         logging.info("Render with '{}' and '{}'".format(current_search, current_typing))
+        if self.show_help:
+            self.render_help()
+            return
+
         height, width = self.window.getmaxyx()
 
         # Get content for extra lines
@@ -256,15 +262,12 @@ class View(object):
 
         # First, plan instructions
         main_height = height - 1
-        inst = self.instructions()
         space_needed = len(extra_text_lines)
-        if self.show_help:
-            space_needed += len(inst)
-        elif len(self.datum.other_annotations) > 0 and len(extra_text_lines) == 0:
-            extra_text_lines.append("")
-            space_needed += 1
         if space_needed > 0:
             space_needed += 1
+        elif len(self.datum.other_annotations) > 0:
+            extra_text_lines.append("")
+            space_needed = 2
 
         if height >= space_needed:
             main_height = main_height - space_needed
@@ -286,19 +289,12 @@ class View(object):
         self.do_contents(main_height, width, markings)
 
         if main_height < height:
-            if self.show_help or len(extra_text_lines) > 0:
+            if len(extra_text_lines) > 0:
                 row = main_height
                 self.window.addstr(row, 0, "-" * width)
                 row += 1
 
                 color = curses.color_pair(HELP_COLOR) + curses.A_BOLD
-
-                # Then, draw instructions
-                if self.show_help:
-                    for line in inst:
-                        fmt = "{:<"+ str(width) +"}"
-                        self.window.addstr(row, 0, fmt.format(line), color)
-                        row += 1
 
                 # Last, draw the text being typed
                 for content in extra_text_lines:
@@ -306,6 +302,19 @@ class View(object):
                     fmt = "{:<"+ str(width) +"}"
                     self.window.addstr(row, 0, fmt.format(text), color)
                     row += 1
+
+        self.window.refresh()
+
+    def render_help(self):
+        self.window.clear()
+        height, width = self.window.getmaxyx()
+
+        row = 0
+        color = curses.color_pair(HELP_COLOR) + curses.A_BOLD
+        for line in self.instructions():
+            fmt = "{:<"+ str(width) +"}"
+            self.window.addstr(row, 0, fmt.format(line), color)
+            row += 1
 
         self.window.refresh()
 
