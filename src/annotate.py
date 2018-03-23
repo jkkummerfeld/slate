@@ -293,7 +293,7 @@ def annotate(window_in, config, filenames):
     cfilename = 0
     filename, start_pos, output_file, annotation_files = filenames[cfilename]
     datum = Datum(filename, config, output_file, annotation_files)
-    view = get_view(datum, config, cfilename, len(filenames), start_pos, True)
+    view = get_view(datum, config, cfilename, len(filenames), start_pos, args.hide_help == False)
 
     last_num = None
     at_end = None
@@ -367,6 +367,8 @@ if __name__ == '__main__':
             help='Prefix for logging files (otherwise none)')
     parser.add_argument('--readonly', default=False,
             help='Do not allow changes or save annotations.')
+    parser.add_argument('-hh', '--hide-help', action='store_true',
+            help='Do not show help on startup.')
     parser.add_argument('--overwrite', default=False, action='store_true',
             help='If they exist already, overwrite output files.')
     parser.add_argument('--show-linked', default=False, action='store_true',

@@ -808,6 +808,7 @@ class Datum(object):
                     cur = ans.setdefault(pos, [])
                     for label in base_labels:
                         cur.append(label)
+                        # TODO: Record the span too
 
                     if len(item.spans) > 1:
                         cur.append(ref_label)

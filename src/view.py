@@ -98,12 +98,18 @@ class View(object):
                 else:
                     name = self.config.get_color_for_label(mark)
             elif mark.startswith("compare-"):
-                if 'False' in mark:
-                    name = COMPARE_DISAGREE_COLOR
+                if 'ref' in mark:
+                    if 'False' in mark:
+                        name = COMPARE_DISAGREE_COLOR
+                    else:
+                        count = int(mark.split("-")[-2])
+                        name = COMPARE_REF_COLORS[count - 1]
                 else:
-                    count = int(mark.split("-")[-2])
-                    name = COMPARE_REF_COLORS[count - 1]
-
+                    if name == DEFAULT_COLOR:
+                        name = COMPARE_DISAGREE_COLOR
+###                    key = mark.split("-")[-1]
+###                    if key in self.config.labels:
+###                        name = self.config.get_color_for_label(mark)
         # Override cases
         if has_link:
             name = LINK_COLOR
@@ -242,6 +248,11 @@ class View(object):
                 for mark in marks:
                     if mark.startswith("label:"):
                         extra_text_lines.append(mark)
+                    elif 'compare-' in mark and 'ref' not in mark:
+                        parts = mark.split("-")
+                        count = int(parts[-2])
+                        label = parts[-1]
+                        extra_text_lines.append("{} marked as {}".format(count, label))
 
         # First, plan instructions
         main_height = height - 1
@@ -249,6 +260,9 @@ class View(object):
         space_needed = len(extra_text_lines)
         if self.show_help:
             space_needed += len(inst)
+        elif len(self.datum.other_annotations) > 0 and len(extra_text_lines) == 0:
+            extra_text_lines.append("")
+            space_needed += 1
         if space_needed > 0:
             space_needed += 1
 

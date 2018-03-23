@@ -1,0 +1,1 @@
+input_data0.txt input_data0.txt.category.annotations ((0,0), (0,0)) input_data0.txt.category.annotations0 input_data0.txt.category.annotations1 input_data0.txt.category.annotations2 input_data0.txt.category.annotations3
