@@ -101,7 +101,6 @@ A series of lines, each containing ([] are optional):
 # TODO:
 
 This week:
-- Disagreement visualisation
 - Splash page of help rather than at the bottom
 
 Future improvements:
