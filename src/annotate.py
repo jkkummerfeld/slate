@@ -347,7 +347,7 @@ def annotate(window_in, config, filenames):
         parts = [
             filename,
             output_file,
-            str(start_pos),
+            str(start_pos), # TODO - simplified value here
             ' '.join(annotation_files)
         ]
         print(" ".join(parts), file=out)

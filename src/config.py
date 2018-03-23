@@ -45,7 +45,7 @@ REF_COLOR = 3
 IS_LINKED_COLOR = 16
 
 COMPARE_DISAGREE_COLOR = 10
-COMPARE_REF_COLORS = [12, 13]
+COMPARE_REF_COLORS = [12, 13, 3]
 
 class AnnScope(Enum):
     character = 0

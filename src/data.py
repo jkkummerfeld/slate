@@ -654,8 +654,6 @@ def get_labels(text, config):
     if config.annotation_type == AnnType.categorical:
         for label in text.strip().split():
             labels.add(label)
-    elif config.annotation_type == AnnType.text:
-        labels.add(text.strip().split())
     else:
         assert len(text.strip().split()) == 0
 
@@ -691,7 +689,24 @@ class Datum(object):
         self.other_annotation_files = other_annotation_files
         self.other_annotations = []
         for filename in other_annotation_files:
-            self.other_annotations = read_annotation_file(config, filename, self.doc)
+            self.other_annotations.append(read_annotation_file(config, filename, self.doc))
+
+        # Working this out is a once-off expensive process
+        self.disagreements = []
+        all_item_counts = {}
+        hash_to_item = {}
+        for annotations in self.other_annotations:
+            for item in annotations:
+                h = hash((tuple(item.spans), tuple(item.labels)))
+                hash_to_item[h] = item
+                if h in all_item_counts:
+                    all_item_counts[h] += 1
+                else:
+                    all_item_counts[h] = 1
+        for h in all_item_counts:
+            count = all_item_counts[h]
+            if count < len(self.other_annotations):
+                self.disagreements.append((hash_to_item[h], count))
 
     def get_all_markings(self, cursor, linking_pos):
         ans = {}
@@ -759,15 +774,54 @@ class Datum(object):
                         if len(item.spans) > 1 and has_link:
                             cur.append('ref')
 
-        # TODO: Now do disagreement colours
+        # Now do disagreement colours.
+        for item, count in self.disagreements:
+            # Does this overlap something that is annotated? If so, skip.
+            matched = False
+            for oitem in self.annotations:
+                for span in oitem.spans:
+                    if span in item.spans:
+                        matched = True
+                if matched:
+                    break
+            if matched:
+                continue
 
-        # Classification:
-        #   If an item has a label, ignore
-        #   If it has no label and they agree, ignore
-        #   Otherwise, colour to indicate disagreement
-        #
-        # Linking:
-        #   
+            # Get the standard color for this item based on its label
+            base_labels = []
+            if self.config.annotation_type == AnnType.categorical:
+                for key in item.labels:
+                    if key in self.config.labels:
+                        base_labels.append("compare-{}-{}".format(count, key))
+                    else:
+                        base_labels.append("compare-label-{}-{}".format(count, key))
+            
+            has_link = False
+            for span in item.spans:
+                if span == linking_pos:
+                    has_link = True
+
+            ref_label = "compare-ref-{}-{}".format(count, has_link)
+            for span in item.spans:
+                pos = span.start
+                while True:
+                    cur = ans.setdefault(pos, [])
+                    for label in base_labels:
+                        cur.append(label)
+
+                    if len(item.spans) > 1:
+                        cur.append(ref_label)
+
+                    if pos == span.end:
+                        break
+                    pos = self.doc.get_next_pos(pos)
+                    # Handle the case of a space
+                    if len(pos) == 2 or (len(pos) == 3 and pos[2] == 0):
+                        cur = ans.setdefault((pos[0], pos[1], -1), [])
+                        for label in base_labels:
+                            cur.append(label)
+                        if len(item.spans) > 1 and has_link:
+                            cur.append(ref_label)
 
         return ans
 

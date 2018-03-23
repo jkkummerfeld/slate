@@ -1,10 +1,6 @@
-
 This is an example sentence in file 0.
-
 This is another example sentence in file 0.
-
 And one more in file 0!
-
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 Pellentesque accumsan libero eu dignissim faucibus.
 Duis blandit dui nec dolor scelerisque, quis malesuada leo viverra.
@@ -16,7 +12,6 @@ Mauris ac euismod ligula, in pharetra mauris.
 Duis id neque dui.
 Suspendisse ut dolor suscipit, ullamcorper massa vitae, ultrices diam.
 Suspendisse potenti.
-
 Nullam ultricies commodo dolor non imperdiet.
 Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
 Nulla feugiat neque sapien, ac blandit libero dictum eget.

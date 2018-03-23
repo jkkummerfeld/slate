@@ -81,22 +81,34 @@ class View(object):
     def marking_to_color(self, marking):
         name = DEFAULT_COLOR
         modifier = curses.A_BOLD
+        has_link = False
+        has_ref = False
         for mark in marking:
             if mark == 'cursor':
                 modifier += curses.A_UNDERLINE
             elif mark == 'link':
-                name = LINK_COLOR
+                has_link = True
             elif mark == 'ref':
-                if name != LINK_COLOR:
-                    name = REF_COLOR
+                has_ref = True
             elif mark == 'linked':
-                if name != LINK_COLOR and name != REF_COLOR:
-                    name = IS_LINKED_COLOR
+                name = IS_LINKED_COLOR
             elif mark in self.config.labels:
                 if name != DEFAULT_COLOR:
                     name = OVERLAP_COLOR
                 else:
                     name = self.config.get_color_for_label(mark)
+            elif mark.startswith("compare-"):
+                if 'False' in mark:
+                    name = COMPARE_DISAGREE_COLOR
+                else:
+                    count = int(mark.split("-")[-2])
+                    name = COMPARE_REF_COLORS[count - 1]
+
+        # Override cases
+        if has_link:
+            name = LINK_COLOR
+        elif has_ref:
+            name = REF_COLOR
 
         return curses.color_pair(name) + modifier
 
@@ -223,6 +235,7 @@ class View(object):
 
         # Get colors for content
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
+        logging.info("markings: {}".format(markings))
         for key in markings:
             marks = markings[key]
             if 'cursor' in marks:
