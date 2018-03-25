@@ -745,7 +745,7 @@ class Datum(object):
                         base_labels.append("label:"+ key)
             elif self.config.annotation_type == AnnType.link:
                 # For links potentially indicate it is linked
-                if self.config.args.show_linked:
+                if not self.config.args.do_not_show_linked:
                     base_labels.append('linked')
             
             has_link = False
@@ -829,41 +829,44 @@ class Datum(object):
     def next_match(self, span, text, reverse=False):
         return self.doc.next_match(span, text, reverse)
 
-    def get_item_with_spans(self, spans):
+    def get_item_with_spans(self, spans, any_present=False):
+        items = []
         for item in self.annotations:
             match = 0
             for span in item.spans:
                 if span in spans:
                     match += 1
             if len(item.spans) == len(spans) == match:
-                return item
-        return None
+                items.append(item)
+            if any_present and match > 0:
+                items.append(item)
+        return items
 
     def modify_annotation(self, spans, label=None):
         # TODO: switch link to be like the old style
         to_edit = self.get_item_with_spans(spans)
-        if to_edit is None:
+        if len(to_edit) == 0:
             # No item with these spans exists, create it
             nspans = [Span(self.config.annotation, self.doc, s) for s in spans]
             item = Item(self.doc, nspans, label)
             self.annotations.append(item)
         else:
-            # Modify existing item
-            if label is None:
-                if len(to_edit.labels) == 0:
-                    self.annotations.remove(to_edit)
-            elif label in to_edit.labels:
-                to_edit.labels.remove(label)
-                if len(to_edit.labels) == 0:
-                    self.annotations.remove(to_edit)
-            else:
-                to_edit.labels.add(label)
+            for item in to_edit:
+                # Modify existing item
+                if label is None:
+                    if len(item.labels) == 0:
+                        self.annotations.remove(item)
+                elif label in item.labels:
+                    item.labels.remove(label)
+                    if len(item.labels) == 0:
+                        self.annotations.remove(item)
+                else:
+                    item.labels.add(label)
 
     def remove_annotation(self, spans):
-        to_remove = self.get_item_with_spans(spans)
-###        logging.info("Removing {} for {}".format(to_remove, spans))
-        if to_remove is not None:
-            self.annotations.remove(to_remove)
+        permissive = self.config.annotation_type == AnnType.link
+        for item in self.get_item_with_spans(spans, permissive):
+            self.annotations.remove(item)
 
     def write_out(self, filename=None):
         out_filename = self.output_file

@@ -171,7 +171,7 @@ def remove_annotation(user_input, action):
     if current_mode[-1] != Mode.read:
         spans = [view.cursor]
         if current_mode[-1] == Mode.link:
-            spans.append(view.linking_pos)
+            spans = [view.linking_pos]
         datum.remove_annotation(spans)
 
 def edit_annotation(user_input, action):
@@ -371,8 +371,8 @@ if __name__ == '__main__':
             help='Do not show help on startup.')
     parser.add_argument('--overwrite', default=False, action='store_true',
             help='If they exist already, overwrite output files.')
-    parser.add_argument('--show-linked', default=False, action='store_true',
-            help='Have a highlight to indicate any linked token.')
+    parser.add_argument('--do-not-show-linked', default=False, action='store_true',
+            help='Do not have a special color to indicate any linked token.')
     parser.add_argument('--prevent-self-links', default=False,
             action='store_true',
             help='Prevent an item to be linked to itself.')
