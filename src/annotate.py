@@ -373,12 +373,12 @@ if __name__ == '__main__':
             help='If they exist already, overwrite output files.')
     parser.add_argument('--show-linked', default=False, action='store_true',
             help='Have a highlight to indicate any linked token.')
-    parser.add_argument('--allow-self-links', default=False,
+    parser.add_argument('--prevent-self-links', default=False,
             action='store_true',
-            help='Allow an item to be linked to itself.')
-    parser.add_argument('--allow-all-links', default=False,
+            help='Prevent an item to be linked to itself.')
+    parser.add_argument('--prevent-forward-links', default=False,
             action='store_true',
-            help='Allow an item to be linked to one after itself.')
+            help='Prevent a link from an item to one after it.')
     parser.add_argument('--alternate-comparisons', default=False,
             action='store_true',
             help='Activate alternative way of showing different annotations (one colour per set of markings, rather than counts).')

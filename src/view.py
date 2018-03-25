@@ -20,6 +20,10 @@ class View(object):
         self.config = my_config
         self.must_show_linking_pos = False
 
+        if self.config.args.prevent_self_links and self.cursor == self.linking_pos:
+            # TODO: In this case move the linking pos along one step
+            pass
+
     def instructions(self):
         if self.config.annotation_type == AnnType.link:
             return [
@@ -45,20 +49,23 @@ class View(object):
         else: self.top -= 10
 
     def _check_move_allowed(self, move_link, new_pos):
-        if self.linking_pos is None or self.config.args.allow_all_links:
+        if self.linking_pos is None:
             return True
-        elif move_link:
-            if self.config.args.allow_self_links:
-                return self.cursor <= new_pos
-            else:
-                return self.cursor < new_pos
-        else:
-            if self.config.args.allow_self_links:
-                return self.linking_pos >= new_pos
-            else:
-                return self.linking_pos > new_pos
+        if self.config.args.prevent_forward_links:
+            if move_link and self.cursor > new_pos:
+                return False
+            if (not move_link) and self.linking_pos < new_pos:
+                return False
+        if self.config.args.prevent_self_links:
+            if move_link and self.cursor == new_pos:
+                return False
+            if (not move_link) and self.linking_pos == new_pos:
+                return False
+        return True
 
     def move(self, direction, distance, maxjump=False, move_link=False):
+        # TODO: if self links are prevented, but forward links are allowed,
+        # then skip over when moving.
         mover = self.cursor
         if move_link:
             mover = self.linking_pos
