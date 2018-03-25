@@ -17,7 +17,7 @@ A terminal-based text annotation tool written in Python.
 TODO: Update
 
 ```sh
-./annotation_tool.py <file with a list of files to annotate>
+python3 src/annotate.py example/
 ```
 
 The file should contain one filename per line.
@@ -102,6 +102,10 @@ A series of lines, each containing ([] are optional):
 
 This week:
 - Splash page of help rather than at the bottom
+- Quit without saving
+- Nicer examples
+- Tutorials on each mode
+- Legend/key giving keys and their labels + colors
 
 Future improvements:
 - Rather than highlighting text, use columns on the left (block of colour), for line mode at least. Not sure about tokens
@@ -135,6 +139,7 @@ Future improvements:
 - Handling clusters (make the set visible)
 - Nicer argument, error, and logging handling
 - Look into Pythonista to make an iOS version
+- Option to have jumping retain the span's size (at the moment it becomes a single item again)
 
 Internal:
 - Bug: Long text labels will cause a crash (if they span more than the width)
