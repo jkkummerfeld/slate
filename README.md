@@ -10,7 +10,7 @@ A terminal-based text annotation tool written in Python.
 - Works in constrained environments (e.g. only allowed ssh access to a machine)
 - Easily configurable and modifiable
 
-# Usage:
+## Usage:
 
 These two simple tutorials explain how to use the tool for annotating labels or links:
 
@@ -20,64 +20,87 @@ python3 src/annotate.py example/label-example.md -hh --ann-type categorical --an
 python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
 ```
 
-To run with a set of 
-
-Below is a complete list of commands for the two main modes.
-The file should contain one filename per line.
-If you wish, there can also be two numbers after each filename, indicating the line and token on which to start annotating.
-
 You will be shown files one at a time in plain text. Commands for are:
 
-Type                 | Key                         | Labelling Affect                 | Linking Affect
--------------------- | --------------------------- | -------------------------------- | ---------------------
-Movement             | `j` or `LEFT`               | move to the left                 | move antecedent to previous word
-.                    | `i` or `UP`                 | move up a line                   | move antecedent up a line
-.                    | `o` or `DOWN`               | move down a line                 | move antecedent down a line
-.                    | `;` or `RIGHT`              | move to next word                | move antecedent to next word
-.                    | `SHIFT` + [`j` of `LEFT`]   | go to the start of the line      | move to previous word
-.                    | `SHIFT` + [`;` of `RIGHT`]  | go to last word in line          | move to next word
-.                    | c or up arrow + shift       | go to first line                 | move up a line
-.                    | v or down arrow + shift     | go to last line                  | move down a line
-.                    | /                           | -                                | start typing a search term
-.                    | n or P                      | -                                | move to next search match
-.                    | p or N                      | -                                | move to previous search match
-Annotation           | `z`                         | [un]mark this token as z         | -
-.                    | `x`                         | [un]mark this token as x         | -
-.                    | `c`                         | [un]mark this token as c         | -
-.                    | `d`                         | -                                | create a link and move down / right
-.                    | `SHIFT` + `d`               | -                                | create a link
-.                    | `u`                         | undo annotation on this token    | undo all annotations for the current item
-Saving, exiting, etc | .                           | save and go to next file         | same
-.                    | ,                           | save and go to previous file     | same
-.                    | q                           | quit                             | same
-.                    | h                           | toggle help info (default on)    | same
+Type                        | Key                         | Labelling Affect                 | Linking Affect
+--------------------------- | --------------------------- | -------------------------------- | ---------------------
+Movement                    | `j` or `LEFT`               | move to the left                 | move selected item to the left
+"                           | `SHIFT` + [`j` or `LEFT`]   | go to the start of the line      | move linking item to the left
+"                           | `i` or `UP`                 | move up a line                   | move selected item up a line
+"                           | `SHIFT` + [`i` or `UP`]     | go to first line                 | move linking item up a line
+"                           | `o` or `DOWN`               | move down a line                 | move selected item down a line
+"                           | `SHIFT` + [`o` or `DWON`]   | go to last line                  | move linking item down a line
+"                           | `;` or `RIGHT`              | move to the right                | move selected item to the right
+"                           | `SHIFT` + [`;` or `RIGHT`]  | go to the end of the line        | move linking item to the right
+Label Annotation (default)  | `z`                         | [un]mark this item as z          | -
+"                           | `x`                         | [un]mark this item as x          | -
+"                           | `c`                         | [un]mark this item as c          | -
+Link Annotation             | `d`                         | -                                | create a link and move down / right
+"                           | `SHIFT` + `d`               | -                                | create a link
+Either Annotation mode      | `u`                         | undo annotation on this item     | undo all annotations for the current item
+Saving, exiting, etc        | `]`                         | save and go to next file         | same
+"                           | `[`                         | save and go to previous file     | same
+"                           | `q`                         | quit                             | same
+"                           | `h`                         | toggle help info (default on)    | same
 
-Note, when moving to the next or previous file, the current state is saved.
-If annotations are being saved without overwriting raw data then the annotated version will be read in.
-For example, if a file is annotated, then '/\' is typed, the file will be showing again with the new annotations.
+To annotate multiple files, specify more than one as an argument. For greater control, provide a list of files in a file specified with `--data-list`. The list should be formatted as follows:
 
+```
+raw_file [annotation_file [starting_position [other_annotations]]]
+```
 
-Tokens are coloured as follows:
+## Colours
 
- - Blue on white, current token under consideration
- - Green on black, {} tokens
- - Yellow on black, [] tokens
- - Purple on black, || tokens
+Colours and keys are customisable. For labelling, the default is:
+
+ - Underlined, current selected item
+ - Green on black, 'z' items
+ - Yellow on black, 'x' items
+ - Purple on black, 'c' items
  - Cyan on black, multiple types for a single token
 
-The tokens are also modified to show the annotations.
+For linking, the default is:
 
-If a file is too long to display on a single screen, moving off the top or
-bottom will cause redrawing so that the current token is always visible.
+ - Underlined, current selected item
+ - Green on black, current linking item
+ - Blue on black, item is linked to the current linking item
+ - Yellow on black, item is in some link, though not with the current linking item
 
-# Options:
+## Options:
 
-TODO: Update
+This is directly from running `./annotate.py -h`:
 
- - `-log <filename>`, default = `files_still_to_do`
- - `-overwrite [tf]`, default = false (annotations for a file will be saved in `<filename>.annotated`)
+```
+positional arguments:
+  data                  Files to be annotated
 
-# Config file format
+optional arguments:
+  -h, --help            show this help message and exit
+  --data-list DATA_LIST [DATA_LIST ...]
+                        Files containing lists of files to be annotated
+  --log-prefix LOG_PREFIX
+                        Prefix for logging files (otherwise none)
+  --readonly READONLY   Do not allow changes or save annotations.
+  -hh, --hide-help      Do not show help on startup.
+  --overwrite           If they exist already, overwrite output files.
+  --do-not-show-linked  Do not have a special color to indicate any linked
+                        token.
+  --prevent-self-links  Prevent an item to be linked to itself.
+  --prevent-forward-links
+                        Prevent a link from an item to one after it.
+  --alternate-comparisons
+                        Activate alternative way of showing different
+                        annotations (one colour per set of markings, rather
+                        than counts).
+  --ann-type {categorical,link}
+                        The type of annotation being done.
+  --ann-scope {character,token,line,document}
+                        The scope of annotation being done.
+  --config-file CONFIG_FILE
+                        A file containing configuration information.
+```
+
+## Config file format
 
 TODO: Update
 
@@ -90,16 +113,7 @@ A series of lines, each containing ([] are optional):
  - [end symbol], the text that will be added after the token
  - [color], not implemented yet.
 
-# Example:
-
-```
->> find . | grep 'tok$' > filenames_todo
->> ./annotation_tool.py filenames_todo -log do_later
-... do some work, then quit, go away, come back...
->> ./annotation_tool.py do_later -log do_even_later
-```
-
-# Notes on design choices
+## Notes on design choices
 
 # TODO:
 

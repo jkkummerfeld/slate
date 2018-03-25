@@ -331,7 +331,7 @@ class View(object):
         pos = int(height / 2)
         edge = 'end' if at_end else 'start'
         line0 = "At "+ edge +" in the files."
-        dir_key = ',' if at_end else '.'
+        dir_key = '[' if at_end else ']'
         line1 = "Type 'q' to quit, or '"+ dir_key+ "' to go back."
         self.window.addstr(pos, 0, line0, curses.color_pair(HELP_COLOR) + curses.A_BOLD)
         self.window.addstr(pos + 1, 0, line1, curses.color_pair(DEFAULT_COLOR) + curses.A_BOLD)

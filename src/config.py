@@ -142,9 +142,9 @@ input_action_list = {
     'help-toggle': [
         'h', ],
     'next-file': [
-        ']', (Mode.no_file, ']'), (Mode.no_file, '.'), ],
+        ']', (Mode.no_file, ']'), ],
     'prev-file': [
-        '[', (Mode.no_file, '['), (Mode.no_file, ','), ],
+        '[', (Mode.no_file, '['), ],
     'quit': [
         'Q', ],
     'save-and-quit': [
