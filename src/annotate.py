@@ -254,8 +254,6 @@ action_to_function = {
     'contract-link-down': change_span,
     'contract-link-left': change_span,
     'contract-link-right': change_span,
-    'next-match': None, # TODO
-    'prev-match': None, # TODO
     'page-up': shift_view,
     'page-down': shift_view,
     'help-toggle': toggle_help,

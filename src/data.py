@@ -360,22 +360,22 @@ value_from_comparisons = {
   (-1, -1, -1, -1, 0, 0): SpanCompare.larger_one_one, #               .    
 }
 
-span_compare_ge = [
+span_compare_ge = {
     SpanCompare.left_inside, SpanCompare.equal, SpanCompare.left_overlap,
     SpanCompare.inside, SpanCompare.inside_right, SpanCompare.overlap_start,
     SpanCompare.right_larger, SpanCompare.larger, SpanCompare.one_left,
     SpanCompare.one_inside, SpanCompare.one_right, SpanCompare.one_larger,
     SpanCompare.equal_one, SpanCompare.match_larger, SpanCompare.larger_one,
     SpanCompare.larger_one_one
-]
-span_compare_le = [
+}
+span_compare_le = {
     SpanCompare.smaller, SpanCompare.smaller_left, SpanCompare.overlap_end,
     SpanCompare.overlap_right, SpanCompare.left_inside, SpanCompare.equal,
     SpanCompare.inside, SpanCompare.inside_right, SpanCompare.one_smaller,
     SpanCompare.one_left, SpanCompare.one_inside, SpanCompare.one_right,
     SpanCompare.smaller_one, SpanCompare.smaller_match, SpanCompare.equal_one,
     SpanCompare.smaller_one_one
-]
+}
 
 class Span(object):
     """A continuous span of text.

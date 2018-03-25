@@ -39,7 +39,6 @@ Need to get papers (in 'broken'?):
  - SALTO - A Versatile Multi-Level Annotation Tool
  - The MATE Workbench Annotation Tool, a Technical Description
  - The SYNC3 Collaborative Annotation Tool
- - WordFreak: An Open Tool for Linguistic Annotation
 
 Maybe?
  - A Flexible Tool for Manual Word Sense Annotation

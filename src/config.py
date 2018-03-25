@@ -135,10 +135,6 @@ input_action_list = {
         'M', ],
     'contract-right': [
         '?', ],
-    'next-match': [
-        'n', 'P', ],
-    'prev-match': [
-        'p', 'N', ],
     'help-toggle': [
         'h', ],
     'next-file': [
