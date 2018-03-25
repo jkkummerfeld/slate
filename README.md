@@ -4,50 +4,53 @@ A terminal-based text annotation tool written in Python.
 
 ## Why use this tool?
 
+- Fast
 - Trivial installation
 - Focuses all of the screen space on annotation (good for large fonts)
-- Easily scalable font size
-- Fast
 - Works in constrained environments (e.g. only allowed ssh access to a machine)
-- Easily configurable
-
+- Easily configurable and modifiable
 
 # Usage:
 
-TODO: Update
+These two simple tutorials explain how to use the tool for annotating labels or links:
 
-```sh
-python3 src/annotate.py example/
+```bash
+python3 src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
+
+python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
 ```
 
+To run with a set of 
+
+Below is a complete list of commands for the two main modes.
 The file should contain one filename per line.
 If you wish, there can also be two numbers after each filename, indicating the line and token on which to start annotating.
 
 You will be shown files one at a time in plain text. Commands for are:
 
-Type                 | Key                     | Labelling Affect                 | Linking Affect
--------------------- | ----------------------- | -------------------------------- | ---------------------
-Movement             | left arrow              | move to previous word            | move antecedent to previous word
-.                    | left arrow + shift      | go to first word in line         | move to previous word
-.                    | right arrow             | move to next word                | move antecedent to next word
-.                    | right arrow + shift     | go to last word in line          | move to next word
-.                    | up arrow                | move up a line                   | move antecedent up a line
-.                    | c or up arrow + shift   | go to first line                 | move up a line
-.                    | down arrow              | move down a line                 | move antecedent down a line
-.                    | v or down arrow + shift | go to last line                  | move down a line
-.                    | /                       | -                                | start typing a search term
-.                    | n or P                  | -                                | move to next search match
-.                    | p or N                  | -                                | move to previous search match
-Annotation           | r                       | [un]mark this token as ||        | -
-.                    | s                       | [un]mark this token as {}        | -
-.                    | b                       | [un]mark this token as []        | -
-.                    | d                       | -                                | create a link and move down / right
-.                    | D                       | -                                | create a link
-.                    | u                       | undo annotation on this token    | undo all annotations for the current item
-Saving, exiting, etc | .                       | save and go to next file         | same
-.                    | ,                       | save and go to previous file     | same
-.                    | q                       | quit                             | same
-.                    | h                       | toggle help info (default on)    | same
+Type                 | Key                         | Labelling Affect                 | Linking Affect
+-------------------- | --------------------------- | -------------------------------- | ---------------------
+Movement             | `j` or `LEFT`               | move to the left                 | move antecedent to previous word
+                     | `i` or `UP`                 | move up a line                   | move antecedent up a line
+                     | `o` or `DOWN`               | move down a line                 | move antecedent down a line
+                     | `;` or `RIGHT`              | move to next word                | move antecedent to next word
+                     | `SHIFT` + [`j` of `LEFT`]   | go to the start of the line      | move to previous word
+                     | `SHIFT` + [`;` of `RIGHT`]  | go to last word in line          | move to next word
+                     | c or up arrow + shift       | go to first line                 | move up a line
+                     | v or down arrow + shift     | go to last line                  | move down a line
+                     | /                           | -                                | start typing a search term
+                     | n or P                      | -                                | move to next search match
+                     | p or N                      | -                                | move to previous search match
+Annotation           | `z`                         | [un]mark this token as z         | -
+.                    | `x`                         | [un]mark this token as x         | -
+.                    | `c`                         | [un]mark this token as c         | -
+.                    | `d`                         | -                                | create a link and move down / right
+.                    | `SHIFT` + `d`               | -                                | create a link
+.                    | `u`                         | undo annotation on this token    | undo all annotations for the current item
+Saving, exiting, etc | .                           | save and go to next file         | same
+.                    | ,                           | save and go to previous file     | same
+.                    | q                           | quit                             | same
+.                    | h                           | toggle help info (default on)    | same
 
 Note, when moving to the next or previous file, the current state is saved.
 If annotations are being saved without overwriting raw data then the annotated version will be read in.
