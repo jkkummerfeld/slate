@@ -5,8 +5,8 @@ This file is intended to help learn about text linking with slate.
 When linking, one item is marked with an underline, and another is marked with
 green text. At the moment, the top line should be both green and highlighted.
 
-  > Try moving the green line down by pressing SHIFT + DOWN (OS X only) or 'o'.
-  > Now try moving it up with SHIFT + UP (OS X only) or 'i'.
+  >- Try moving the green line down by pressing SHIFT + DOWN (OS X only) or 'o'.
+  >-  Now try moving it up with SHIFT + UP (OS X only) or 'i'.
 
 Move the green line down a few lines and try moving the highlighted line with
 UP and DOWN. Note that the highlighted line cannot go below the green line.
