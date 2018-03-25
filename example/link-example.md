@@ -4,7 +4,9 @@ This file is intended to help learn about text linking with slate. It is
 intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
-  >- ```./src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite```
+```shell
+./src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
+```
 
 When linking, one item is marked with an underline, and another is marked with
 green text. At the moment, the top line should be both green and underlined.

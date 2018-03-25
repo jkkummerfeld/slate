@@ -4,7 +4,9 @@ This file is intended to help learn about text labelling with slate. It is
 intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
-  >- ```./src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite```
+```shell
+./src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
+```
 
 When labelling, the current item is underlined. In this case, that means the
 very first token of this document.
