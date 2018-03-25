@@ -31,16 +31,16 @@ You will be shown files one at a time in plain text. Commands for are:
 Type                 | Key                         | Labelling Affect                 | Linking Affect
 -------------------- | --------------------------- | -------------------------------- | ---------------------
 Movement             | `j` or `LEFT`               | move to the left                 | move antecedent to previous word
-                     | `i` or `UP`                 | move up a line                   | move antecedent up a line
-                     | `o` or `DOWN`               | move down a line                 | move antecedent down a line
-                     | `;` or `RIGHT`              | move to next word                | move antecedent to next word
-                     | `SHIFT` + [`j` of `LEFT`]   | go to the start of the line      | move to previous word
-                     | `SHIFT` + [`;` of `RIGHT`]  | go to last word in line          | move to next word
-                     | c or up arrow + shift       | go to first line                 | move up a line
-                     | v or down arrow + shift     | go to last line                  | move down a line
-                     | /                           | -                                | start typing a search term
-                     | n or P                      | -                                | move to next search match
-                     | p or N                      | -                                | move to previous search match
+.                    | `i` or `UP`                 | move up a line                   | move antecedent up a line
+.                    | `o` or `DOWN`               | move down a line                 | move antecedent down a line
+.                    | `;` or `RIGHT`              | move to next word                | move antecedent to next word
+.                    | `SHIFT` + [`j` of `LEFT`]   | go to the start of the line      | move to previous word
+.                    | `SHIFT` + [`;` of `RIGHT`]  | go to last word in line          | move to next word
+.                    | c or up arrow + shift       | go to first line                 | move up a line
+.                    | v or down arrow + shift     | go to last line                  | move down a line
+.                    | /                           | -                                | start typing a search term
+.                    | n or P                      | -                                | move to next search match
+.                    | p or N                      | -                                | move to previous search match
 Annotation           | `z`                         | [un]mark this token as z         | -
 .                    | `x`                         | [un]mark this token as x         | -
 .                    | `c`                         | [un]mark this token as c         | -
