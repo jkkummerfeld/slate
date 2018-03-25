@@ -313,7 +313,7 @@ def annotate(window_in, config, filenames):
 
         # Get input
         user_input = window.getch()
-        logging.info("Read {} in mode {}".format(user_input, current_mode))
+        logging.info("User input gave {} in mode {}".format(user_input, current_mode))
         nsteps += 1
         if nsteps % 100 == 0 and current_mode[-1] == Mode.category:
             datum.write_out()
