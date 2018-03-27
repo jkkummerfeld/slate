@@ -32,6 +32,14 @@ Movement                    | `j` or `LEFT`               | move to the left    
 "                           | `SHIFT` + [`o` or `DWON`]   | go to last line                  | move linking item down a line
 "                           | `;` or `RIGHT`              | move to the right                | move selected item to the right
 "                           | `SHIFT` + [`;` or `RIGHT`]  | go to the end of the line        | move linking item to the right
+Edit Span                   | `m`                         | extend left                      | -
+"                           | `SHIFT` + `m`               | contract left side               | -
+"                           | `k`                         | extend up                        | -
+"                           | `SHIFT` + `k`               | contract top                     | -
+"                           | `l`                         | extend down                      | -
+"                           | `SHIFT` + `l`               | contract bottom                  | -
+"                           | `/`                         | extend right                     | -
+"                           | `SHIFT` + `/`               | contract right side              | -
 Label Annotation (default)  | `z`                         | [un]mark this item as z          | -
 "                           | `x`                         | [un]mark this item as x          | -
 "                           | `c`                         | [un]mark this item as c          | -
