@@ -146,10 +146,17 @@ class View(object):
                         name = COMPARE_DISAGREE_COLOR
                     else:
                         count = int(mark.split("-")[-2])
-                        name = COMPARE_REF_COLORS[count - 1]
+                        if count > 0:
+                            name = COMPARE_REF_COLORS[count - 1]
                 else:
+                    count = int(mark.split("-")[-2])
                     if name == DEFAULT_COLOR:
-                        name = COMPARE_DISAGREE_COLOR
+                        if count == 0:
+                            key = mark.split("-")[-1]
+                            if key in self.config.labels:
+                                name = self.config.get_color_for_label(key)
+                        else:
+                            name = COMPARE_DISAGREE_COLOR
 ###                    key = mark.split("-")[-1]
 ###                    if key in self.config.labels:
 ###                        name = self.config.get_color_for_label(mark)

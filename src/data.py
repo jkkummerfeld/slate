@@ -705,8 +705,7 @@ class Datum(object):
                     all_item_counts[h] = 1
         for h in all_item_counts:
             count = all_item_counts[h]
-            if count < len(self.other_annotations):
-                self.disagreements.append((hash_to_item[h], count))
+            self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
 
     def get_all_markings(self, cursor, linking_pos):
         ans = {}
