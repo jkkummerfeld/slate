@@ -304,7 +304,7 @@ class View(object):
                         extra_text_lines.append(mark)
                     elif 'compare-' in mark and 'ref' not in mark:
                         parts = mark.split("-")
-                        count = int(parts[-2])
+                        count = len(self.datum.other_annotations) - int(parts[-2])
                         label = parts[-1]
                         extra_text_lines.append("{} marked as {}".format(count, label))
 
