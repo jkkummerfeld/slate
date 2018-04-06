@@ -110,9 +110,9 @@ def add_to_typing(user_input, action):
         return
 
     if current_mode[-1] == Mode.write_query:
-        search_term += chr(user_input)
+        search_term += user_input[0]
     else:
-        partial_typing += chr(user_input)
+        partial_typing += user_input[0]
 
 def change_file(user_input, action):
     global current_mode, cfilename, filename, datum, view, config
@@ -156,7 +156,7 @@ def update_number(user_input, action):
     if current_mode[-1] == Mode.no_file:
         return
 
-    num = int(chr(user_input))
+    num = int(user_input[0])
     if current_num is None:
         current_num = 0
     else:
@@ -175,12 +175,13 @@ def remove_annotation(user_input, action):
         datum.remove_annotation(spans)
 
 def edit_annotation(user_input, action):
-    global view, current_mode, datum
+    global view, current_mode, datum, config
     if current_mode[-1] == Mode.no_file:
         return
 
     if current_mode[-1] == Mode.category:
-        datum.modify_annotation([view.cursor], chr(user_input))
+        label = config.get_label_for_input(user_input)
+        datum.modify_annotation([view.cursor], label)
 
 def create_link(user_input, action):
     global view, datum, config
@@ -269,6 +270,12 @@ action_to_function = {
     'update-num': update_number,
 }
 
+def input_to_symbol(num):
+    if num in key_to_symbol:
+        return key_to_symbol[num]
+    else:
+        return "UNKNOWN"
+
 def get_view(datum, config, file_num, total_files, position, show_help):
     global window
 
@@ -296,6 +303,7 @@ def annotate(window_in, config, filenames):
     last_num = None
     at_end = None
     nsteps = 0
+    user_input = []
     while True:
         # Set current search term appearance
         tmp_term = search_term
@@ -310,8 +318,14 @@ def annotate(window_in, config, filenames):
         view.must_show_linking_pos = False
 
         # Get input
-        user_input = window.getch()
-        logging.info("User input gave {} in mode {}".format(user_input, current_mode))
+        next_user_input = input_to_symbol(window.getch())
+        user_input.append(next_user_input)
+        tuser_input = tuple(user_input)
+        if (current_mode[-1], tuser_input) not in config.valid_prefixes:
+            if (None, tuser_input) not in config.valid_prefixes:
+                user_input = [next_user_input]
+                tuser_input = (next_user_input,)
+        logging.info("Input {} in mode {} giving {}".format(next_user_input, current_mode, user_input))
         nsteps += 1
         if nsteps % 100 == 0 and current_mode[-1] == Mode.category:
             datum.write_out()
@@ -319,19 +333,20 @@ def annotate(window_in, config, filenames):
         # Determine what to do for the input
         action = None
         function = None
-        if (current_mode[-1], user_input) in config.input_to_action:
-            action = config.input_to_action[current_mode[-1], user_input]
+        if (current_mode[-1], tuser_input) in config.input_to_action:
+            action = config.input_to_action[current_mode[-1], tuser_input]
             if action in action_to_function:
                 function = action_to_function[action]
-        elif (None, user_input) in config.input_to_action:
-            action = config.input_to_action[None, user_input]
+        elif (None, tuser_input) in config.input_to_action:
+            action = config.input_to_action[None, tuser_input]
             if action in action_to_function:
                 function = action_to_function[action]
-        logging.info("{} {} -> {} {}".format(current_mode, user_input, action, function))
+        logging.info("{} {} -> {} {}".format(current_mode, tuser_input, action, function))
 
         # Do it!
         if function is not None:
-            outcome = function(user_input, action)
+            outcome = function(tuser_input, action)
+            user_input = []
             if outcome == 'quit':
                 break
 
@@ -414,9 +429,9 @@ if __name__ == '__main__':
     else:
         config = Config(args, 
             {
-                'z': ('SELL', 'green'),
-                'x': ('BUY', 'blue'),
-                'c': ('RATE', 'magenta'),
+                'SELL': (('SPACE', 'a'), 'green'),
+                'BUY': (('SPACE', 's'), 'blue'),
+                'RATE': (('SPACE', 'd'), 'magenta'),
             }
         )
 

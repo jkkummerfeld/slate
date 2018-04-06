@@ -1,6 +1,5 @@
 # Next Steps
 
-- Quit without saving
 - Nicer examples
 - Tutorials on each mode
 - Legend/key giving keys and their labels + colors
@@ -10,8 +9,6 @@
 - Allow multiple annotations of the same file at the same time
 - For blank lines, option to print only one in a row
 - Variable location of instructions
-- Allow default key assignment to include 0
-- Allow multi-key labels
 - Allow auto-search over labels (i.e. user types characters and we search over labels to get the right one as they type)
 - Allow definition of keys to jump to next match on a regex or even a simple string
 - Add the option to read in the raw data when going back to a seen file
