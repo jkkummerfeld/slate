@@ -131,7 +131,7 @@ input_action_list = {
         'M', ],
     'contract-right': [
         '?', ],
-    'help-toggle': [
+    'toggle-help': [
         'h', ],
     'next-file': [
         ']', (Mode.no_file, ']'), ],
@@ -153,6 +153,10 @@ input_action_list = {
         (None, 'u'), ],
     'update-num': [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ],
+    'toggle-progress': [
+            ['>', 'p'], ],
+    'toggle-legend': [
+            ['>', 'l'], ],
 }
 
 # Fill in all other characters for searching
@@ -286,7 +290,6 @@ class Config(object):
         return self.input_to_label.get(user_input, None)
 
     def add_keybinding(self, mode, key, action):
-        logging.info("adding key: {} {} {}".format(mode, key, action))
         pair = (mode, key)
         if pair in self.input_to_action:
             raise Exception("input {} used twice".format(pair))

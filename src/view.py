@@ -9,13 +9,15 @@ from config import *
 from data import Span, span_compare_ge, span_compare_le
 
 class View(object):
-    def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, show_help):
+    def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num):
         self.window = window
         self.cursor = cursor
         self.linking_pos = linking_pos
         self.datum = datum
         self.top = max(0, cursor.start[0] - self.window.getmaxyx()[0] - 10)
-        self.show_help = show_help
+        self.show_help = False
+        self.show_legend = False
+        self.show_progress = False
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.config = my_config
         self.must_show_linking_pos = False
@@ -25,9 +27,14 @@ class View(object):
             pass
 
     def instructions(self):
+        shared = [
+            "Misc      | ] ]                   | save and go to next ] / previous [ file",
+            "          | q Q                   | quit with or without saving            ",
+            "          | h                     | toggle help info (default on)          ",
+            "          | s                     | save the current file                  ",
+        ]
         if self.config.annotation_type == AnnType.link:
             return [
-                self.progress,
                 "Colors are underline:slected, green:linking, blue:linked, yellow:has_link",
                 "         | Key                  | Affect                             ",
                 "---------|----------------------|------------------------------------",
@@ -42,14 +49,10 @@ class View(object):
                 "Annotate | d                    | create a link and move down / right",
                 "         | SHIFT + d            | create a link                      ",
                 "         | u                    | undo all annotations for this item ",
-                "Misc     | ]                    | save and go to next file           ",
-                "         | [                    | save and go to previous file       ",
-                "         | q                    | save and quit                      ",
-                "         | h                    | toggle help info                   ",
-            ]
+            ] + shared
         else:
             return [
-                self.progress + " Underline is current, colors are labels",
+                " Underline is current, colors are labels",
                 "Type      | Key                   | Affect                 ",
                 "----------|-----------------------|------------------------------",
                 "Move      | j or LEFT             | move to the left             ",
@@ -70,13 +73,12 @@ class View(object):
                 "          | SHIFT + /             | contract right side              ",
                 "Annotate  | z, x, c               | [un]mark this item as z, x, or c      ",
                 "          | u                     | undo annotation on this item ",
-                "Misc      | ] ]                   | save and go to next ] / previous [ file     ",
-                "          | q                     | quit                         ",
-                "          | h                     | toggle help info (default on)",
-            ]
+            ] + shared
 
     def toggle_help(self):
         self.show_help = not self.show_help
+    def toggle_progress(self):
+        self.show_progress = not self.show_progress
 
     def shift_view(self, down=False):
         if down: self.top += 10
@@ -290,6 +292,7 @@ class View(object):
 
         # Get content for extra lines
         extra_text_lines = []
+        if self.show_progress: extra_text_lines.append(self.progress)
         if len(current_search) > 0: extra_text_lines.append(current_search)
         if len(current_typing) > 0: extra_text_lines.append(current_typing)
 

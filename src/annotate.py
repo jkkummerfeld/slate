@@ -129,17 +129,21 @@ def change_file(user_input, action):
         filename, start_pos, output_file, annotation_files = \
                 filenames[cfilename]
         datum = Datum(filename, config, output_file, annotation_files)
-        view = get_view(datum, config, cfilename, len(filenames), start_pos,
-                view.show_help)
+        view = get_view(datum, config, cfilename, len(filenames), start_pos)
     elif current_mode != Mode.no_file:
         current_mode.append(Mode.no_file)
 
-def toggle_help(user_input, action):
+def modify_display(user_input, action):
     global view
     if current_mode[-1] == Mode.no_file:
         return
 
-    view.toggle_help()
+    if 'help' in action:
+        view.toggle_help()
+    elif 'progress' in action:
+        view.toggle_progress()
+    elif 'legend' in action:
+        view.toggle_legend()
 
 def shift_view(user_input, action):
     global view
@@ -257,7 +261,9 @@ action_to_function = {
     'contract-link-right': change_span,
     'page-up': shift_view,
     'page-down': shift_view,
-    'help-toggle': toggle_help,
+    'toggle-help': modify_display,
+    'toggle-progress': modify_display,
+    'toggle-legend': modify_display,
     'next-file': change_file,
     'prev-file': change_file,
     'quit': save_or_quit,
@@ -276,12 +282,12 @@ def input_to_symbol(num):
     else:
         return "UNKNOWN"
 
-def get_view(datum, config, file_num, total_files, position, show_help):
+def get_view(datum, config, file_num, total_files, position):
     global window
 
     cursor = position
     link = position if config.annotation_type == AnnType.link else None
-    return View(window, cursor, link, datum, config, file_num, total_files, show_help)
+    return View(window, cursor, link, datum, config, file_num, total_files)
 
 def annotate(window_in, config, filenames):
     global current_mode, search_term, cfilename, filename, datum, view, window
@@ -298,7 +304,9 @@ def annotate(window_in, config, filenames):
     cfilename = 0
     filename, start_pos, output_file, annotation_files = filenames[cfilename]
     datum = Datum(filename, config, output_file, annotation_files)
-    view = get_view(datum, config, cfilename, len(filenames), start_pos, args.hide_help == False)
+    view = get_view(datum, config, cfilename, len(filenames), start_pos)
+    if not args.hide_help:
+        view.toggle_help()
 
     last_num = None
     at_end = None
@@ -323,8 +331,10 @@ def annotate(window_in, config, filenames):
         tuser_input = tuple(user_input)
         if (current_mode[-1], tuser_input) not in config.valid_prefixes:
             if (None, tuser_input) not in config.valid_prefixes:
-                user_input = [next_user_input]
-                tuser_input = (next_user_input,)
+                if (current_mode[-1], tuser_input) not in config.input_to_action:
+                    if (None, tuser_input) not in config.input_to_action:
+                        user_input = [next_user_input]
+                        tuser_input = (next_user_input,)
         logging.info("Input {} in mode {} giving {}".format(next_user_input, current_mode, user_input))
         nsteps += 1
         if nsteps % 100 == 0 and current_mode[-1] == Mode.category:
