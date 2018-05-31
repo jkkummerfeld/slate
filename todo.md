@@ -22,7 +22,7 @@
 - Allow different default when resolving disagreements (rather than the union, only have those with agreement, or a majority). Note, this is subtle, as it interacts with the way colouring works.
 - Ability to colour linked items as they are created (to see the history). Either always showing all using different colours, or showing what the cursor is linked to.
 - Option to not allow annotation of some files (and not create a file)
-- Look into the LAF format for data input / output
+- Look into the Concrete format (https://www.cs.jhu.edu/~vandurme/papers/concretely-annotated-corpora.pdf) amd the LAF format for data input / output
 - Show the set of available labels
 - Specify every chunk must be labeled, or only some
 - Be able to annotate with errors (creating new errors along the way) and then sort by label
@@ -33,6 +33,7 @@
 - Option to have jumping retain the span's size (at the moment it becomes a single item again)
 - Shortcut to jump to just before the link line
 - When the movement key is pressed multiple times in a row quickly, start jumping further [optional], or have a fast jump key?
+- Be able to mix levels (e.g. dialogue acts per line, and named entities within the line)
 
 ### Internal
 
@@ -41,3 +42,6 @@
 - Improve speed of jumping back down
 - For help, compose it out of a set of items, with line breaks changing when the screen is narrow
 
+### Supplementary tools
+
+- IAA calculator (at all possible scales)
