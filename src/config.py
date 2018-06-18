@@ -157,6 +157,14 @@ input_action_list = {
             ['>', 'p'], ],
     'toggle-legend': [
             ['>', 'l'], ],
+    'search-prev': [
+        'p', ],
+    'search-next': [
+        'n', ],
+    'search-link-prev': [
+        'P', ],
+    'search-link-next': [
+        'N', ],
 }
 
 # Fill in all other characters for searching

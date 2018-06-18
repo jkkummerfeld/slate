@@ -19,6 +19,8 @@ class View(object):
         self.show_legend = False
         self.show_progress = False
         self.progress = "file {} / {}".format(cnum + 1, total_num)
+        self.show_legend = False
+        self.legend = "Legend (TBD)"
         self.config = my_config
         self.must_show_linking_pos = False
 
@@ -38,19 +40,19 @@ class View(object):
         if self.config.annotation_type == AnnType.link:
             return [
                 "Colors are underline:slected, green:linking, blue:linked, yellow:has_link",
-                "          | Key                  | Affect                             ",
-                "----------|----------------------|------------------------------------",
-                "Move      | j or LEFT            | move selected item to the left     ",
-                "          | SHIFT + [j or LEFT]  | move linking item to the left      ",
-                "          | i or UP              | move selected item up a line       ",
-                "          | SHIFT + [i or UP]    | move linking item up a line        ",
-                "          | o or DOWN            | move selected item down a line     ",
-                "          | SHIFT + [o or DWON]  | move linking item down a line      ",
-                "          | ; or RIGHT           | move selected item to the right    ",
-                "          | SHIFT + [; or RIGHT] | move linking item to the right     ",
-                "Annotate  | d                    | create a link and move down / right",
-                "          | SHIFT + d            | create a link                      ",
-                "          | u                    | undo all annotations for this item ",
+                "          | Key                   | Affect                             ",
+                "----------|-----------------------|------------------------------------",
+                "Move      | j or LEFT             | move selected item to the left     ",
+                "          | SHIFT + [j or LEFT]   | move linking item to the left      ",
+                "          | i or UP               | move selected item up a line       ",
+                "          | SHIFT + [i or UP]     | move linking item up a line        ",
+                "          | o or DOWN             | move selected item down a line     ",
+                "          | SHIFT + [o or DWON]   | move linking item down a line      ",
+                "          | ; or RIGHT            | move selected item to the right    ",
+                "          | SHIFT + [; or RIGHT]  | move linking item to the right     ",
+                "Annotate  | d                     | create a link and move down / right",
+                "          | SHIFT + d             | create a link                      ",
+                "          | u                     | undo all annotations for this item ",
             ] + shared
         else:
             return [
@@ -81,6 +83,8 @@ class View(object):
         self.show_help = not self.show_help
     def toggle_progress(self):
         self.show_progress = not self.show_progress
+    def toggle_legend(self):
+        self.show_legend = not self.show_legend
 
     def shift_view(self, down=False):
         self.last_moved_pos = None
@@ -112,6 +116,19 @@ class View(object):
 ###        logging.info("Move {} {} {}".format(self.cursor, direction, distance))
         new_pos = mover.edited(direction, 'move', distance, maxjump)
 ###        logging.info("Moving {} to {}".format(self.cursor, new_pos))
+        if self._check_move_allowed(move_link, new_pos):
+            if move_link:
+                self.linking_pos = new_pos
+            else:
+                self.cursor = new_pos
+            self.last_moved_pos = new_pos
+
+    def search(self, query, direction, count, maxjump=False, move_link=False):
+        logging.info("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
+        mover = self.cursor
+        if move_link:
+            mover = self.linking_pos
+        new_pos = mover.search(query, direction, count, maxjump)
         if self._check_move_allowed(move_link, new_pos):
             if move_link:
                 self.linking_pos = new_pos
@@ -274,7 +291,7 @@ class View(object):
 
 
     def render(self, current_search, current_typing):
-        logging.info("Render with '{}' and '{}'".format(current_search, current_typing))
+###        logging.info("Render with '{}' and '{}'".format(current_search, current_typing))
         if self.show_help:
             self.render_help()
             return
@@ -284,12 +301,13 @@ class View(object):
         # Get content for extra lines
         extra_text_lines = []
         if self.show_progress: extra_text_lines.append(self.progress)
+        if self.show_legend: extra_text_lines.append(self.legend)
         if len(current_search) > 0: extra_text_lines.append(current_search)
         if len(current_typing) > 0: extra_text_lines.append(current_typing)
 
         # Get colors for content
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
-        logging.info("markings: {}".format(markings))
+###        logging.info("markings: {}".format(markings))
         for key in markings:
             marks = markings[key]
             if 'cursor' in marks:

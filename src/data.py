@@ -79,6 +79,7 @@ class Document(object):
     def __init__(self, filename):
         self.raw_text = open(filename).read()
         self.lines = self.raw_text.split("\n")
+        self.search_cache = {}
 
         self.tokens = []
         self.first_char = None
@@ -114,39 +115,31 @@ class Document(object):
 
             return (line, token, char)
 
-    def next_match(self, pos, text, reverse=False):
-        return pos
-        # TODO:
-###        if len(pos) == 1:
-###            cline = pos[0]
-###            delta = -1 if reverse else 1
-###            while 0 <= cline < len(self.lines):
-###                if text in self.lines[cline]:
-###                    return (cline)
-###                cline += delta
-###        elif len(pos) > 1:
-###            # Check this line first
-###            if text in self.lines[pos[0]]:
-###                parts = self.lines[pos[0]].split(text)
-###                ctoken, cchar = 0, 0
-###                options = []
-###                for part in parts:
-###                    # Advance
-###                    for char in part:
-###                        if char == ' ':
-###                            ctoken += 1
-###                            cchar = 0
-###                        else:
-###                            cchar += 1
-###                    options.append((ctoken, cchar))
-###                    for char in text:
-###                        if char == ' ':
-###                            ctoken += 1
-###                            cchar = 0
-###                        else:
-###                            cchar += 1
-###                pass
-###        return pos
+    def matches(self, text):
+        if text not in self.search_cache:
+            positions = []
+            self.search_cache[text] = positions
+            for line_no, line in enumerate(self.lines):
+                if text in line:
+                    parts = line.split(text)
+                    ctoken, cchar = 0, 0
+                    options = []
+                    for part in parts[:-1]:
+                        # Advance
+                        for char in part:
+                            if char == ' ':
+                                ctoken += 1
+                                cchar = 0
+                            else:
+                                cchar += 1
+                        positions.append((line_no, ctoken, cchar))
+                        for char in text:
+                            if char == ' ':
+                                ctoken += 1
+                                cchar = 0
+                            else:
+                                cchar += 1
+        return self.search_cache[text]
 
     def get_moved_pos(self, pos, right=0, down=0, maxjump=False, skip_blank=True):
         """Calculate a shifted version of  a given a position in this document.
@@ -469,9 +462,10 @@ class Span(object):
             return True
     def __lt__(self, other):
         assert type(self) == type(other)
-        if self._compare_tuples(self.start, other.start) == 0:
+        comp = self._compare_tuples(self.start, other.start)
+        if comp == 0:
             return self._compare_tuples(self.end, other.end) == 1
-        return self._compare_tuples(self.start, other.start) == 1
+        return comp == 1
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -512,6 +506,23 @@ class Span(object):
         start = self.doc.get_3tuple(start)
         end = self.doc.get_3tuple(end)
         return Span(AnnScope.character, self.doc, (start, end))
+
+    def search(self, query, direction=None, count=1, maxjump=False):
+        options = self.doc.matches(query)
+        logging.info(options)
+        ans = None
+        for option in options:
+            comp = self._compare_tuples(self.start, option)
+            if comp < 0 and direction == 'prev':
+                ans = option
+            elif comp > 0:
+                if direction == 'next':
+                    ans = option
+                break
+        if ans is None:
+            return self
+        else:
+            return Span(self.scope, self.doc, ans[:len(self.start)])
 
     def edited(self, direction=None, change=None, distance=1, maxjump=False):
         """Change this span, either moving both ends or only one.

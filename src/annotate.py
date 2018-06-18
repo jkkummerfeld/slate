@@ -203,7 +203,7 @@ def create_link(user_input, action):
         view.must_show_linking_pos = True
 
 def save_or_quit(user_input, action):
-    global current_mode, filenames, cfilename
+    global view
 
     if 'save' in action:
         if current_mode[-1] != Mode.read:
@@ -221,6 +221,25 @@ def save_or_quit(user_input, action):
             # Have an 'are you sure?' step
             pass
         return 'quit'
+
+def search(user_input, action):
+    global current_num, current_mode, view, search_term
+    if current_mode[-1] == Mode.no_file:
+        return
+
+    direction = action.split('-')[-1]
+    jump = False
+    link = 'link' in action
+
+    num = 1
+    if current_num == 0:
+        jump = True
+        current_num = None
+    elif current_num is not None:
+        num = current_num
+        current_num = None
+
+    view.search(search_term, direction, num, jump, link)
 
 action_to_function = {
     'delete-query-char': delete_typing_char,
@@ -259,6 +278,10 @@ action_to_function = {
     'contract-link-down': change_span,
     'contract-link-left': change_span,
     'contract-link-right': change_span,
+    'search-prev': search,
+    'search-next': search,
+    'search-link-prev': search,
+    'search-link-next': search,
     'page-up': shift_view,
     'page-down': shift_view,
     'toggle-help': modify_display,
@@ -313,15 +336,15 @@ def annotate(window_in, config, filenames):
     nsteps = 0
     user_input = []
     while True:
-        # Set current search term appearance
-        tmp_term = search_term
-        if current_mode[-1] == Mode.write_query:
-            tmp_term = '/'+ tmp_term
-
         # Draw screen
         if current_mode[-1] == Mode.no_file:
             view.render_edgecase(cfilename > 0)
         else:
+            # Set current search term appearance
+            tmp_term = search_term
+            if current_mode[-1] == Mode.write_query:
+                tmp_term = '\\'+ tmp_term
+
             view.render(tmp_term, partial_typing)
         view.must_show_linking_pos = False
 
