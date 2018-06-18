@@ -22,6 +22,8 @@ class View(object):
         self.config = my_config
         self.must_show_linking_pos = False
 
+        self.last_moved_pos = None
+
         if self.config.args.prevent_self_links and self.cursor == self.linking_pos:
             # TODO: In this case move the linking pos along one step
             pass
@@ -36,19 +38,19 @@ class View(object):
         if self.config.annotation_type == AnnType.link:
             return [
                 "Colors are underline:slected, green:linking, blue:linked, yellow:has_link",
-                "         | Key                  | Affect                             ",
-                "---------|----------------------|------------------------------------",
-                "Move     | j or LEFT            | move selected item to the left     ",
-                "         | SHIFT + [j or LEFT]  | move linking item to the left      ",
-                "         | i or UP              | move selected item up a line       ",
-                "         | SHIFT + [i or UP]    | move linking item up a line        ",
-                "         | o or DOWN            | move selected item down a line     ",
-                "         | SHIFT + [o or DWON]  | move linking item down a line      ",
-                "         | ; or RIGHT           | move selected item to the right    ",
-                "         | SHIFT + [; or RIGHT] | move linking item to the right     ",
-                "Annotate | d                    | create a link and move down / right",
-                "         | SHIFT + d            | create a link                      ",
-                "         | u                    | undo all annotations for this item ",
+                "          | Key                  | Affect                             ",
+                "----------|----------------------|------------------------------------",
+                "Move      | j or LEFT            | move selected item to the left     ",
+                "          | SHIFT + [j or LEFT]  | move linking item to the left      ",
+                "          | i or UP              | move selected item up a line       ",
+                "          | SHIFT + [i or UP]    | move linking item up a line        ",
+                "          | o or DOWN            | move selected item down a line     ",
+                "          | SHIFT + [o or DWON]  | move linking item down a line      ",
+                "          | ; or RIGHT           | move selected item to the right    ",
+                "          | SHIFT + [; or RIGHT] | move linking item to the right     ",
+                "Annotate  | d                    | create a link and move down / right",
+                "          | SHIFT + d            | create a link                      ",
+                "          | u                    | undo all annotations for this item ",
             ] + shared
         else:
             return [
@@ -81,6 +83,7 @@ class View(object):
         self.show_progress = not self.show_progress
 
     def shift_view(self, down=False):
+        self.last_moved_pos = None
         if down: self.top += 10
         else: self.top -= 10
 
@@ -114,6 +117,7 @@ class View(object):
                 self.linking_pos = new_pos
             else:
                 self.cursor = new_pos
+            self.last_moved_pos = new_pos
     
     def adjust(self, direction, distance, change, maxjump=False):
         new_pos = self.cursor.edited(direction, change, distance, maxjump)
@@ -258,28 +262,15 @@ class View(object):
                 if row >= height:
                     break
 
-        # Tracks if the cursor is vsible
-        seen_cursor = False
-        seen_linking_pos = False
+        # Tracks if we can see where we moved to
+        seen_last_moved_pos = True
         if first_span is not None and last_span is not None:
-###            logging.info("Trying {} vs. {} {}".format(self.cursor, first_span, last_span))
-            cmp_first = self.cursor.compare(first_span) 
-            cmp_last = self.cursor.compare(last_span) 
-            seen_cursor = cmp_first in span_compare_ge and \
-                    cmp_last in span_compare_le
-###            logging.info("Got {} {}".format(cmp_first, cmp_last))
-
-            if self.linking_pos is not None:
-                cmp_first = self.linking_pos.compare(first_span) 
-                cmp_last = self.linking_pos.compare(last_span) 
-                seen_linking_pos = cmp_first in span_compare_ge and \
+            if self.last_moved_pos is not None:
+                cmp_first = self.last_moved_pos.compare(first_span)
+                cmp_last = self.last_moved_pos.compare(last_span)
+                seen_last_moved_pos = cmp_first in span_compare_ge and \
                         cmp_last in span_compare_le
-###        logging.info("{} in {} {} ? {}".format(self.cursor, first_span, last_span, seen_cursor))
-
-        if self.must_show_linking_pos:
-            return seen_linking_pos
-        else:
-            return seen_cursor
+        return seen_last_moved_pos
 
 
     def render(self, current_search, current_typing):
@@ -325,12 +316,9 @@ class View(object):
 
         # Shift the top up if necessary
         if self.config.annotation != AnnScope.document:
-            if self.must_show_linking_pos:
-                if self.top > self.linking_pos.start[0]:
-                    self.top = self.linking_pos.start[0]
-            else:
-                if self.top > self.cursor.start[0]:
-                    self.top = self.cursor.start[0]
+            if self.last_moved_pos is not None:
+                if self.top > self.last_moved_pos.start[0]:
+                    self.top = self.last_moved_pos.start[0]
 
         # Do dry runs, shifting top down until the position is visible
         while not self.do_contents(main_height, width, markings, True):
