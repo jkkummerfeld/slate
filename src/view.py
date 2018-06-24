@@ -22,9 +22,8 @@ class View(object):
         self.show_legend = False
         self.legend = "Legend (TBD)"
         self.config = my_config
-        self.must_show_linking_pos = False
 
-        self.last_moved_pos = None
+        self.last_moved_pos = cursor
 
         if self.config.args.prevent_self_links and self.cursor == self.linking_pos:
             # TODO: In this case move the linking pos along one step
