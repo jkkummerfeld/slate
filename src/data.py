@@ -710,10 +710,9 @@ class Datum(object):
             for item in annotations:
                 h = hash((tuple(item.spans), tuple(item.labels)))
                 hash_to_item[h] = item
-                if h in all_item_counts:
-                    all_item_counts[h] += 1
-                else:
-                    all_item_counts[h] = 1
+                if h not in all_item_counts:
+                    all_item_counts[h] = 0
+                all_item_counts[h] += 1
         for h in all_item_counts:
             count = all_item_counts[h]
             self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
@@ -811,7 +810,8 @@ class Datum(object):
                 if span == linking_pos:
                     has_link = True
 
-            ref_label = "compare-ref-{}-{}".format(count, has_link)
+            ref_label = "compare-ref-{}-{}".format(has_link, count)
+            max_span = max(item.spans)
             for span in item.spans:
                 pos = span.start
                 while True:
@@ -821,7 +821,10 @@ class Datum(object):
                         # TODO: Record the span too
 
                     if len(item.spans) > 1:
-                        cur.append(ref_label)
+                        if span == max_span:
+                            cur.append(ref_label +"-last")
+                        else:
+                            cur.append(ref_label +"-earlier")
 
                     if pos == span.end:
                         break
@@ -832,7 +835,10 @@ class Datum(object):
                         for label in base_labels:
                             cur.append(label)
                         if len(item.spans) > 1 and has_link:
-                            cur.append(ref_label)
+                            if span == max_span:
+                                cur.append(ref_label +"-last")
+                            else:
+                                cur.append(ref_label +"-earlier")
 
         return ans
 

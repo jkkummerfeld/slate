@@ -164,12 +164,16 @@ class View(object):
                     name = self.config.get_color_for_label(mark)
             elif mark.startswith("compare-"):
                 if 'ref' in mark:
-                    if 'False' in mark:
-                        name = COMPARE_DISAGREE_COLOR
-                    else:
-                        count = int(mark.split("-")[-2])
-                        if count > 0:
-                            name = COMPARE_REF_COLORS[count - 1]
+                    count = int(mark.split("-")[-2])
+                    if count > 0:
+                        if 'last' in mark:
+                            if name == DEFAULT_COLOR:
+                                name = COMPARE_DISAGREE_COLOR
+                        elif 'True' in mark and 'earlier' in mark:
+                            if name == DEFAULT_COLOR or name == COMPARE_DISAGREE_COLOR:
+                                name = COMPARE_REF_COLORS[count - 1]
+                    elif 'True' in mark and 'earlier' in mark:
+                        has_ref = True
                 else:
                     count = int(mark.split("-")[-2])
                     if name == DEFAULT_COLOR:
@@ -308,6 +312,7 @@ class View(object):
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
 ###        logging.info("markings: {}".format(markings))
         for key in markings:
+            logging.info("marking: {}: {}".format(key, markings[key]))
             marks = markings[key]
             if 'cursor' in marks:
                 for mark in marks:
