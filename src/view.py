@@ -188,7 +188,10 @@ class View(object):
 ###                        name = self.config.get_color_for_label(mark)
         # Override cases
         if has_link:
-            name = LINK_COLOR
+            if has_ref:
+                name = IS_LINKED_COLOR
+            else:
+                name = LINK_COLOR
         elif has_ref:
             name = REF_COLOR
 

@@ -112,9 +112,9 @@ input_action_list = {
     'move-link-right': [
         (Mode.link, "SHIFT-RIGHT"), (Mode.link, ':'), ],
     'page-up': [
-        "PPAGE", ],
+        "PPAGE", '{' ],
     'page-down': [
-        "NPAGE", ],
+        "NPAGE", '}' ],
     'extend-up': [
         'k', ],
     'extend-down': [

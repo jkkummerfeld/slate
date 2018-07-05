@@ -852,9 +852,13 @@ class Datum(object):
             for span in item.spans:
                 if span in spans:
                     match += 1
-            if len(item.spans) == len(spans) == match:
+            rev_match = 0
+            for span in spans:
+                if span in item.spans:
+                    rev_match += 1
+            if len(item.spans) == len(spans) == match == rev_match:
                 items.append(item)
-            if any_present and match > 0:
+            elif any_present and match > 0:
                 items.append(item)
         return items
 

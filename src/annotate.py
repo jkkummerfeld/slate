@@ -239,7 +239,8 @@ def search(user_input, action):
         num = current_num
         current_num = None
 
-    view.search(search_term, direction, num, jump, link)
+    if len(search_term) > 0:
+        view.search(search_term, direction, num, jump, link)
 
 action_to_function = {
     'delete-query-char': delete_typing_char,
