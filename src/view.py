@@ -123,6 +123,18 @@ class View(object):
             else:
                 self.cursor = new_pos
             self.last_moved_pos = new_pos
+        elif self.linking_pos is not None:
+            # Move as far as possible
+            if self.config.args.prevent_self_links:
+                if move_link:
+                    self.linking_pos = self.cursor.edited('next', 'move', 1, False)
+                else:
+                    self.cursor = self.linking_pos.edited('previous', 'move', 1, False)
+            else:
+                if move_link:
+                    self.linking_pos = self.cursor
+                else:
+                    self.cursor = self.linking_pos
 
     def search(self, query, direction, count, maxjump=False, move_link=False):
         logging.info("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
