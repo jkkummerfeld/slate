@@ -43,6 +43,10 @@ def move(user_input, action):
 
     view.move(direction, num, jump, link)
 
+def toggle_line_numbers(user_input, action):
+    global view
+    view.line_numbers = not view.line_numbers
+
 def change_span(user_input, action):
     global current_num, current_mode, view
     if current_mode[-1] == Mode.no_file:
@@ -254,6 +258,7 @@ action_to_function = {
     'assign-text-label': assign_text,
     'enter-label-mode': enter_typing_mode,
     'add-to-label': add_to_typing,
+    'toggle-line-numbers': toggle_line_numbers,
     'move-up': move,
     'move-down': move,
     'move-left': move,

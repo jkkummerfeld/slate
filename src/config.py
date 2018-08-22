@@ -43,6 +43,7 @@ LINK_COLOR = 2
 HELP_COLOR = 4
 REF_COLOR = 3
 IS_LINKED_COLOR = 16
+LINE_NUMBER_COLOR = 16
 
 COMPARE_DISAGREE_COLOR = 10
 COMPARE_REF_COLORS = [12, 13, 3]
@@ -87,6 +88,8 @@ input_action_list = {
         '\\', ], 
     'enter-label-mode': [
         't', ], 
+    'toggle-line-numbers': [
+        '#', ],
     'move-up': [
         "UP", 'i', ],
     'move-down': [

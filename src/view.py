@@ -22,6 +22,7 @@ class View(object):
         self.show_legend = False
         self.legend = "Legend (TBD)"
         self.config = my_config
+        self.line_numbers = False
 
         self.last_moved_pos = cursor
 
@@ -35,6 +36,7 @@ class View(object):
             "          | q Q                   | quit with or without saving            ",
             "          | h                     | toggle help info (default on)          ",
             "          | s                     | save the current file                  ",
+            "          | #                     | toggle line numbers                    ",
         ]
         if self.config.annotation_type == AnnType.link:
             return [
@@ -197,7 +199,7 @@ class View(object):
 
         return curses.color_pair(name) + modifier
 
-    def do_contents(self, height, width, markings, trial=False):
+    def do_contents(self, height, width, markings, number_width, trial=False):
         # For linked items, colour them to indicate it
         # For labels, colour them always, and add beginning / end
         # For freeform text, include it at the bottom
@@ -218,11 +220,13 @@ class View(object):
 
             # Set
             row += 1
-            column = 0
+            column = number_width
+            if (not trial) and column > 0:
+                self.window.addstr(row, 0, str(line_no), curses.color_pair(LINE_NUMBER_COLOR))
             for token_no, token in enumerate(line):
                 # Check if we are going on to the next line and adjust
                 # accordingly.
-                space_before = 1 if column > 0 else 0
+                space_before = 1 if column > number_width else 0
                 wide_token = False
                 if column + len(token) + space_before > width:
                     if token_no != 0:
@@ -277,8 +281,6 @@ class View(object):
                         if (line_no, token_no, char_no) in markings:
                             mark = markings[line_no, token_no, char_no]
                         color = self.marking_to_color(mark)
-
-                    if not trial:
                         self.window.addstr(row, column, char, color)
                     column += 1
 
@@ -345,12 +347,24 @@ class View(object):
                 if self.top > self.last_moved_pos.start[0]:
                     self.top = self.last_moved_pos.start[0]
 
+        # Work out width
+        main_width = width
+        number_width = 0
+        if self.line_numbers:
+            count = 1
+            lines = len(self.datum.doc.lines)
+            while lines > 1:
+                count += 1
+                lines /= 10
+            number_width = count
+            main_width -= number_width
+
         # Do dry runs, shifting top down until the position is visible
-        while not self.do_contents(main_height, width, markings, True):
+        while not self.do_contents(main_height, main_width, markings, number_width, True):
             self.top += 1
 
         # Next, draw contents
-        self.do_contents(main_height, width, markings)
+        self.do_contents(main_height, main_width, markings, number_width)
 
         if main_height < height:
             if len(extra_text_lines) > 0:

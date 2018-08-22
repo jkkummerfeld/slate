@@ -1,5 +1,10 @@
+# Bugfix
+
+- Colour in comparison mode (bad interaction with edits for self-link colour)
+
 # Next Steps
 
+- Option to jump to a line
 - Change help to be a mode (currently other keys are interpreted while it is showing)
 - Nicer examples
 - Tutorials on each mode
