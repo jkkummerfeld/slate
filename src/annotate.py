@@ -109,10 +109,13 @@ def add_to_typing(user_input, action):
     if current_mode[-1] == Mode.no_file:
         return
 
+    char = user_input[0]
+    if user_input[0] == 'SPACE':
+        char = ' '
     if current_mode[-1] == Mode.write_query:
-        search_term += user_input[0]
+        search_term += char
     else:
-        partial_typing += user_input[0]
+        partial_typing += char
 
 def change_file(user_input, action):
     global current_mode, cfilename, filename, datum, view, config
