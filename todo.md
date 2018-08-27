@@ -14,6 +14,7 @@ Visual
 - Show the set of available labels
 - Ability to colour linked items as they are created (to see the history). Either always showing all using different colours, or showing what the cursor is linked to.
 - Allow different default when resolving disagreements (rather than the union, only have those with agreement, or a majority). Note, this is subtle, as it interacts with the way colouring works.
+- Option to highlight matches
 
 Annotation
 - Constrain annotations, e.g. a flag to not allow links to point in one direction
@@ -27,6 +28,7 @@ Annotation
 - Allow multiple annotations of the same file at the same time
 
 Movement
+- Jump to next/prev unannotated chunk
 - Option to jump to a line
 - Add the ability to jump to the start/end of a paragraph (and expand / contract similarly)
 - Jump to next match on a regex
