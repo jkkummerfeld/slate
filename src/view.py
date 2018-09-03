@@ -141,17 +141,23 @@ class View(object):
 
     def search(self, query, direction, count, maxjump=False, move_link=False):
         logging.info("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
-        mover = self.cursor
-        if move_link:
-            mover = self.linking_pos
-        new_pos = mover.search(query, direction, count, maxjump)
-        if self._check_move_allowed(move_link, new_pos):
+        new_pos = None
+        if query is None:
+            new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction)
+        else:
+            mover = self.cursor
             if move_link:
-                self.linking_pos = new_pos
-            else:
-                self.cursor = new_pos
-            self.last_moved_pos = new_pos
-    
+                mover = self.linking_pos
+            new_pos = mover.search(query, direction, count, maxjump)
+
+        if new_pos is not None:
+            if self._check_move_allowed(move_link, new_pos):
+                if move_link:
+                    self.linking_pos = new_pos
+                else:
+                    self.cursor = new_pos
+                self.last_moved_pos = new_pos
+
     def adjust(self, direction, distance, change, maxjump=False):
         new_pos = self.cursor.edited(direction, change, distance, maxjump)
         if self._check_move_allowed(False, new_pos):
@@ -165,6 +171,7 @@ class View(object):
         modifier = curses.A_BOLD
         has_link = False
         has_ref = False
+        has_self_link = False
         for mark in marking:
             if mark == 'cursor':
                 modifier += curses.A_UNDERLINE
@@ -172,6 +179,8 @@ class View(object):
                 has_link = True
             elif mark == 'ref':
                 has_ref = True
+            elif mark == 'self-link':
+                has_self_link = True
             elif mark == 'linked':
                 name = IS_LINKED_COLOR
             elif mark in self.config.labels:
@@ -206,7 +215,10 @@ class View(object):
         # Override cases
         if has_link:
             if has_ref:
-                name = IS_LINKED_COLOR
+                if has_self_link:
+                    name = SELF_LINK_COLOR
+                else:
+                    name = IS_LINKED_COLOR
             else:
                 name = LINK_COLOR
         elif has_ref:

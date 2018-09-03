@@ -248,6 +248,9 @@ def search(user_input, action):
 
     if len(search_term) > 0:
         view.search(search_term, direction, num, jump, link)
+    else:
+        # Used when comparing files to go to the next/prev annotation
+        view.search(None, direction, num, jump, link)
 
 action_to_function = {
     'delete-query-char': delete_typing_char,
@@ -430,7 +433,7 @@ if __name__ == '__main__':
             help='Do not have a special color to indicate any linked token.')
     parser.add_argument('--prevent-self-links', default=False,
             action='store_true',
-            help='Prevent an item to be linked to itself.')
+            help='Prevent an item from being linked to itself.')
     parser.add_argument('--prevent-forward-links', default=False,
             action='store_true',
             help='Prevent a link from an item to one after it.')

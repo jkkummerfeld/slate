@@ -25,6 +25,7 @@ COLORS = [
     (14, curses.COLOR_CYAN, curses.COLOR_WHITE),
     (15, curses.COLOR_MAGENTA, curses.COLOR_WHITE),
     (16, curses.COLOR_YELLOW, curses.COLOR_BLACK),
+    (17, curses.COLOR_BLACK, curses.COLOR_WHITE),
 ]
 
 name_to_color = {
@@ -44,6 +45,7 @@ HELP_COLOR = 4
 REF_COLOR = 3
 IS_LINKED_COLOR = 16
 LINE_NUMBER_COLOR = 16
+SELF_LINK_COLOR = 17
 
 COMPARE_DISAGREE_COLOR = 10
 COMPARE_REF_COLORS = [12, 13, 3]

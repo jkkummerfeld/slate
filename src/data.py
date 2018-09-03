@@ -666,7 +666,7 @@ def get_labels(text, config):
         for label in text.strip().split():
             labels.add(label)
     else:
-        assert len(text.strip().split()) == 0
+        assert len(text.strip().split()) == 0, text
 
     return labels
 
@@ -717,6 +717,23 @@ class Datum(object):
             count = all_item_counts[h]
             self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
 
+    def get_next_disagreement(self, cursor, linking_pos, direction):
+        best = None
+        for item, count in self.disagreements:
+            has_link = False
+            for span in item.spans:
+                if span == linking_pos:
+                    has_link = True
+            if has_link:
+                for span in item.spans:
+                    if direction == 'next' and span > cursor:
+                        if best is None or span < best:
+                            best = span
+                    elif direction == 'prev' and span < cursor:
+                        if best is None or span > best:
+                            best = span
+        return best
+
     def get_all_markings(self, cursor, linking_pos):
         ans = {}
 
@@ -757,6 +774,8 @@ class Datum(object):
                 if not self.config.args.do_not_show_linked:
                     base_labels.append('linked')
             
+            is_self_link = len(item.spans) == 2 and item.spans[0] == item.spans[1]
+
             has_link = False
             for span in item.spans:
                 if span == linking_pos:
@@ -771,6 +790,8 @@ class Datum(object):
 
                     if len(item.spans) > 1 and has_link:
                         cur.append('ref')
+                        if is_self_link:
+                            cur.append('self-link')
 
                     if pos == span.end:
                         break
@@ -785,17 +806,6 @@ class Datum(object):
 
         # Now do disagreement colours.
         for item, count in self.disagreements:
-            # Does this overlap something that is annotated? If so, skip.
-            matched = False
-            for oitem in self.annotations:
-                for span in oitem.spans:
-                    if span in item.spans:
-                        matched = True
-                if matched:
-                    break
-            if matched:
-                continue
-
             # Get the standard color for this item based on its label
             base_labels = []
             if self.config.annotation_type == AnnType.categorical:
