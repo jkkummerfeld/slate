@@ -713,8 +713,7 @@ class Datum(object):
                 if h not in all_item_counts:
                     all_item_counts[h] = 0
                 all_item_counts[h] += 1
-        for h in all_item_counts:
-            count = all_item_counts[h]
+        for h, count in all_item_counts.items():
             self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
 
     def get_next_disagreement(self, cursor, linking_pos, direction):

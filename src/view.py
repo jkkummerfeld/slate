@@ -191,15 +191,14 @@ class View(object):
             elif mark.startswith("compare-"):
                 if 'ref' in mark:
                     count = int(mark.split("-")[-2])
-                    if count > 0:
-                        if 'last' in mark:
-                            if name == DEFAULT_COLOR:
-                                name = COMPARE_DISAGREE_COLOR
-                        elif 'True' in mark and 'earlier' in mark:
-                            if name == DEFAULT_COLOR or name == COMPARE_DISAGREE_COLOR:
-                                name = COMPARE_REF_COLORS[count - 1]
-                    elif 'True' in mark and 'earlier' in mark:
-                        has_ref = True
+                    if 'True' in mark:
+                        # First, cases where this is related to the current linking line
+                        if name == DEFAULT_COLOR or name == COMPARE_DISAGREE_COLOR:
+                            name = COMPARE_REF_COLOR
+                    elif count > 0 and 'last' in mark:
+                        # If unrelated, but there is a disagreement, indicate it
+                        if name == DEFAULT_COLOR:
+                            name = COMPARE_DISAGREE_COLOR
                 else:
                     count = int(mark.split("-")[-2])
                     if name == DEFAULT_COLOR:
