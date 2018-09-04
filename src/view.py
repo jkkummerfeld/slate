@@ -143,7 +143,10 @@ class View(object):
         logging.info("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
         new_pos = None
         if query is None:
-            new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction)
+            if move_link:
+                new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction, True)
+            else:
+                new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction, False)
         else:
             mover = self.cursor
             if move_link:

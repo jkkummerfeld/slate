@@ -716,21 +716,31 @@ class Datum(object):
         for h, count in all_item_counts.items():
             self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
 
-    def get_next_disagreement(self, cursor, linking_pos, direction):
+    def get_next_disagreement(self, cursor, linking_pos, direction, moving_link):
         best = None
         for item, count in self.disagreements:
-            has_link = False
-            for span in item.spans:
-                if span == linking_pos:
-                    has_link = True
-            if has_link:
-                for span in item.spans:
-                    if direction == 'next' and span > cursor:
+            if moving_link:
+                if count > 0:
+                    span = max(item.spans)
+                    if direction == 'next' and span > linking_pos:
                         if best is None or span < best:
                             best = span
-                    elif direction == 'prev' and span < cursor:
+                    elif direction == 'prev' and span < linking_pos:
                         if best is None or span > best:
                             best = span
+            else:
+                has_link = False
+                for span in item.spans:
+                    if span == linking_pos:
+                        has_link = True
+                if has_link:
+                    for span in item.spans:
+                        if direction == 'next' and span > cursor:
+                            if best is None or span < best:
+                                best = span
+                        elif direction == 'prev' and span < cursor:
+                            if best is None or span > best:
+                                best = span
         return best
 
     def get_all_markings(self, cursor, linking_pos):

@@ -37,6 +37,7 @@ Movement
 - When the movement key is pressed multiple times in a row quickly, start jumping further [optional], or have a fast jump key?
 
 Documentation
+- Note the use of 'n', 'p', 'shift-n', 'shift-p' in comparison mode
 - Nicer examples
 - Tutorials on each mode
 
