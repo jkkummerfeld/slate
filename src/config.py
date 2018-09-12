@@ -140,7 +140,7 @@ input_action_list = {
         'h', ],
     'next-file': [
         ']', (Mode.no_file, ']'), ],
-    'prev-file': [
+    'previous-file': [
         '[', (Mode.no_file, '['), ],
     'quit': [
         'Q', ],
@@ -162,11 +162,11 @@ input_action_list = {
             ['>', 'p'], ],
     'toggle-legend': [
             ['>', 'l'], ],
-    'search-prev': [
+    'search-previous': [
         'p', ],
     'search-next': [
         'n', ],
-    'search-link-prev': [
+    'search-link-previous': [
         'P', ],
     'search-link-next': [
         'N', ],

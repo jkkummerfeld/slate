@@ -513,7 +513,7 @@ class Span(object):
         ans = None
         for option in options:
             comp = self._compare_tuples(self.start, option)
-            if comp < 0 and direction == 'prev':
+            if comp < 0 and direction == 'previous':
                 ans = option
             elif comp > 0:
                 if direction == 'next':
@@ -716,6 +716,25 @@ class Datum(object):
         for h, count in all_item_counts.items():
             self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
 
+    def get_next_unannotated(self, cursor, linking_pos, direction, moving_link):
+        if moving_link:
+            annotated = set()
+            for item in self.annotations:
+                span = max(item.spans)
+                if min(item.spans) == span:
+                    continue
+                annotated.add(span)
+            position = linking_pos.edited(direction)
+            prev = None
+            while position in annotated and position != prev:
+                prev = position
+                position = position.edited(direction)
+            if position not in annotated:
+                return position
+            return linking_pos
+        else:
+            return cursor
+
     def get_next_disagreement(self, cursor, linking_pos, direction, moving_link):
         best = None
         for item, count in self.disagreements:
@@ -725,7 +744,7 @@ class Datum(object):
                     if direction == 'next' and span > linking_pos:
                         if best is None or span < best:
                             best = span
-                    elif direction == 'prev' and span < linking_pos:
+                    elif direction == 'previous' and span < linking_pos:
                         if best is None or span > best:
                             best = span
             else:
@@ -738,7 +757,7 @@ class Datum(object):
                         if direction == 'next' and span > cursor:
                             if best is None or span < best:
                                 best = span
-                        elif direction == 'prev' and span < cursor:
+                        elif direction == 'previous' and span < cursor:
                             if best is None or span > best:
                                 best = span
         return best

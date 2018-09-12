@@ -9,20 +9,24 @@ from config import *
 from data import Span, span_compare_ge, span_compare_le
 
 class View(object):
-    def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num):
+    def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, prev_view=None):
         self.window = window
         self.cursor = cursor
         self.linking_pos = linking_pos
         self.datum = datum
         self.top = max(0, cursor.start[0] - self.window.getmaxyx()[0] - 10)
         self.show_help = False
-        self.show_legend = False
         self.show_progress = False
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.show_legend = False
         self.legend = "Legend (TBD)"
         self.config = my_config
         self.line_numbers = False
+        if prev_view is not None:
+            self.show_help = prev_view.show_help
+            self.show_progress = prev_view.show_progress
+            self.show_legend = prev_view.show_legend
+            self.line_numbers = prev_view.line_numbers
 
         self.last_moved_pos = cursor
 
@@ -143,10 +147,10 @@ class View(object):
         logging.info("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
         new_pos = None
         if query is None:
-            if move_link:
-                new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction, True)
+            if len(self.datum.disagreements) == 0:
+                new_pos = self.datum.get_next_unannotated(self.cursor, self.linking_pos, direction, move_link)
             else:
-                new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction, False)
+                new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction, move_link)
         else:
             mover = self.cursor
             if move_link:

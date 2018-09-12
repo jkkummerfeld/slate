@@ -7,6 +7,7 @@
 # Ideas
 
 Visual
+- Option for 'next' and 'prev' to cycle (ie if it hits the top, search from the bottom)
 - Legend/key giving keys and their labels + colors
 - Rather than highlighting text, use columns on the left (block of colour), for line mode at least. Not sure about tokens
 - Variable location of instructions

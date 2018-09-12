@@ -136,7 +136,7 @@ def change_file(user_input, action):
         filename, start_pos, output_file, annotation_files = \
                 filenames[cfilename]
         datum = Datum(filename, config, output_file, annotation_files)
-        view = get_view(datum, config, cfilename, len(filenames), start_pos)
+        view = get_view(datum, config, cfilename, len(filenames), start_pos, view)
     elif current_mode != Mode.no_file:
         current_mode.append(Mode.no_file)
 
@@ -249,7 +249,8 @@ def search(user_input, action):
     if len(search_term) > 0:
         view.search(search_term, direction, num, jump, link)
     else:
-        # Used when comparing files to go to the next/prev annotation
+        # Used when comparing files to go to the next/previous annotation
+        # Or when not comparing files to go to the next unannotated thing
         view.search(None, direction, num, jump, link)
 
 action_to_function = {
@@ -290,9 +291,9 @@ action_to_function = {
     'contract-link-down': change_span,
     'contract-link-left': change_span,
     'contract-link-right': change_span,
-    'search-prev': search,
+    'search-previous': search,
     'search-next': search,
-    'search-link-prev': search,
+    'search-link-previous': search,
     'search-link-next': search,
     'page-up': shift_view,
     'page-down': shift_view,
@@ -300,7 +301,7 @@ action_to_function = {
     'toggle-progress': modify_display,
     'toggle-legend': modify_display,
     'next-file': change_file,
-    'prev-file': change_file,
+    'previous-file': change_file,
     'quit': save_or_quit,
     'save-and-quit': save_or_quit,
     'save': save_or_quit,
@@ -317,12 +318,12 @@ def input_to_symbol(num):
     else:
         return "UNKNOWN"
 
-def get_view(datum, config, file_num, total_files, position):
+def get_view(datum, config, file_num, total_files, position, prev_view=None):
     global window
 
     cursor = position
     link = position if config.annotation_type == AnnType.link else None
-    return View(window, cursor, link, datum, config, file_num, total_files)
+    return View(window, cursor, link, datum, config, file_num, total_files, prev_view)
 
 def annotate(window_in, config, filenames):
     global current_mode, search_term, cfilename, filename, datum, view, window
