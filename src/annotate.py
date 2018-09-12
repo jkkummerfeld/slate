@@ -129,8 +129,9 @@ def change_file(user_input, action):
 
     direction = 1 if 'next' in action else -1
     if current_mode[-1] == Mode.no_file:
-        if (cfilename == 0 and direction == 1) or (cfilename != 0 and direction == -1):
+        if (cfilename < 0) == (direction > 0):
             current_mode.pop()
+            cfilename += direction
     elif 0 <= cfilename + direction < len(filenames):
         cfilename += direction
         filename, start_pos, output_file, annotation_files = \
@@ -138,6 +139,7 @@ def change_file(user_input, action):
         datum = Datum(filename, config, output_file, annotation_files)
         view = get_view(datum, config, cfilename, len(filenames), start_pos, view)
     elif current_mode != Mode.no_file:
+        cfilename += direction
         current_mode.append(Mode.no_file)
 
 def modify_display(user_input, action):
@@ -351,7 +353,7 @@ def annotate(window_in, config, filenames):
     while True:
         # Draw screen
         if current_mode[-1] == Mode.no_file:
-            view.render_edgecase(cfilename > 0)
+            view.render_edgecase(cfilename >= 0)
         else:
             # Set current search term appearance
             tmp_term = search_term
