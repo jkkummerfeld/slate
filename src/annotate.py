@@ -219,15 +219,16 @@ def save_or_quit(user_input, action):
             datum.write_out()
 
         # TODO: Save both cursor and linking pos
-        cur = filenames[cfilename]
-        pos = view.cursor
-        if config.annotation_type == AnnType.link:
-            pos = view.linking_pos
-        filenames[cfilename] = (cur[0], pos, cur[2], cur[3])
+        if 0 <= cfilename < len(filenames):
+            cur = filenames[cfilename]
+            pos = view.cursor
+            if config.annotation_type == AnnType.link:
+                pos = view.linking_pos
+            filenames[cfilename] = (cur[0], pos, cur[2], cur[3])
 
     if 'quit' in action:
         if 'save' not in action:
-            # Have an 'are you sure?' step
+            # TODO: Have an 'are you sure?' step
             pass
         return 'quit'
 
