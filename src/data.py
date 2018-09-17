@@ -733,12 +733,18 @@ class Datum(object):
         else:
             return cursor
 
-    def get_next_disagreement(self, cursor, linking_pos, direction, moving_link):
+    def get_next_disagreement(self, cursor, linking_pos, direction, moving_link, cycle=True):
         best = None
+        first = None
+        last = None
         for item, count in self.disagreements:
             if moving_link:
                 if count > 0:
                     span = max(item.spans)
+                    if first is None or span > first:
+                        first = span
+                    if last is None or span < last:
+                        last = span
                     if direction == 'next' and span > linking_pos:
                         if best is None or span < best:
                             best = span
@@ -752,12 +758,22 @@ class Datum(object):
                         has_link = True
                 if has_link:
                     for span in item.spans:
-                        if direction == 'next' and span > cursor:
-                            if best is None or span < best:
-                                best = span
-                        elif direction == 'previous' and span < cursor:
-                            if best is None or span > best:
-                                best = span
+                        if span <= linking_pos:
+                            if first is None or span < first:
+                                first = span
+                            if last is None or span > last:
+                                last = span
+                            if direction == 'next' and span > cursor:
+                                if best is None or span < best:
+                                    best = span
+                            elif direction == 'previous' and span < cursor:
+                                if best is None or span > best:
+                                    best = span
+        if best is None and cycle:
+            if direction == 'next':
+                best = first
+            else:
+                best = last
         return best
 
     def get_all_markings(self, cursor, linking_pos):
