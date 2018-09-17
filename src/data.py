@@ -721,8 +721,6 @@ class Datum(object):
             annotated = set()
             for item in self.annotations:
                 span = max(item.spans)
-                if min(item.spans) == span:
-                    continue
                 annotated.add(span)
             position = linking_pos.edited(direction)
             prev = None
