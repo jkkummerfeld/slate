@@ -1,7 +1,3 @@
-# SLATE, a Super-Lightweight Annotation Tool for Experts
-
-A terminal-based text annotation tool written in Python.
-
 ## Why use this tool?
 
 - Fast
