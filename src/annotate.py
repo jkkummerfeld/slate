@@ -254,6 +254,7 @@ def search(user_input, action):
     else:
         # Used when comparing files to go to the next/previous annotation
         # Or when not comparing files to go to the next unannotated thing
+        # When there is nothing unannotated, it jumps to the next self-linked item
         view.search(None, direction, num, jump, link)
 
 action_to_function = {

@@ -397,19 +397,21 @@ class Span(object):
             self.end = self.start
         else:
             # Check it has the right length
-            length = 0
+            length = None
             if scope == AnnScope.character: length = 3
             elif scope == AnnScope.token: length = 2
             elif scope == AnnScope.line: length = 1
             elif scope == AnnScope.document: length = 0
             else: raise Exception("Invalid scope")
 
-            if type(span) == tuple:
+            # TODO: Add a check that this position is valid for this doc
+            if type(span) == int and length == 1:
+                self.start = (span,)
+                self.end = (span,)
+            elif type(span) == tuple:
                 if len(span) == 0:
                     self.start, self.end = (), ()
                 else:
-                    # TODO: Add a check that this position is valid for this
-                    # doc
                     if type(span[0]) == int:
                         assert len(span) == length, "Got {} not {}".format(len(span), length)
                         self.start = span
@@ -420,8 +422,8 @@ class Span(object):
                         self.end = span[1]
             else:
                 assert len(span.start) == len(span.end) == length
-                self.end = span.end
                 self.start = span.start
+                self.end = span.end
 
     def _compare_tuples(self, a, b):
         # Returns a number that is the kind of delta going from a to b
@@ -715,6 +717,23 @@ class Datum(object):
                 all_item_counts[h] += 1
         for h, count in all_item_counts.items():
             self.disagreements.append((hash_to_item[h],len(self.other_annotations) - count))
+
+    def get_next_self_link(self, cursor, linking_pos, direction, moving_link):
+        if moving_link:
+            self_links = set()
+            for item in self.annotations:
+                if max(item.spans) == min(item.spans):
+                    self_links.add(min(item.spans))
+            position = linking_pos.edited(direction)
+            prev = None
+            while position != prev:
+                if position in self_links:
+                    return position
+                prev = position
+                position = position.edited(direction)
+            return linking_pos
+        else:
+            return cursor
 
     def get_next_unannotated(self, cursor, linking_pos, direction, moving_link):
         if moving_link:

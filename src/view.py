@@ -149,6 +149,8 @@ class View(object):
         if query is None:
             if len(self.datum.disagreements) == 0:
                 new_pos = self.datum.get_next_unannotated(self.cursor, self.linking_pos, direction, move_link)
+                if new_pos == self.linking_pos or new_pos is None:
+                    new_pos = self.datum.get_next_self_link(self.cursor, self.linking_pos, direction, move_link)
             else:
                 new_pos = self.datum.get_next_disagreement(self.cursor, self.linking_pos, direction, move_link)
         else:
