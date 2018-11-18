@@ -381,6 +381,8 @@ class View(object):
             if self.last_moved_pos is not None:
                 if self.top > self.last_moved_pos.start[0]:
                     self.top = self.last_moved_pos.start[0]
+                if self.top < self.last_moved_pos.start[0] - main_height:
+                    self.top = self.last_moved_pos.start[0] - main_height
 
         # Work out width
         main_width = width
