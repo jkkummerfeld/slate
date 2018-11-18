@@ -108,6 +108,13 @@ def enter_typing_mode(user_input, action):
         current_mode.append(Mode.write_label)
         partial_typing = ''
 
+def clear_query(user_input, action):
+    global current_mode, search_term, partial_typing
+    if current_mode[-1] == Mode.no_file:
+        return
+
+    search_term = ''
+
 def add_to_typing(user_input, action):
     global current_mode, search_term, partial_typing
     if current_mode[-1] == Mode.no_file:
@@ -261,6 +268,7 @@ action_to_function = {
     'delete-query-char': delete_typing_char,
     'leave-query-mode': leave_typing_mode,
     'enter-query-mode': enter_typing_mode,
+    'clear-query': clear_query,
     'add-to-query': add_to_typing,
     'delete-label-char': delete_typing_char,
     'assign-text-label': assign_text,

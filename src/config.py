@@ -86,10 +86,12 @@ input_action_list = {
     'delete-label-char': [
         (Mode.write_label, "BACKSPACE"),
         (Mode.write_label, '!'), ], 
+    'clear-query': [
+        '|', ],
     'enter-query-mode': [
-        '\\', ], 
+        '\\', ],
     'enter-label-mode': [
-        't', ], 
+        't', ],
     'toggle-line-numbers': [
         '#', ],
     'move-up': [
