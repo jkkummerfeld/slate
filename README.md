@@ -6,9 +6,29 @@
 - Works in constrained environments (e.g. only allowed ssh access to a machine)
 - Easily configurable and modifiable
 
+## Installation
+
+Simply clone or download this repository.
+The code requires just Python 3 and can be run out of the box.
+
+Step by step, in a terminal, you can either download a zip file:
+
+```bash
+wget -O slate.zip https://github.com/jkkummerfeld/slate/archive/master.zip
+unzip slate.zip
+cd slate-master
+```
+
+Or clone the repository:
+
+```bash
+git clone https://github.com/jkkummerfeld/slate
+cd slate
+```
+
 ## Usage:
 
-These two simple tutorials explain how to use the tool for annotating labels or links:
+These two tutorials explain how to use the tool for annotating labels or links:
 
 ```bash
 python3 src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
@@ -16,7 +36,7 @@ python3 src/annotate.py example/label-example.md -hh --ann-type categorical --an
 python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
 ```
 
-You will be shown files one at a time in plain text. Commands for are:
+You will be shown files one at a time in plain text. Commands are:
 
 Type                        | Key                         | Labelling Affect                 | Linking Affect
 --------------------------- | --------------------------- | -------------------------------- | ---------------------
@@ -47,10 +67,21 @@ Saving, exiting, etc        | `]`                         | save and go to next 
 "                           | `q`                         | quit                             | same
 "                           | `h`                         | toggle help info (default on)    | same
 
-To annotate multiple files, specify more than one as an argument. For greater control, provide a list of files in a file specified with `--data-list`. The list should be formatted as follows:
+To annotate multiple files, specify more than one as an argument.
+For greater control, provide a list of files in a file specified with `--data-list`.
+The list should be formatted as follows, where [] indicate optional values:
 
 ```
-raw_file [annotation_file [starting_position [other_annotations]]]
+raw_file [annotation_file [starting_position [additional_annotation_files]]]
+```
+
+For example, these commands will create a file list, use it, then return to it later:
+
+```bash
+$ find . | grep 'txt$' > filenames_todo
+$ ./slate/src/annotate.py --data-list filenames_todo --log-prefix do_later
+... do some work, then quit, go away, come back...
+$ ./slate/src/annotate.py --data-list dp_later.todo --log-prefix do_even_later
 ```
 
 ## Colours

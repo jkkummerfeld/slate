@@ -29,17 +29,17 @@ To move, expand and contract faster:
 
 Select an item you want to label:
 
-  >- Type `z` to apply the 'z' label
+  >- Type `SPACE` and then `a` to apply the 'a' label
 
 Note that the text has changed colour to indicate that it is labeled.
 
-  >- Type `z` again to remove the label
-  >- Type `x` to apply the 'x' label
+  >- Type `SPACE` and then `a` again to remove the label
+  >- Similarly, type `SPACE` and then `s` to apply the 's' label
 
 Note that a different colour is used for each label. These keys and colours can
 be defined as you like.
 
-  >- Type `z` to also apply the 'z' label
+  >- Type `SPACE` and then `a` to also apply the 'a' label
 
 When multiple labels apply to the same item a different colour is used.
 

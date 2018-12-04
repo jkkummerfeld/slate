@@ -27,13 +27,14 @@ Links can be created in two ways:
 
   >- First, create a link by typing `SHIFT` + `d` (i.e. `D`).
 
-Note that once linked, the text turns blue.
+Note that once linked, the text is highlighted (if you linked a line to itself)
+or becomes blue (if you linked two different lines).
 
   >- Try removing the link by typing `SHIFT` + `d` again.
   >- Now try creating a link with just `d`.
 
 Note that when typing lowercase `d`, after creating the link, the green line is
-moved down one and the highlighted line is changed to be right above it. Also,
+moved down one and the underlined line is changed to be right above it. Also,
 the lines that are part of a link are now yellow, so you can see that they are
 part of a link.
 
