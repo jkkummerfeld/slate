@@ -26,15 +26,16 @@ git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
 
+## Tutorials:
+
+These tutorials are independent
+
+Task | Command
+---- | --------
+Annotating labels for spans of text in a document | `python3 src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite`
+Annotating links in a document | `python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite`
+
 ## Usage:
-
-These two tutorials explain how to use the tool for annotating labels or links:
-
-```bash
-python3 src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
-
-python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
-```
 
 You will be shown files one at a time in plain text. Commands are:
 
