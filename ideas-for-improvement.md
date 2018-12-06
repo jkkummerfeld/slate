@@ -6,6 +6,12 @@
 
 # Ideas
 
+Documentation
+- Note the use of 'n', 'p', 'shift-n', 'shift-p' in comparison mode
+- Nicer examples
+- Tutorials on each mode
+- How to change configurations
+
 Visual
 - Option for 'next' and 'prev' to cycle (ie if it hits the top, search from the bottom)
 - Legend/key giving keys and their labels + colors
@@ -37,15 +43,8 @@ Movement
 - Option to have jumping retain the span's size (at the moment it becomes a single item again)
 - When the movement key is pressed multiple times in a row quickly, start jumping further [optional], or have a fast jump key?
 
-Documentation
-- Note the use of 'n', 'p', 'shift-n', 'shift-p' in comparison mode
-- Nicer examples
-- Tutorials on each mode
-
 Internal
 - Change help to be a mode (currently other keys are interpreted while it is showing)
-- Improve speed of jumping back down
-- More intelligent calculation of view position (avoid dry runs)
 - Saving both cursor and link for linking mode (in todo file) and reading similarly
 - For help, compose it out of a set of items, with line breaks changing when the screen is narrow
 
@@ -54,11 +53,10 @@ Supplementary tools
 - Take standoff and create inline data (instead of adding inline as an input / output)
 
 Misc
-- Add a calibration mode, where people type keys so I can figure out what they mean (and they could customise things).
-- Option to specify file names on the command line
+- Add a calibration mode, where people type keys so I can figure out what they mean (and they could customise things)
+- Add logging of all edits to a file, so a crash can be recoverd from easily
 - Support undo to reverse actions
 - Add the option to read in the raw data when going back to a seen file
 - Option to load all at start
 - Option to only save on exit (not when changing files)
 - Nicer argument, error, and logging handling
-- Add logging of all edits to a file, so a crash can be recoverd from easily.
