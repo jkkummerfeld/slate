@@ -42,31 +42,53 @@ You will be shown files one at a time in plain text. Commands are:
 Type                        | Key                         | Labelling Affect                 | Linking Affect
 --------------------------- | --------------------------- | -------------------------------- | ---------------------
 Movement                    | `j` or `LEFT`               | move to the left                 | move selected item to the left
-"                           | `SHIFT` + [`j` or `LEFT`]   | go to the start of the line      | move linking item to the left
-"                           | `i` or `UP`                 | move up a line                   | move selected item up a line
-"                           | `SHIFT` + [`i` or `UP`]     | go to first line                 | move linking item up a line
-"                           | `o` or `DOWN`               | move down a line                 | move selected item down a line
-"                           | `SHIFT` + [`o` or `DWON`]   | go to last line                  | move linking item down a line
-"                           | `;` or `RIGHT`              | move to the right                | move selected item to the right
-"                           | `SHIFT` + [`;` or `RIGHT`]  | go to the end of the line        | move linking item to the right
+&nbsp;                      | `SHIFT` + [`j` or `LEFT`]   | go to the start of the line      | move linking item to the left
+&nbsp;                      | `i` or `UP`                 | move up a line                   | move selected item up a line
+&nbsp;                      | `SHIFT` + [`i` or `UP`]     | go to first line                 | move linking item up a line
+&nbsp;                      | `o` or `DOWN`               | move down a line                 | move selected item down a line
+&nbsp;                      | `SHIFT` + [`o` or `DWON`]   | go to last line                  | move linking item down a line
+&nbsp;                      | `;` or `RIGHT`              | move to the right                | move selected item to the right
+&nbsp;                      | `SHIFT` + [`;` or `RIGHT`]  | go to the end of the line        | move linking item to the right
 Edit Span                   | `m`                         | extend left                      | -
-"                           | `SHIFT` + `m`               | contract left side               | -
-"                           | `k`                         | extend up                        | -
-"                           | `SHIFT` + `k`               | contract top                     | -
-"                           | `l`                         | extend down                      | -
-"                           | `SHIFT` + `l`               | contract bottom                  | -
-"                           | `/`                         | extend right                     | -
-&nbsp;                      | `SHIFT` + `/`               | contract right side              | -
+&nbsp;                      | `M`                         | contract left side               | -
+&nbsp;                      | `k`                         | extend up                        | -
+&nbsp;                      | `K`                         | contract top                     | -
+&nbsp;                      | `l`                         | extend down                      | -
+&nbsp;                      | `L`                         | contract bottom                  | -
+&nbsp;                      | `/`                         | extend right                     | -
+&nbsp;                      | `?`                         | contract right side              | -
 Label Annotation (default)  | `SPACE` then `a`            | [un]mark this item as a          | -
-"                           | `SPACE` then `s`            | [un]mark this item as s          | -
-"                           | `SPACE` then `d`            | [un]mark this item as d          | -
-Link Annotation             | `d`                         | -                                | create a link and move down / right
-"                           | `SHIFT` + `d`               | -                                | create a link
+&nbsp;                      | `SPACE` then `s`            | [un]mark this item as s          | -
+&nbsp;                      | `SPACE` then `d`            | [un]mark this item as d          | -
+Link Annotation             | `d`                         | -                                | create a link and move right / down
+&nbsp;                      | `D`                         | -                                | create a link
 Either Annotation mode      | `u`                         | undo annotation on this item     | undo all annotations for the current item
-Saving, exiting, etc        | `]`                         | save and go to next file         | same
-"                           | `[`                         | save and go to previous file     | same
-"                           | `q`                         | quit                             | same
-"                           | `h`                         | toggle help info (default on)    | same
+
+Type                        | Key                         | Mode   | Affect               
+--------------------------- | --------------------------- | ------ | ----------------------------
+Searching                   | `\`                         | Normal | start editing query
+&nbsp;                      | `?` or `ENTER`              | Query  | stop editing query
+&nbsp;                      | `!` or `BACKSPACE`          | Query  | delete last character in query
+&nbsp;                      | `p`                         | Normal | go to previous match
+&nbsp;                      | `n`                         | Normal | go to next match
+&nbsp;                      | `P`                         | Normal | go to previous match for linking line
+&nbsp;                      | `N`                         | Normal | go to next match for linking line
+Assigning text labels       | `t`                         | Normal | start editing label
+&nbsp;                      | `?` or `ENTER`              | Query  | stop editing label and assign it
+&nbsp;                      | `!` or `BACKSPACE`          | Query  | delete last character in label
+Saving, exiting, etc        | `]`                         | Normal | save and go to next file         
+&nbsp;                      | `[`                         | Normal | save and go to previous file     
+&nbsp;                      | `q`                         | Normal | save and quit                    
+&nbsp;                      | `s`                         | Normal | save                             
+&nbsp;                      | `Q`                         | Normal | quit                             
+Misc                        | `#`                         | Normal | toggle line numbers
+&nbsp;                      | `h`                         | Normal | toggle help info (default on)    
+&nbsp;                      | `{` or `PAGE-UP`            | Normal | shift view up 5 lines
+&nbsp;                      | `}` or `PAGE-DOWN`          | Normal | shift view down 5 lines
+&nbsp;                      | `>` then `p`                | Normal | toggle showing progress through files
+&nbsp;                      | `>` then `l`                | Normal | toggle showing legend for labels [TODO]
+
+Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OSX operating systems. That is why in all places where they are used we have an alternative as well.
 
 To annotate multiple files, specify more than one as an argument.
 For greater control, provide a list of files in a file specified with `--data-list`.
