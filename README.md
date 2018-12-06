@@ -26,16 +26,16 @@ git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
 
-## Tutorials:
+## Tutorials
 
-These tutorials are independent
+Included in this repository are a set of interactive tutorials that teach you how to use the tool from within the tool itself.
 
 Task | Command
 ---- | --------
-Annotating labels for spans of text in a document | `python3 src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite`
-Annotating links in a document | `python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite`
+Annotating labels for spans of text in a document | `python3 src/annotate.py tutorial/label.md -hh --ann-type categorical --ann-scope token --overwrite`
+Annotating links in a document | `python3 src/annotate.py tutorial/link.md -hh --ann-type link --ann-scope line --overwrite`
 
-## Usage:
+## Detailed Usage Instructions
 
 You will be shown files one at a time in plain text. Commands are:
 
@@ -56,10 +56,10 @@ Edit Span                   | `m`                         | extend left         
 "                           | `l`                         | extend down                      | -
 "                           | `SHIFT` + `l`               | contract bottom                  | -
 "                           | `/`                         | extend right                     | -
-"                           | `SHIFT` + `/`               | contract right side              | -
-Label Annotation (default)  | `z`                         | [un]mark this item as z          | -
-"                           | `x`                         | [un]mark this item as x          | -
-"                           | `c`                         | [un]mark this item as c          | -
+&nbsp;                      | `SHIFT` + `/`               | contract right side              | -
+Label Annotation (default)  | `SPACE` then `a`            | [un]mark this item as a          | -
+"                           | `SPACE` then `s`            | [un]mark this item as s          | -
+"                           | `SPACE` then `d`            | [un]mark this item as d          | -
 Link Annotation             | `d`                         | -                                | create a link and move down / right
 "                           | `SHIFT` + `d`               | -                                | create a link
 Either Annotation mode      | `u`                         | undo annotation on this item     | undo all annotations for the current item
@@ -85,14 +85,14 @@ $ ./slate/src/annotate.py --data-list filenames_todo --log-prefix do_later
 $ ./slate/src/annotate.py --data-list dp_later.todo --log-prefix do_even_later
 ```
 
-## Colours
+## Customisation
 
 Colours and keys are customisable. For labelling, the default is:
 
  - Underlined, current selected item
- - Green on black, 'z' items
- - Yellow on black, 'x' items
- - Purple on black, 'c' items
+ - Green on black, 'a' items
+ - Yellow on black, 's' items
+ - Purple on black, 'd' items
  - Cyan on black, multiple types for a single token
 
 For linking, the default is:

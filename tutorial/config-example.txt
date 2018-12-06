@@ -262,9 +262,9 @@ Input:          add-to-label              write_label          SPACE
 Input:          edit-annotation           category             SPACE_a
 Input:          edit-annotation           category             SPACE_s
 Input:          edit-annotation           category             SPACE_d
-Label:          SELL                      SPACE_a green
-Label:          BUY                       SPACE_s blue
-Label:          RATE                      SPACE_d magenta
+Label:          a                         SPACE_a green
+Label:          s                         SPACE_s blue
+Label:          d                         SPACE_d magenta
 Special_Key:    SHIFT-UP                  337
 Special_Key:    SHIFT-DOWN                336
 Special_Key:    ENTER                     10

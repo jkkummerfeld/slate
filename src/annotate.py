@@ -487,9 +487,9 @@ if __name__ == '__main__':
     else:
         config = Config(args, 
             {
-                'SELL': (('SPACE', 'a'), 'green'),
-                'BUY': (('SPACE', 's'), 'blue'),
-                'RATE': (('SPACE', 'd'), 'magenta'),
+                'a': (('SPACE', 'a'), 'green'),
+                's': (('SPACE', 's'), 'blue'),
+                'd': (('SPACE', 'd'), 'magenta'),
             }
         )
 
