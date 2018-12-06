@@ -40,7 +40,7 @@ Comparing annotations | TODO
 
 Run as:
 
-```bash
+```
 python3 src/annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-l LOG_PREFIX] [-r]
                         [-hh] [-o] [-t {categorical,link}]
                         [-s {character,token,line,document}] [-c CONFIG_FILE] [-ps]
@@ -113,16 +113,18 @@ Either Annotation mode      | `u`                         | undo annotation on t
 
 Type                        | Key                         | Mode   | Affect               
 --------------------------- | --------------------------- | ------ | ----------------------------
-Searching                   | `\`                         | Normal | start editing query
-&nbsp;                      | `?` or `ENTER`              | Query  | stop editing query
+Searching                   | `\`                         | Normal | enter query editing mode
+&nbsp;                      | `?` or `ENTER`              | Query  | exit query editing mode
 &nbsp;                      | `!` or `BACKSPACE`          | Query  | delete last character in query
+&nbsp;                      | characters except `?` and `!` | Query  | add character to query
 &nbsp;                      | `p`                         | Normal | go to previous match
 &nbsp;                      | `n`                         | Normal | go to next match
 &nbsp;                      | `P`                         | Normal | go to previous match for linking line
 &nbsp;                      | `N`                         | Normal | go to next match for linking line
-Assigning text labels       | `t`                         | Normal | start editing label
-&nbsp;                      | `?` or `ENTER`              | Query  | stop editing label and assign it
-&nbsp;                      | `!` or `BACKSPACE`          | Query  | delete last character in label
+Assigning text labels       | `t`                         | Normal | enter label editing mode
+&nbsp;                      | `?` or `ENTER`              | Label  | exit label editing mode and assign the label
+&nbsp;                      | `!` or `BACKSPACE`          | Label  | delete last character in label
+&nbsp;                      | characters except `?` and `!` | Label  | add character to label
 Saving, exiting, etc        | `]`                         | Normal | save and go to next file         
 &nbsp;                      | `[`                         | Normal | save and go to previous file     
 &nbsp;                      | `q`                         | Normal | save and quit                    
