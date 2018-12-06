@@ -32,8 +32,9 @@ Included in this repository are a set of interactive tutorials that teach you ho
 
 Task | Command
 ---- | --------
-Annotating labels for spans of text in a document | `python3 src/annotate.py tutorial/label.md -hh --ann-type categorical --ann-scope token --overwrite`
-Annotating links in a document | `python3 src/annotate.py tutorial/link.md -hh --ann-type link --ann-scope line --overwrite`
+Labelling spans of text in a document | `python3 src/annotate.py tutorial/label.md -t categorical -s token -o -hh`
+Linking lines in a document | `python3 src/annotate.py tutorial/link.md -t link -s line -o -hh`
+Comparing annotations | TODO
 
 ## Detailed Usage Instructions
 
@@ -53,17 +54,18 @@ optional arguments:
   -h, --help            show this help message and exit
   -d DATA_LIST [DATA_LIST ...], --data-list DATA_LIST [DATA_LIST ...]
                         Files containing lists of files to be annotated
-  -l LOG_PREFIX, --log-prefix LOG_PREFIX
-                        Prefix for logging files (otherwise none)
-  -r, --readonly        Do not allow changes or save annotations.
-  -hh, --hide-help      Do not show help on startup.
-  -o, --overwrite       If they exist already, overwrite output files.
   -t {categorical,link}, --ann-type {categorical,link}
                         The type of annotation being done.
   -s {character,token,line,document}, --ann-scope {character,token,line,document}
                         The scope of annotation being done.
   -c CONFIG_FILE, --config-file CONFIG_FILE
                         A file containing configuration information.
+  -l LOG_PREFIX, --log-prefix LOG_PREFIX
+                        Prefix for logging files (otherwise none)
+  -hh, --hide-help      Do not show help on startup.
+  -r, --readonly        Do not allow changes or save annotations.
+  -o, --overwrite       If they exist already, read abd overwrite output
+                        files.
   -ps, --prevent-self-links
                         Prevent an item from being linked to itself.
   -pf, --prevent-forward-links
@@ -158,8 +160,8 @@ Colours and keys are customisable. For labelling, the default is:
 
  - Underlined, current selected item
  - Green on black, 'a' items
- - Yellow on black, 's' items
- - Purple on black, 'd' items
+ - Blue on black, 's' items
+ - Magenta on black, 'd' items
  - Cyan on black, multiple types for a single token
 
 For linking, the default is:

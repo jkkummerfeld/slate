@@ -434,22 +434,25 @@ if __name__ == '__main__':
             help='Files to be annotated')
     parser.add_argument('-d', '--data-list', nargs="+",
             help='Files containing lists of files to be annotated')
-    parser.add_argument('-l', '--log-prefix', default="annotation_log."+ stime,
-            help='Prefix for logging files (otherwise none)')
-    parser.add_argument('-r', '--readonly', action='store_true',
-            help='Do not allow changes or save annotations.')
-    parser.add_argument('-hh', '--hide-help', action='store_true',
-            help='Do not show help on startup.')
-    parser.add_argument('-o', '--overwrite', default=False, action='store_true',
-            help='If they exist already, overwrite output files.')
+
     parser.add_argument('-t', '--ann-type',
             choices=[v for v in AnnType.__members__], default='categorical',
             help='The type of annotation being done.')
     parser.add_argument('-s', '--ann-scope',
             choices=[v for v in AnnScope.__members__], default='line',
             help='The scope of annotation being done.')
+
     parser.add_argument('-c', '--config-file',
             help='A file containing configuration information.')
+    parser.add_argument('-l', '--log-prefix', default="annotation_log."+ stime,
+            help='Prefix for logging files (otherwise none)')
+
+    parser.add_argument('-hh', '--hide-help', action='store_true',
+            help='Do not show help on startup.')
+    parser.add_argument('-r', '--readonly', action='store_true',
+            help='Do not allow changes or save annotations.')
+    parser.add_argument('-o', '--overwrite', default=False, action='store_true',
+            help='If they exist already, read abd overwrite output files.')
 
     parser.add_argument('-ps', '--prevent-self-links', default=False,
             action='store_true',
@@ -489,9 +492,9 @@ if __name__ == '__main__':
     else:
         config = Config(args, 
             {
-                'a': (('SPACE', 'a'), 'green'),
-                's': (('SPACE', 's'), 'blue'),
-                'd': (('SPACE', 'd'), 'magenta'),
+                'label:a': (('SPACE', 'a'), 'green'),
+                'label:s': (('SPACE', 's'), 'blue'),
+                'label:d': (('SPACE', 'd'), 'magenta'),
             }
         )
 
