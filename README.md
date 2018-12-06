@@ -37,7 +37,52 @@ Annotating links in a document | `python3 src/annotate.py tutorial/link.md -hh -
 
 ## Detailed Usage Instructions
 
-You will be shown files one at a time in plain text. Commands are:
+Run as:
+
+```bash
+python3 src/annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-l LOG_PREFIX] [-r]
+                        [-hh] [-o] [-t {categorical,link}]
+                        [-s {character,token,line,document}] [-c CONFIG_FILE] [-ps]
+                        [-pf] [--do-not-show-linked] [--alternate-comparisons]
+                        [data [data ...]]
+
+positional arguments:
+  data                  Files to be annotated
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DATA_LIST [DATA_LIST ...], --data-list DATA_LIST [DATA_LIST ...]
+                        Files containing lists of files to be annotated
+  -l LOG_PREFIX, --log-prefix LOG_PREFIX
+                        Prefix for logging files (otherwise none)
+  -r, --readonly        Do not allow changes or save annotations.
+  -hh, --hide-help      Do not show help on startup.
+  -o, --overwrite       If they exist already, overwrite output files.
+  -t {categorical,link}, --ann-type {categorical,link}
+                        The type of annotation being done.
+  -s {character,token,line,document}, --ann-scope {character,token,line,document}
+                        The scope of annotation being done.
+  -c CONFIG_FILE, --config-file CONFIG_FILE
+                        A file containing configuration information.
+  -ps, --prevent-self-links
+                        Prevent an item from being linked to itself.
+  -pf, --prevent-forward-links
+                        Prevent a link from an item to one after it.
+  --do-not-show-linked  Do not have a special color to indicate any linked
+                        token.
+  --alternate-comparisons
+                        Activate alternative way of showing different
+                        annotations (one colour per set of markings, rather
+                        than counts).
+```
+
+You may also define arguments in a file and pass them in as follows:
+
+```bash
+python3 src/annotate.py @arguments.txt
+```
+
+The tool shows files one at a time in plain text. Commands are:
 
 Type                        | Key                         | Labelling Affect                 | Linking Affect
 --------------------------- | --------------------------- | -------------------------------- | ---------------------
@@ -101,10 +146,10 @@ raw_file [annotation_file [starting_position [additional_annotation_files]]]
 For example, these commands will create a file list, use it, then return to it later:
 
 ```bash
-$ find . | grep 'txt$' > filenames_todo
-$ ./slate/src/annotate.py --data-list filenames_todo --log-prefix do_later
+$ find . -name *txt > filenames_todo
+$ ./slate/src/annotate.py -d filenames_todo -l do_later
 ... do some work, then quit, go away, come back...
-$ ./slate/src/annotate.py --data-list dp_later.todo --log-prefix do_even_later
+$ ./slate/src/annotate.py -d do_later.todo -l do_even_later
 ```
 
 ## Customisation
@@ -124,37 +169,4 @@ For linking, the default is:
  - Blue on black, item is linked to the current linking item
  - Yellow on black, item is in some link, though not with the current linking item
 
-## Options:
-
-This is directly from running `./annotate.py -h`:
-
-```
-positional arguments:
-  data                  Files to be annotated
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --data-list DATA_LIST [DATA_LIST ...]
-                        Files containing lists of files to be annotated
-  --log-prefix LOG_PREFIX
-                        Prefix for logging files (otherwise none)
-  --readonly READONLY   Do not allow changes or save annotations.
-  -hh, --hide-help      Do not show help on startup.
-  --overwrite           If they exist already, overwrite output files.
-  --do-not-show-linked  Do not have a special color to indicate any linked
-                        token.
-  --prevent-self-links  Prevent an item to be linked to itself.
-  --prevent-forward-links
-                        Prevent a link from an item to one after it.
-  --alternate-comparisons
-                        Activate alternative way of showing different
-                        annotations (one colour per set of markings, rather
-                        than counts).
-  --ann-type {categorical,link}
-                        The type of annotation being done.
-  --ann-scope {character,token,line,document}
-                        The scope of annotation being done.
-  --config-file CONFIG_FILE
-                        A file containing configuration information.
-```
 

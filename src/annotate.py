@@ -432,35 +432,37 @@ if __name__ == '__main__':
             fromfile_prefix_chars='@')
     parser.add_argument('data', nargs="*",
             help='Files to be annotated')
-    parser.add_argument('--data-list', nargs="+",
+    parser.add_argument('-d', '--data-list', nargs="+",
             help='Files containing lists of files to be annotated')
-    parser.add_argument('--log-prefix', default="annotation_log."+ stime,
+    parser.add_argument('-l', '--log-prefix', default="annotation_log."+ stime,
             help='Prefix for logging files (otherwise none)')
-    parser.add_argument('--readonly', default=False,
+    parser.add_argument('-r', '--readonly', action='store_true',
             help='Do not allow changes or save annotations.')
     parser.add_argument('-hh', '--hide-help', action='store_true',
             help='Do not show help on startup.')
-    parser.add_argument('--overwrite', default=False, action='store_true',
+    parser.add_argument('-o', '--overwrite', default=False, action='store_true',
             help='If they exist already, overwrite output files.')
-    parser.add_argument('--do-not-show-linked', default=False, action='store_true',
-            help='Do not have a special color to indicate any linked token.')
-    parser.add_argument('--prevent-self-links', default=False,
+    parser.add_argument('-t', '--ann-type',
+            choices=[v for v in AnnType.__members__], default='categorical',
+            help='The type of annotation being done.')
+    parser.add_argument('-s', '--ann-scope',
+            choices=[v for v in AnnScope.__members__], default='line',
+            help='The scope of annotation being done.')
+    parser.add_argument('-c', '--config-file',
+            help='A file containing configuration information.')
+
+    parser.add_argument('-ps', '--prevent-self-links', default=False,
             action='store_true',
             help='Prevent an item from being linked to itself.')
-    parser.add_argument('--prevent-forward-links', default=False,
+    parser.add_argument('-pf', '--prevent-forward-links', default=False,
             action='store_true',
             help='Prevent a link from an item to one after it.')
+
+    parser.add_argument('--do-not-show-linked', default=False, action='store_true',
+            help='Do not have a special color to indicate any linked token.')
     parser.add_argument('--alternate-comparisons', default=False,
             action='store_true',
             help='Activate alternative way of showing different annotations (one colour per set of markings, rather than counts).')
-    parser.add_argument('--ann-type',
-            choices=[v for v in AnnType.__members__], default='categorical',
-            help='The type of annotation being done.')
-    parser.add_argument('--ann-scope',
-            choices=[v for v in AnnScope.__members__], default='line',
-            help='The scope of annotation being done.')
-    parser.add_argument('--config-file',
-            help='A file containing configuration information.')
 
     args = parser.parse_args()
 
