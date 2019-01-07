@@ -67,7 +67,7 @@ def change_span(user_input, action):
         num = current_num
         current_num = None
 
-    view.adjust(direction, num, change, jump)
+    view.adjust(direction, num, change, jump, link)
 
 def delete_typing_char(user_input, action):
     global search_term, partial_typing
@@ -495,6 +495,7 @@ if __name__ == '__main__':
                 'label:a': (('SPACE', 'a'), 'green'),
                 'label:s': (('SPACE', 's'), 'blue'),
                 'label:d': (('SPACE', 'd'), 'magenta'),
+                'label:v': (('SPACE', 'v'), 'red'),
             }
         )
 

@@ -14,24 +14,30 @@ very first token of this document.
 There are two ways to move the underline:
 
   >- Use the arrow keys
-  >- Or use `j`, `i`, `o`, and `;` to move left, up, down and right, respectively
+  >- Or use `j`, `i`, `o`, and `;` to move left, up, down and right,
+     respectively
 
 The reason for the second option is those keys are closer to the next set of
 keys, which allow you to change the size of what you have selected:
 
-  >- To expand the item, use `m`, `k`, `l`, and `/` to make it larger to the left, up, down, and right, respectively
-  >- To contract the item use the same keys with `SHIFT` (i.e., `M`, `K`, `L`, `?`)
+  >- To expand the item, use `m` and `/` to make it larger to the left and
+     right, respectively
+  >- To contract the item use `k` and `l` to make it smaller on the left and
+     right sides, respectively
 
 To move, expand and contract faster:
 
-  >- Type a number before any of the above commands and it will be repeated that many times
-  >- Hold `SHIFT` while moving to jump to the start/end of a line or top/bottom of the document
+  >- Type a number before any of the above commands and it will be repeated
+     that many times
+  >- Hold `SHIFT` while moving to jump to the start/end of a line or top/bottom
+     of the document
 
 Select an item you want to label:
 
   >- Type `SPACE` and then `a` to apply the 'a' label
 
-Note that the text has changed colour to indicate that it is labeled.
+Note that the text has changed colour to indicate that it is labeled and the
+label is disaplayed at the bottom of the screen.
 
   >- Type `SPACE` and then `a` again to remove the label
   >- Similarly, type `SPACE` and then `s` to apply the 's' label

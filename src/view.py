@@ -167,10 +167,17 @@ class View(object):
                     self.cursor = new_pos
                 self.last_moved_pos = new_pos
 
-    def adjust(self, direction, distance, change, maxjump=False):
-        new_pos = self.cursor.edited(direction, change, distance, maxjump)
-        if self._check_move_allowed(False, new_pos):
-            self.cursor = new_pos
+    def adjust(self, direction, distance, change, maxjump, link):
+        changer = self.cursor
+        if link and self.linking_pos is not None:
+            changer = self.linking_pos
+
+        new_pos = changer.edited(direction, change, distance, maxjump)
+        if self._check_move_allowed(link, new_pos):
+            if link:
+                self.linking_pos = new_pos
+            else:
+                self.cursor = new_pos
     
     def put_cursor_beside_link(self):
         self.cursor = self.linking_pos.edited('previous')

@@ -123,21 +123,29 @@ input_action_list = {
     'page-down': [
         "NPAGE", '}' ],
     'extend-up': [
-        'k', ],
+         ],
     'extend-down': [
-        'l', ],
+        ],
+    'contract-up': [
+         ],
+    'contract-down': [
+         ],
     'extend-left': [
         'm', ],
     'extend-right': [
         '/', ],
-    'contract-up': [
-        'K', ],
-    'contract-down': [
-        'L', ],
     'contract-left': [
-        'M', ],
+        'k', ],
     'contract-right': [
+        'l', ],
+    'extend-link-left': [
+        'M', ],
+    'extend-link-right': [
         '?', ],
+    'contract-link-left': [
+        'K', ],
+    'contract-link-right': [
+        'L', ],
     'toggle-help': [
         'h', ],
     'next-file': [

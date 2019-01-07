@@ -64,7 +64,7 @@ optional arguments:
                         Prefix for logging files (otherwise none)
   -hh, --hide-help      Do not show help on startup.
   -r, --readonly        Do not allow changes or save annotations.
-  -o, --overwrite       If they exist already, read abd overwrite output
+  -o, --overwrite       If they exist already, read and overwrite output
                         files.
   -ps, --prevent-self-links
                         Prevent an item from being linked to itself.
@@ -89,53 +89,56 @@ The tool shows files one at a time in plain text. Commands are:
 Type                        | Key                         | Labelling Affect                 | Linking Affect
 --------------------------- | --------------------------- | -------------------------------- | ---------------------
 Movement                    | `j` or `LEFT`               | move to the left                 | move selected item to the left
-&nbsp;                      | `SHIFT` + [`j` or `LEFT`]   | go to the start of the line      | move linking item to the left
 &nbsp;                      | `i` or `UP`                 | move up a line                   | move selected item up a line
-&nbsp;                      | `SHIFT` + [`i` or `UP`]     | go to first line                 | move linking item up a line
 &nbsp;                      | `o` or `DOWN`               | move down a line                 | move selected item down a line
-&nbsp;                      | `SHIFT` + [`o` or `DWON`]   | go to last line                  | move linking item down a line
 &nbsp;                      | `;` or `RIGHT`              | move to the right                | move selected item to the right
-&nbsp;                      | `SHIFT` + [`;` or `RIGHT`]  | go to the end of the line        | move linking item to the right
-Edit Span                   | `m`                         | extend left                      | -
-&nbsp;                      | `M`                         | contract left side               | -
-&nbsp;                      | `k`                         | extend up                        | -
-&nbsp;                      | `K`                         | contract top                     | -
-&nbsp;                      | `l`                         | extend down                      | -
-&nbsp;                      | `L`                         | contract bottom                  | -
-&nbsp;                      | `/`                         | extend right                     | -
-&nbsp;                      | `?`                         | contract right side              | -
+&nbsp;                      | `J` or [`SHIFT` + `LEFT`]   | go to the start of the line      | move linking item to the left
+&nbsp;                      | `I` or [`SHIFT` + `UP`]     | go to first line                 | move linking item up a line
+&nbsp;                      | `O` or [`SHIFT` + `DWON`]   | go to last line                  | move linking item down a line
+&nbsp;                      | `:` or [`SHIFT` + `RIGHT`]  | go to the end of the line        | move linking item to the right
+Edit Span                   | `m`                         | extend left                      | extend selected item left
+&nbsp;                      | `k`                         | contract left side               | contract selected item left
+&nbsp;                      | `/`                         | extend right                     | extend selected item right
+&nbsp;                      | `l`                         | contract right side              | contract selected item right
+&nbsp;                      | `M`                         | -                                | extend linking item left
+&nbsp;                      | `K`                         | -                                | contract linking item left
+&nbsp;                      | `?`                         | -                                | extend linking item right
+&nbsp;                      | `L`                         | -                                | contract linking item right
 Label Annotation (default)  | `SPACE` then `a`            | [un]mark this item as a          | -
 &nbsp;                      | `SPACE` then `s`            | [un]mark this item as s          | -
 &nbsp;                      | `SPACE` then `d`            | [un]mark this item as d          | -
+&nbsp;                      | `SPACE` then `v`            | [un]mark this item as v          | -
 Link Annotation             | `d`                         | -                                | create a link and move right / down
 &nbsp;                      | `D`                         | -                                | create a link
 Either Annotation mode      | `u`                         | undo annotation on this item     | undo all annotations for the current item
 
-Type                        | Key                         | Mode   | Affect               
---------------------------- | --------------------------- | ------ | ----------------------------
-Searching                   | `\`                         | Normal | enter query editing mode
-&nbsp;                      | `?` or `ENTER`              | Query  | exit query editing mode
-&nbsp;                      | `!` or `BACKSPACE`          | Query  | delete last character in query
+Shared commands:
+
+Type                        | Key                           | Mode   | Affect               
+--------------------------- | ----------------------------- | ------ | ----------------------------
+Searching                   | `\`                           | Normal | enter query editing mode
+&nbsp;                      | `?` or `ENTER`                | Query  | exit query editing mode
+&nbsp;                      | `!` or `BACKSPACE`            | Query  | delete last character in query
 &nbsp;                      | characters except `?` and `!` | Query  | add character to query
-&nbsp;                      | `p`                         | Normal | go to previous match
-&nbsp;                      | `n`                         | Normal | go to next match
-&nbsp;                      | `P`                         | Normal | go to previous match for linking line
-&nbsp;                      | `N`                         | Normal | go to next match for linking line
-Assigning text labels       | `t`                         | Normal | enter label editing mode
-&nbsp;                      | `?` or `ENTER`              | Label  | exit label editing mode and assign the label
-&nbsp;                      | `!` or `BACKSPACE`          | Label  | delete last character in label
+&nbsp;                      | `p`                           | Normal | go to previous match
+&nbsp;                      | `n`                           | Normal | go to next match
+&nbsp;                      | `P`                           | Normal | go to previous match for linking line
+&nbsp;                      | `N`                           | Normal | go to next match for linking line
+Assigning text labels       | `t`                           | Normal | enter label editing mode
+&nbsp;                      | `?` or `ENTER`                | Label  | exit label editing mode and assign the label
+&nbsp;                      | `!` or `BACKSPACE`            | Label  | delete last character in label
 &nbsp;                      | characters except `?` and `!` | Label  | add character to label
-Saving, exiting, etc        | `]`                         | Normal | save and go to next file         
-&nbsp;                      | `[`                         | Normal | save and go to previous file     
-&nbsp;                      | `q`                         | Normal | save and quit                    
-&nbsp;                      | `s`                         | Normal | save                             
-&nbsp;                      | `Q`                         | Normal | quit                             
-Misc                        | `#`                         | Normal | toggle line numbers
-&nbsp;                      | `h`                         | Normal | toggle help info (default on)    
-&nbsp;                      | `{` or `PAGE-UP`            | Normal | shift view up 5 lines
-&nbsp;                      | `}` or `PAGE-DOWN`          | Normal | shift view down 5 lines
-&nbsp;                      | `>` then `p`                | Normal | toggle showing progress through files
-&nbsp;                      | `>` then `l`                | Normal | toggle showing legend for labels [TODO]
+Saving, exiting, etc        | `]`                           | Normal | save and go to next file         
+&nbsp;                      | `[`                           | Normal | save and go to previous file     
+&nbsp;                      | `q`                           | Normal | save and quit                    
+&nbsp;                      | `s`                           | Normal | save                             
+&nbsp;                      | `Q`                           | Normal | quit                             
+Misc                        | `#`                           | Normal | toggle line numbers
+&nbsp;                      | `h`                           | Normal | toggle help info (default on)    
+&nbsp;                      | `{` or `PAGE-UP`              | Normal | shift view up 5 lines
+&nbsp;                      | `}` or `PAGE-DOWN`            | Normal | shift view down 5 lines
+&nbsp;                      | `>` then `p`                  | Normal | toggle showing progress through files
+&nbsp;                      | `>` then `l`                  | Normal | toggle showing legend for labels [TODO]
 
 Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OSX operating systems. That is why in all places where they are used we have an alternative as well.
 
@@ -164,6 +167,7 @@ Colours and keys are customisable. For labelling, the default is:
  - Green on black, 'a' items
  - Blue on black, 's' items
  - Magenta on black, 'd' items
+ - Red on black, 'v' items
  - Cyan on black, multiple types for a single token
 
 For linking, the default is:
