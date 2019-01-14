@@ -5,7 +5,7 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python3 src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
+python src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
 ```
 
 When labelling, the current item is underlined. In this case, that means the

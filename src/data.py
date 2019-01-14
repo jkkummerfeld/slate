@@ -384,13 +384,13 @@ class Span(object):
         # Most of the time a span will be provided to start from.
         if span is None:
             first = self.doc.first_char
-            if scope == AnnScope.character:
+            if scope == 'character':
                 self.start = (first[0], first[1], first[2])
-            elif scope == AnnScope.token:
+            elif scope == 'token':
                 self.start = (first[0], first[1])
-            elif scope == AnnScope.line:
+            elif scope == 'line':
                 self.start = (first[0],)
-            elif scope == AnnScope.document:
+            elif scope == 'document':
                 self.start = ()
             else:
                 raise Exception("Invalid scope")
@@ -398,10 +398,10 @@ class Span(object):
         else:
             # Check it has the right length
             length = None
-            if scope == AnnScope.character: length = 3
-            elif scope == AnnScope.token: length = 2
-            elif scope == AnnScope.line: length = 1
-            elif scope == AnnScope.document: length = 0
+            if scope == 'character': length = 3
+            elif scope == 'token': length = 2
+            elif scope == 'line': length = 1
+            elif scope == 'document': length = 0
             else: raise Exception("Invalid scope")
 
             # TODO: Add a check that this position is valid for this doc
@@ -503,11 +503,11 @@ class Span(object):
         return value_from_comparisons[s0s1, e0e1, s0e1, e0s1, s0e0, s1e1]
 
     def to_3tuple(self):
-        if self.scope == AnnScope.character:
+        if self.scope == 'character':
             return self
         start = self.doc.get_3tuple(start)
         end = self.doc.get_3tuple(end)
-        return Span(AnnScope.character, self.doc, (start, end))
+        return Span('character', self.doc, (start, end))
 
     def search(self, query, direction=None, count=1, maxjump=False):
         options = self.doc.matches(query)
@@ -664,7 +664,7 @@ def get_spans(text, doc, config):
 
 def get_labels(text, config):
     labels = set()
-    if config.annotation_type == AnnType.categorical:
+    if config.annotation_type == 'categorical':
         for label in text.strip().split():
             labels.add(label)
     else:
@@ -823,14 +823,14 @@ class Datum(object):
         for item in self.annotations:
             # Get the standard color for this item based on its label
             base_labels = []
-            if self.config.annotation_type == AnnType.categorical:
+            if self.config.annotation_type == 'categorical':
                 # For categorical use the configuration set
                 for key in item.labels:
                     if key in self.config.labels:
                         base_labels.append(key)
                     else:
                         base_labels.append("label:"+ key)
-            elif self.config.annotation_type == AnnType.link:
+            elif self.config.annotation_type == 'link':
                 # For links potentially indicate it is linked
                 if not self.config.args.do_not_show_linked:
                     base_labels.append('linked')
@@ -869,7 +869,7 @@ class Datum(object):
         for item, count in self.disagreements:
             # Get the standard color for this item based on its label
             base_labels = []
-            if self.config.annotation_type == AnnType.categorical:
+            if self.config.annotation_type == 'categorical':
                 for key in item.labels:
                     if key in self.config.labels:
                         base_labels.append("compare-{}-{}".format(count, key))
@@ -955,7 +955,7 @@ class Datum(object):
                     item.labels.add(label)
 
     def remove_annotation(self, spans):
-        permissive = self.config.annotation_type == AnnType.link
+        permissive = self.config.annotation_type == 'link'
         for item in self.get_item_with_spans(spans, permissive):
             self.annotations.remove(item)
 

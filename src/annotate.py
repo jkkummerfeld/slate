@@ -26,7 +26,7 @@ config = None
 
 def move(user_input, action):
     global current_num, current_mode, view
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     direction = action.split('-')[-1]
@@ -49,7 +49,7 @@ def toggle_line_numbers(user_input, action):
 
 def change_span(user_input, action):
     global current_num, current_mode, view
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     change = action.split('-')[0]
@@ -71,17 +71,17 @@ def change_span(user_input, action):
 
 def delete_typing_char(user_input, action):
     global search_term, partial_typing
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
-    if current_mode[-1] == Mode.write_query:
+    if current_mode[-1] == 'write_query':
         search_term = search_term[:-1]
     else:
         partial_typing = partial_typing[:-1]
 
 def leave_typing_mode(user_input, action):
     global current_mode, partial_typing
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     if len(current_mode) > 1:
@@ -89,7 +89,7 @@ def leave_typing_mode(user_input, action):
 
 def assign_text(user_input, action):
     global current_mode, partial_typing
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     if len(current_mode) > 1:
@@ -99,31 +99,31 @@ def assign_text(user_input, action):
 
 def enter_typing_mode(user_input, action):
     global current_mode, partial_typing
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     if 'query' in action:
-        current_mode.append(Mode.write_query)
+        current_mode.append('write_query')
     else:
-        current_mode.append(Mode.write_label)
+        current_mode.append('write_label')
         partial_typing = ''
 
 def clear_query(user_input, action):
     global current_mode, search_term, partial_typing
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     search_term = ''
 
 def add_to_typing(user_input, action):
     global current_mode, search_term, partial_typing
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     char = user_input[0]
     if user_input[0] == 'SPACE':
         char = ' '
-    if current_mode[-1] == Mode.write_query:
+    if current_mode[-1] == 'write_query':
         search_term += char
     else:
         partial_typing += char
@@ -131,11 +131,11 @@ def add_to_typing(user_input, action):
 def change_file(user_input, action):
     global current_mode, cfilename, filename, datum, view, config
 
-    if current_mode[-1] != Mode.no_file:
+    if current_mode[-1] != 'no_file':
         save_or_quit(None, 'save')
 
     direction = 1 if 'next' in action else -1
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         if (cfilename < 0) == (direction > 0):
             current_mode.pop()
             cfilename += direction
@@ -145,13 +145,13 @@ def change_file(user_input, action):
                 filenames[cfilename]
         datum = Datum(filename, config, output_file, annotation_files)
         view = get_view(datum, config, cfilename, len(filenames), start_pos, view)
-    elif current_mode != Mode.no_file:
+    elif current_mode != 'no_file':
         cfilename += direction
-        current_mode.append(Mode.no_file)
+        current_mode.append('no_file')
 
 def modify_display(user_input, action):
     global view
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     if 'help' in action:
@@ -163,7 +163,7 @@ def modify_display(user_input, action):
 
 def shift_view(user_input, action):
     global view
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     if 'up' in action:
@@ -173,7 +173,7 @@ def shift_view(user_input, action):
 
 def update_number(user_input, action):
     global current_num
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     num = int(user_input[0])
@@ -185,32 +185,32 @@ def update_number(user_input, action):
 
 def remove_annotation(user_input, action):
     global view, current_mode, config
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
-    if current_mode[-1] != Mode.read:
+    if current_mode[-1] != 'read':
         spans = [view.cursor]
-        if current_mode[-1] == Mode.link:
+        if current_mode[-1] == 'link':
             spans = [view.linking_pos]
         datum.remove_annotation(spans)
 
 def edit_annotation(user_input, action):
     global view, current_mode, datum, config
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
-    if current_mode[-1] == Mode.category:
+    if current_mode[-1] == 'category':
         label = config.get_label_for_input(user_input)
         datum.modify_annotation([view.cursor], label)
 
 def create_link(user_input, action):
     global view, datum, config
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     datum.modify_annotation([view.cursor, view.linking_pos])
     if 'and-move' in action:
-        if config.annotation == AnnScope.line:
+        if config.annotation == 'line':
             view.move('down', 1, False, True)
             view.put_cursor_beside_link()
         else:
@@ -222,14 +222,14 @@ def save_or_quit(user_input, action):
     global view
 
     if 'save' in action:
-        if current_mode[-1] != Mode.read:
+        if current_mode[-1] != 'read':
             datum.write_out()
 
         # TODO: Save both cursor and linking pos
         if 0 <= cfilename < len(filenames):
             cur = filenames[cfilename]
             pos = view.cursor
-            if config.annotation_type == AnnType.link:
+            if config.annotation_type == 'link':
                 pos = view.linking_pos
             filenames[cfilename] = (cur[0], pos, cur[2], cur[3])
 
@@ -241,7 +241,7 @@ def save_or_quit(user_input, action):
 
 def search(user_input, action):
     global current_num, current_mode, view, search_term
-    if current_mode[-1] == Mode.no_file:
+    if current_mode[-1] == 'no_file':
         return
 
     direction = action.split('-')[-1]
@@ -334,7 +334,7 @@ def get_view(datum, config, file_num, total_files, position, prev_view=None):
     global window
 
     cursor = position
-    link = position if config.annotation_type == AnnType.link else None
+    link = position if config.annotation_type == 'link' else None
     return View(window, cursor, link, datum, config, file_num, total_files, prev_view)
 
 def annotate(window_in, config, filenames):
@@ -362,12 +362,12 @@ def annotate(window_in, config, filenames):
     user_input = []
     while True:
         # Draw screen
-        if current_mode[-1] == Mode.no_file:
+        if current_mode[-1] == 'no_file':
             view.render_edgecase(cfilename >= 0)
         else:
             # Set current search term appearance
             tmp_term = search_term
-            if current_mode[-1] == Mode.write_query:
+            if current_mode[-1] == 'write_query':
                 tmp_term = '\\'+ tmp_term
 
             view.render(tmp_term, partial_typing)
@@ -385,7 +385,7 @@ def annotate(window_in, config, filenames):
                         tuser_input = (next_user_input,)
         logging.info("Input {} in mode {} giving {}".format(next_user_input, current_mode, user_input))
         nsteps += 1
-        if nsteps % 100 == 0 and current_mode[-1] == Mode.category:
+        if nsteps % 100 == 0 and current_mode[-1] == 'category':
             datum.write_out()
 
         # Determine what to do for the input
@@ -436,12 +436,12 @@ if __name__ == '__main__':
             help='Files containing lists of files to be annotated')
 
     parser.add_argument('-t', '--ann-type',
-            choices=[v for v in AnnType.__members__], default='categorical',
+            choices=['categorical', 'link'], default='categorical',
             help='The type of annotation being done.')
     parser.add_argument('-s', '--ann-scope',
-            choices=[v for v in AnnScope.__members__], default='line',
+            choices=['character', 'token', 'line', 'document'],
+            default='token',
             help='The scope of annotation being done.')
-
     parser.add_argument('-c', '--config-file',
             help='A file containing configuration information.')
     parser.add_argument('-l', '--log-prefix', default="annotation_log."+ stime,
@@ -480,11 +480,11 @@ if __name__ == '__main__':
     ### Process configuration
     # Set the current mode
     if args.readonly:
-        current_mode.append(Mode.read)
-    elif AnnType[args.ann_type] == AnnType.categorical:
-        current_mode.append(Mode.category)
-    elif AnnType[args.ann_type] == AnnType.link:
-        current_mode.append(Mode.link)
+        current_mode.append('read')
+    elif args.ann_type == 'categorical':
+        current_mode.append('category')
+    elif args.ann_type == 'link':
+        current_mode.append('link')
 
     config = None
     if args.config_file is not None:

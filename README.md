@@ -32,8 +32,8 @@ Included in this repository are a set of interactive tutorials that teach you ho
 
 Task | Command
 ---- | --------
-Labelling spans of text in a document | `python3 src/annotate.py tutorial/label.md -t categorical -s token -o -hh`
-Linking lines in a document | `python3 src/annotate.py tutorial/link.md -t link -s line -o -hh`
+Labelling spans of text in a document | `python src/annotate.py tutorial/label.md -t categorical -s token -o -hh`
+Linking lines in a document | `python src/annotate.py tutorial/link.md -t link -s line -o -hh`
 Comparing annotations | TODO
 
 ## Detailed Usage Instructions
@@ -41,7 +41,7 @@ Comparing annotations | TODO
 Run as:
 
 ```
-python3 src/annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-l LOG_PREFIX] [-r]
+python src/annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-l LOG_PREFIX] [-r]
                         [-hh] [-o] [-t {categorical,link}]
                         [-s {character,token,line,document}] [-c CONFIG_FILE] [-ps]
                         [-pf] [--do-not-show-linked] [--alternate-comparisons]
@@ -81,7 +81,7 @@ optional arguments:
 You may also define arguments in a file and pass them in as follows:
 
 ```bash
-python3 src/annotate.py @arguments.txt
+python src/annotate.py @arguments.txt
 ```
 
 The tool shows files one at a time in plain text. Commands are:
@@ -114,31 +114,31 @@ Either Annotation mode      | `u`                         | undo annotation on t
 
 Shared commands:
 
-Type                        | Key                           | Mode   | Affect               
---------------------------- | ----------------------------- | ------ | ----------------------------
-Searching                   | `\`                           | Normal | enter query editing mode
-&nbsp;                      | `?` or `ENTER`                | Query  | exit query editing mode
-&nbsp;                      | `!` or `BACKSPACE`            | Query  | delete last character in query
-&nbsp;                      | characters except `?` and `!` | Query  | add character to query
-&nbsp;                      | `p`                           | Normal | go to previous match
-&nbsp;                      | `n`                           | Normal | go to next match
-&nbsp;                      | `P`                           | Normal | go to previous match for linking line
-&nbsp;                      | `N`                           | Normal | go to next match for linking line
-Assigning text labels       | `t`                           | Normal | enter label editing mode
-&nbsp;                      | `?` or `ENTER`                | Label  | exit label editing mode and assign the label
-&nbsp;                      | `!` or `BACKSPACE`            | Label  | delete last character in label
-&nbsp;                      | characters except `?` and `!` | Label  | add character to label
-Saving, exiting, etc        | `]`                           | Normal | save and go to next file         
-&nbsp;                      | `[`                           | Normal | save and go to previous file     
-&nbsp;                      | `q`                           | Normal | save and quit                    
-&nbsp;                      | `s`                           | Normal | save                             
-&nbsp;                      | `Q`                           | Normal | quit                             
-Misc                        | `#`                           | Normal | toggle line numbers
-&nbsp;                      | `h`                           | Normal | toggle help info (default on)    
-&nbsp;                      | `{` or `PAGE-UP`              | Normal | shift view up 5 lines
-&nbsp;                      | `}` or `PAGE-DOWN`            | Normal | shift view down 5 lines
-&nbsp;                      | `>` then `p`                  | Normal | toggle showing progress through files
-&nbsp;                      | `>` then `l`                  | Normal | toggle showing legend for labels [TODO]
+Type                        | Mode   | Key                           | Affect               
+--------------------------- | ------ | ----------------------------- | ----------------------------
+Searching                   | Normal | `\`                           | enter query editing mode
+&nbsp;                      | Query  | `?` or `ENTER`                | exit query editing mode
+&nbsp;                      | Query  | `!` or `BACKSPACE`            | delete last character in query
+&nbsp;                      | Query  | characters except `?` and `!` | add character to query
+&nbsp;                      | Normal | `p`                           | go to previous match
+&nbsp;                      | Normal | `n`                           | go to next match
+&nbsp;                      | Normal | `P`                           | go to previous match for linking line
+&nbsp;                      | Normal | `N`                           | go to next match for linking line
+Assigning text labels       | Normal | `t`                           | enter label editing mode
+&nbsp;                      | Label  | `?` or `ENTER`                | exit label editing mode and assign the label
+&nbsp;                      | Label  | `!` or `BACKSPACE`            | delete last character in label
+&nbsp;                      | Label  | characters except `?` and `!` | add character to label
+Saving, exiting, etc        | Normal | `]`                           | save and go to next file         
+&nbsp;                      | Normal | `[`                           | save and go to previous file     
+&nbsp;                      | Normal | `q`                           | save and quit                    
+&nbsp;                      | Normal | `s`                           | save                             
+&nbsp;                      | Normal | `Q`                           | quit                             
+Misc                        | Normal | `#`                           | toggle line numbers
+&nbsp;                      | Normal | `h`                           | toggle help info (default on)    
+&nbsp;                      | Normal | `{` or `PAGE-UP`              | shift view up 5 lines
+&nbsp;                      | Normal | `}` or `PAGE-DOWN`            | shift view down 5 lines
+&nbsp;                      | Normal | `>` then `p`                  | toggle showing progress through files
+&nbsp;                      | Normal | `>` then `l`                  | toggle showing legend for labels [TODO]
 
 Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OSX operating systems. That is why in all places where they are used we have an alternative as well.
 

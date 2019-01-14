@@ -42,7 +42,7 @@ class View(object):
             "          | s                     | save the current file                  ",
             "          | #                     | toggle line numbers                    ",
         ]
-        if self.config.annotation_type == AnnType.link:
+        if self.config.annotation_type == 'link':
             return [
                 "Colors are underline:slected, green:linking, blue:linked, yellow:has_link",
                 "          | Key                   | Affect                             ",
@@ -258,7 +258,7 @@ class View(object):
             if row >= height:
                 break
             if first_span is None:
-                first_span = Span(AnnScope.character, self.datum.doc, (line_no, 0, 0))
+                first_span = Span('character', self.datum.doc, (line_no, 0, 0))
 
             # Set
             row += 1
@@ -285,7 +285,7 @@ class View(object):
                 end_pos = len(token) - 1
                 if wide_token:
                     end_pos = width - column - space_before - 1
-                last_span = Span(AnnScope.character, self.datum.doc, (line_no, token_no, end_pos))
+                last_span = Span('character', self.datum.doc, (line_no, token_no, end_pos))
 
                 for char_no, char in enumerate(token):
                     if column >= width:
@@ -384,7 +384,7 @@ class View(object):
             main_height = main_height - space_needed
 
         # Shift the top up if necessary
-        if self.config.annotation != AnnScope.document:
+        if self.config.annotation != 'document':
             if self.last_moved_pos is not None:
                 if self.top > self.last_moved_pos.start[0]:
                     self.top = self.last_moved_pos.start[0]

@@ -50,42 +50,19 @@ SELF_LINK_COLOR = 17
 COMPARE_DISAGREE_COLOR = 10
 COMPARE_REF_COLOR = 12
 
-class AnnScope(Enum):
-    character = 0
-    token = 1
-    line = 2
-    document = 3
-
-# TODO: Have a separate notion of 'single', 'continuous', 'discontiuous' (for the item selection), so the user could be linking a pair of discontinuous sets of lines
-
-class AnnType(Enum):
-    categorical = 0
-    link = 1 #TODO: directed or undirected
-    # TODO: sets
-
-class Mode(Enum):
-    category = 0
-    read = 1
-    calibrate = 2
-    write_query = 3
-    link = 4
-    no_file = 5
-    write_label = 6
-
-
 input_action_list = {
     'leave-query-mode': [
-        (Mode.write_query, "ENTER"),
-        (Mode.write_query, '?'), ],
+        ('write_query', "ENTER"),
+        ('write_query', '?'), ],
     'delete-query-char': [
-        (Mode.write_query, "BACKSPACE"),
-        (Mode.write_query, '!'), ], 
+        ('write_query', "BACKSPACE"),
+        ('write_query', '!'), ], 
     'assign-text-label': [
-        (Mode.write_label, "ENTER"),
-        (Mode.write_label, '?'), ],
+        ('write_label', "ENTER"),
+        ('write_label', '?'), ],
     'delete-label-char': [
-        (Mode.write_label, "BACKSPACE"),
-        (Mode.write_label, '!'), ], 
+        ('write_label', "BACKSPACE"),
+        ('write_label', '!'), ], 
     'clear-query': [
         '|', ],
     'enter-query-mode': [
@@ -111,13 +88,13 @@ input_action_list = {
     'jump-right': [
         "SHIFT-RIGHT", ':', ],
     'move-link-up': [
-        (Mode.link, "SHIFT-UP"), (Mode.link, 'I'), ],
+        ('link', "SHIFT-UP"), ('link', 'I'), ],
     'move-link-down': [
-        (Mode.link, "SHIFT-DOWN"), (Mode.link, 'O'), ],
+        ('link', "SHIFT-DOWN"), ('link', 'O'), ],
     'move-link-left': [
-        (Mode.link, "SHIFT-LEFT"), (Mode.link, 'J'), ],
+        ('link', "SHIFT-LEFT"), ('link', 'J'), ],
     'move-link-right': [
-        (Mode.link, "SHIFT-RIGHT"), (Mode.link, ':'), ],
+        ('link', "SHIFT-RIGHT"), ('link', ':'), ],
     'page-up': [
         "PPAGE", '{' ],
     'page-down': [
@@ -149,9 +126,9 @@ input_action_list = {
     'toggle-help': [
         'h', ],
     'next-file': [
-        ']', (Mode.no_file, ']'), ],
+        ']', ('no_file', ']'), ],
     'previous-file': [
-        '[', (Mode.no_file, '['), ],
+        '[', ('no_file', '['), ],
     'quit': [
         'Q', ],
     'save-and-quit': [
@@ -159,9 +136,9 @@ input_action_list = {
     'save': [
         's', ],
     'create-link': [
-        (Mode.link, 'D'), ],
+        ('link', 'D'), ],
     'create-link-and-move': [
-        (Mode.link, 'd'), ],
+        ('link', 'd'), ],
     'edit-annotation': [
         ],
     'remove-annotation': [
@@ -198,10 +175,10 @@ for char in string.printable:
             char = 'SPACE'
         else:
             continue
-    if (Mode.write_query, (char,)) not in used:
-        input_action_list.setdefault('add-to-query', []).append((Mode.write_query, char))
-    if (Mode.write_label, (char,)) not in used:
-        input_action_list.setdefault('add-to-label', []).append((Mode.write_label, char))
+    if ('write_query', (char,)) not in used:
+        input_action_list.setdefault('add-to-query', []).append(('write_query', char))
+    if ('write_label', (char,)) not in used:
+        input_action_list.setdefault('add-to-label', []).append(('write_label', char))
 
 key_to_symbol = {
     curses.KEY_UP: "UP",
@@ -247,8 +224,8 @@ class Config(object):
     def __init__(self, args, labels={}):
         self.args = args
         self.labels = labels
-        self.annotation = AnnScope[args.ann_scope]
-        self.annotation_type = AnnType[args.ann_type]
+        self.annotation = args.ann_scope
+        self.annotation_type = args.ann_type
         self.input_to_action = {}
 
         if args.config_file is not None:
@@ -257,10 +234,8 @@ class Config(object):
                 if line.startswith("Input:"):
                     _, action, mode, key = line.strip().split()
                     symbols = tuple(keydef_to_symbols(key))
-                    if mode == 'All':
+                    if mode == 'all':
                         mode = None
-                    else:
-                        mode = Mode[mode]
                     self.add_keybinding(mode, symbols, action)
                 elif line.startswith("Label:"):
                     _, label, key, color = line.strip().split()
@@ -285,7 +260,7 @@ class Config(object):
             # Provided labels
             for label in self.labels:
                 key, _ = self.labels[label]
-                self.add_keybinding(Mode.category, key, 'edit-annotation')
+                self.add_keybinding('category', key, 'edit-annotation')
 
         # Fill annotation keys
         self.input_to_label = {}
@@ -324,9 +299,7 @@ class Config(object):
         for mode, key in self.input_to_action:
             action = self.input_to_action[mode, key]
             if mode is None:
-                mode = 'All'
-            else:
-                mode = mode.name
+                mode = 'all'
             key = "_".join(key)
 
             ans.append("{:<15} {:<25} {:<20} {}".format("Input:", action, mode, key))

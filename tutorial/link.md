@@ -5,7 +5,7 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python3 src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
+python src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
 ```
 
 When linking, one item is marked with an underline, and another is marked with
