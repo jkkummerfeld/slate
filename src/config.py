@@ -241,7 +241,7 @@ class Config(object):
                     _, label, key, color = line.strip().split()
                     symbols = tuple(keydef_to_symbols(key))
                     self.labels[label] = (symbols, color)
-                elif line.startswith("Special_Keys:"):
+                elif line.startswith("Special_Key:"):
                     _, symbol, key = line.strip().split()
                     special_keys[int(key)] = symbol
                     symbol_to_key[symbol] = key

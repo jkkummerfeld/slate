@@ -5,7 +5,7 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python src/annotate.py example/label-example.md -hh --ann-type categorical --ann-scope token --overwrite
+python src/annotate.py tutorial/label.md -t categorical -s token -o -hh
 ```
 
 When labelling, the current item is underlined. In this case, that means the
@@ -50,4 +50,8 @@ be defined as you like.
 When multiple labels apply to the same item a different colour is used.
 
   >- Type `u` to remove both labels on this item
+
+For more commands please see the README.md file. For now, you can:
+
+ >- Type `q` to quit
 

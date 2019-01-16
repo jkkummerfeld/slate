@@ -374,7 +374,9 @@ def annotate(window_in, config, filenames):
         view.must_show_linking_pos = False
 
         # Get input
-        next_user_input = input_to_symbol(window.getch())
+        ch = window.getch()
+        next_user_input = input_to_symbol(ch)
+        logging.info("Input {} converted to {} in mode {}".format(ch, next_user_input, current_mode))
         user_input.append(next_user_input)
         tuser_input = tuple(user_input)
         if (current_mode[-1], tuser_input) not in config.valid_prefixes:
@@ -383,7 +385,6 @@ def annotate(window_in, config, filenames):
                     if (None, tuser_input) not in config.input_to_action:
                         user_input = [next_user_input]
                         tuser_input = (next_user_input,)
-        logging.info("Input {} in mode {} giving {}".format(next_user_input, current_mode, user_input))
         nsteps += 1
         if nsteps % 100 == 0 and current_mode[-1] == 'category':
             datum.write_out()

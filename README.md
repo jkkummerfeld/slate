@@ -32,8 +32,8 @@ Included in this repository are a set of interactive tutorials that teach you ho
 
 Task | Command
 ---- | --------
-Labelling spans of text in a document | `python src/annotate.py tutorial/label.md -t categorical -s token -o -hh`
-Linking lines in a document | `python src/annotate.py tutorial/link.md -t link -s line -o -hh`
+Labelling spans of text in a document | `python src/annotate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
+Linking lines in a document | `python src/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
 Comparing annotations | Coming soon!
 
 ## Detailed Usage Instructions

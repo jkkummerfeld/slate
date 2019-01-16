@@ -413,15 +413,15 @@ class Span(object):
                     self.start, self.end = (), ()
                 else:
                     if type(span[0]) == int:
-                        assert len(span) == length, "Got {} not {}".format(len(span), length)
+                        assert len(span) == length, "Invalid item: got {} not {}".format(len(span), length)
                         self.start = span
                         self.end = span
                     else:
-                        assert len(span[0]) == len(span[1]) == length
+                        assert len(span[0]) == len(span[1]) == length, "Invalid item: got {} not {}".format(len(span), length)
                         self.start = span[0]
                         self.end = span[1]
             else:
-                assert len(span.start) == len(span.end) == length
+                assert len(span.start) == len(span.end) == length, "Invalid item: got {} not {}".format(len(span), length)
                 self.start = span.start
                 self.end = span.end
 

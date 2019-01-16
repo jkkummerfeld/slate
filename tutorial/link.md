@@ -5,7 +5,7 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python src/annotate.py example/link-example.md -hh --ann-type link --ann-scope line --overwrite
+python src/annotate.py tutorial/link.md -t link -s line -o -hh
 ```
 
 When linking, one item is marked with an underline, and another is marked with
@@ -15,13 +15,14 @@ Try moving the lines:
 
   >- Move the underlined line down by pressing `DOWN` or `o`
   >- Move it up with `UP` or `i`
-  >- Move the green line down by pressing `SHIFT` + `DOWN` (OS X only) or `SHIFT` + `o`
-  >- Move it up with `SHIFT` + `UP` (OS X only) or `SHIFT` + `i`
+  >- Move the green line down by pressing `SHIFT` + `DOWN` (Not all platforms) or `SHIFT` + `o`
+  >- Move it up with `SHIFT` + `UP`(Not all platforms) or `SHIFT` + `i`
 
-If you are not using OS X it is possible to add support for the shift based
-movement. Try typing "SHIFT + DOWN", look at the log file and see the line
-about user input, and use that number in your keybindings (either in config.py
-or a config file).
+If you do not find that the SHIFT commands work it is possible to add support
+by looking at the log file for "INFO:root:Input" and then either (1) modifying
+a config file to have an extra `Special_Key` line like those already present,
+or (2) by editing src/config.py to have the relevant number in `special_keys`
+on line 202.
 
 Links can be created in two ways:
 
@@ -44,4 +45,8 @@ part of a link.
 
 There are a range of options for customising the behaviour discussed here, see
 the command line options for details.
+
+For more commands please see the README.md file. For now, you can:
+
+ >- Type `q` to quit
 
