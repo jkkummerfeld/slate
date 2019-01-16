@@ -9,7 +9,7 @@
 ## Installation
 
 Simply clone or download this repository.
-The code requires just Python 3 and can be run out of the box.
+The code requires only Python (2 or 3) and can be run out of the box.
 
 Step by step, in a terminal, you can either download a zip file:
 
@@ -34,7 +34,7 @@ Task | Command
 ---- | --------
 Labelling spans of text in a document | `python src/annotate.py tutorial/label.md -t categorical -s token -o -hh`
 Linking lines in a document | `python src/annotate.py tutorial/link.md -t link -s line -o -hh`
-Comparing annotations | TODO
+Comparing annotations | Coming soon!
 
 ## Detailed Usage Instructions
 
