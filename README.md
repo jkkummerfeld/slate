@@ -3,8 +3,8 @@
 - Fast
 - Trivial installation
 - Focuses all of the screen space on annotation (good for large fonts)
-- Works in constrained environments (e.g. only allowed ssh access to a machine)
-- Easily configurable and modifiable
+- Terminal based, so it works in constrained environments (e.g. only allowed ssh access to a machine)
+- Not difficult to configurable and modifiable
 
 ## Installation
 
@@ -26,7 +26,35 @@ git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
 
-## Tutorials
+## Getting Started
+
+Run `python src/annotate.py <filename>` to start annotating a file with labels over spans of tokens.
+The entire interface is contained in your terminal, it does not launch a GUI or other window.
+By adding command line arguments you can vary the type of annotation (labels or links), scope (characters, tokens, lines, documents), and a range of other features.
+
+When you start the tool it displays some core controls by default.
+These are also specified below, along with additional controls.
+
+When you save (type `s`) or save and quit (`q`) the tool saves the annotation in a separate file (`<filename>.annotations` by default, this can be varied with a file list as described below).
+Annotation files are formatted with one line per annotated item.
+The item is specified with a tuple of numbers, (line, token, character).
+For labels, the item is followed by a hyphen and the list of labels separated by spaces.
+For links, there are two items on the line before the hyphen.
+For example, these are two annotation files, one for labels of token spans and the other for links between lines:
+
+```
+==> label.annotations <==
+(2, 1) - label:a
+((3, 5), (3, 8)) - label:a
+(7, 8) - label:s label:a
+
+==> link.annotations <==
+13 0 - 
+13 7 - 
+16 7 - 
+```
+
+### Tutorials
 
 Included in this repository are a set of interactive tutorials that teach you how to use the tool from within the tool itself.
 
@@ -38,7 +66,7 @@ Comparing annotations | Coming soon!
 
 ## Detailed Usage Instructions
 
-Run as:
+### Invocation options
 
 ```
 python src/annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-l LOG_PREFIX] [-r]
@@ -83,6 +111,8 @@ You may also define arguments in a file and pass them in as follows:
 ```bash
 python src/annotate.py @arguments.txt
 ```
+
+### Keybindings
 
 The tool shows files one at a time in plain text. Commands are:
 
@@ -142,6 +172,8 @@ Misc                        | Normal | `#`                           | toggle li
 
 Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OSX operating systems. That is why in all places where they are used we have an alternative as well.
 
+### Misc
+
 To annotate multiple files, specify more than one as an argument.
 For greater control, provide a list of files in a file specified with `--data-list`.
 The list should be formatted as follows, where [] indicate optional values:
@@ -177,7 +209,7 @@ For linking, the default is:
  - Blue on black, item is linked to the current linking item
  - Yellow on black, item is in some link, though not with the current linking item
 
-## Modifying the Tool
+### Modifying the Code
 
 Slate has a relatively small codebase (~2,200 lines) and is designed to make adding new functionality not too hard.
 The code is divided up as follows:
