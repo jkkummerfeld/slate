@@ -144,14 +144,17 @@ class Document(object):
     def get_moved_pos(self, pos, right=0, down=0, maxjump=False, skip_blank=True):
         """Calculate a shifted version of  a given a position in this document.
 
-        Co-ordinates are (line number, token number), with (0,0) as the top
-        left, tokens increasing left to right and lines increasing top to
-        bottom.
+        Co-ordinates are (line number, token number, character number), with
+        (0,0, 0) as the top left, tokens increasing left to right and lines
+        increasing top to bottom.
         """
         if len(pos) == 0: # This is the whole document, can't move
             return pos
-        elif len(pos) == 1: # This is a line, ignore right
+        elif len(pos) == 1: # This is a line
             npos = pos[0]
+            # Interpret left/right as also being up/down for lines
+            if down == 0 and right != 0:
+                down = right
             if maxjump:
                 if down < 0: npos = self.first_char[0]
                 elif down > 0: npos = self.last_char[0]
