@@ -15,7 +15,7 @@ This command is also an example of how to run the code. It says to:
  - with categories (`-t categorical`),
  - applied to tokens (`-s token`),
  - reading and overwriting any existing annotation file (`-o`),
- - hiding the help at the start (`-hh`),
+ - hiding help information (`-hh`),
  - and logging to a specified file (`-l log.tutorial.label.txt`)
 
 For the full range of command line arguments, see the README.md file.

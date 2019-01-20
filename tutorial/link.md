@@ -15,7 +15,7 @@ This command is also an example of how to run the code. It says to:
  - with links (`-t link`),
  - applied to lines (`-s line`),
  - reading and overwriting any existing annotation file (`-o`),
- - hiding the help at the start (`-hh`),
+ - hiding help information (`-hh`),
  - and logging to a specified file (`-l log.tutorial.link.txt`)
 
 When linking, one item is marked with an underline, and another is marked with
