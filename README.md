@@ -177,4 +177,24 @@ For linking, the default is:
  - Blue on black, item is linked to the current linking item
  - Yellow on black, item is in some link, though not with the current linking item
 
+## Modifying the Tool
+
+Slate has a relatively small codebase (~2,200 lines) and is designed to make adding new functionality not too hard.
+The code is divided up as follows:
+
+ - `annotate.py`, the main program, this has the core loop that gets user input.
+ - `config.py`, contains the default configuration, including colours and keyboard bindings.
+ - `data.py`, classes to read, store and write data.
+ - `view.py`, rendering the screen.
+
+Logic for determining what colour goes where is split across two parts of the code.
+In `data.py`, the set of labels for an item is determined.
+In `view.py`, that set of labels is used to choose a suitable colour.
+
+Adding a new command involves:
+
+ - Adding the name and key to `input_action_list` in `config.py`
+ - Adding a mapping from the name to a function in `action_to_function` in `annotate.py`
+ - Adding or modifying a function in `annotate.py`
+ - Modifying `data.py` or `view.py` to apply the action
 

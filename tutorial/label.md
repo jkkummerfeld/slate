@@ -8,6 +8,18 @@ containing slate, run it like so:
 python src/annotate.py tutorial/label.md -t categorical -s token -o -hh
 ```
 
+This command is also an example of how to run the code. It says to:
+
+ - run the program with python (`python src/annotate.py`),
+ - annotating this file (`tutorial/label.md`),
+ - with categories (`-t categorical`),
+ - applied to tokens (`-s token`),
+ - reading and overwriting any existing annotation file (`-o`),
+ - hiding the help at the start (`-hh`),
+ - and logging to a specified file (`-l log.tutorial.label.txt`)
+
+For the full range of command line arguments, see the README.md file.
+
 When labelling, the current item is underlined. In this case, that means the
 very first token of this document.
 

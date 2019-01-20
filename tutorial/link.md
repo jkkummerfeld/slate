@@ -5,8 +5,18 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python src/annotate.py tutorial/link.md -t link -s line -o -hh
+python src/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt
 ```
+
+This command is also an example of how to run the code. It says to:
+
+ - run the program with python (`python src/annotate.py`),
+ - annotating this file (`tutorial/link.md`),
+ - with links (`-t link`),
+ - applied to lines (`-s line`),
+ - reading and overwriting any existing annotation file (`-o`),
+ - hiding the help at the start (`-hh`),
+ - and logging to a specified file (`-l log.tutorial.link.txt`)
 
 When linking, one item is marked with an underline, and another is marked with
 green text. At the moment, the top line should be both green and underlined.
