@@ -28,17 +28,17 @@ cd slate
 
 ## Getting Started
 
-Run `python src/annotate.py <filename>` to start annotating a file with labels over spans of tokens.
-The entire interface is contained in your terminal, it does not launch a GUI or other window.
-By adding command line arguments you can vary the type of annotation (labels or links), scope (characters, tokens, lines, documents), and a range of other features.
+Run `python src/annotate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
+The entire interface is contained in your terminal, there is no GUI.
+With command line arguments you can vary properties such as the type of annotation (labels or links) and scope of annotation (characters, tokens, lines, documents).
 
-When you start the tool it displays some core controls by default.
-These are also specified below, along with additional controls.
+When you start the tool it displays a set of core commands by default.
+These are also specified below, along with additional commands.
 
-When you save (type `s`) or save and quit (`q`) the tool saves the annotation in a separate file (`<filename>.annotations` by default, this can be varied with a file list as described below).
+The tool saves annotations in a separate file (`<filename>.annotations` by default, this can be varied with a file list as described below).
 Annotation files are formatted with one line per annotated item.
-The item is specified with a tuple of numbers, (line, token, character).
-For labels, the item is followed by a hyphen and the list of labels separated by spaces.
+The item is specified with a tuple of numbers.
+For labels, the item is followed by a hyphen and the list of labels.
 For links, there are two items on the line before the hyphen.
 For example, these are two annotation files, one for labels of token spans and the other for links between lines:
 
@@ -53,6 +53,12 @@ For example, these are two annotation files, one for labels of token spans and t
 13 7 - 
 16 7 - 
 ```
+
+A few notes:
+- The second label annotation is on a span of tokens, going from 5 to 8 on line 3.
+- The third label annotation has two labels.
+- The line annotations only have one number to specify the item.
+- When the same line is linked to multiple other lines, each link is a separate item.
 
 ### Tutorials
 
