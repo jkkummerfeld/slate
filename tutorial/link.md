@@ -58,5 +58,5 @@ the command line options for details.
 
 For more commands please see the README.md file. For now, you can:
 
- >- Type `q` to quit
+ >- Type `q` to save and quit
 

@@ -65,5 +65,5 @@ When multiple labels apply to the same item a different colour is used.
 
 For more commands please see the README.md file. For now, you can:
 
- >- Type `q` to quit
+ >- Type `q` to save and quit
 
