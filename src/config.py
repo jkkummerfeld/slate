@@ -3,8 +3,6 @@ from __future__ import print_function
 import string
 import logging
 
-from enum import Enum
-
 import curses # Needed for colours
 
 COLORS = [

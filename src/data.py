@@ -295,82 +295,81 @@ class Document(object):
         else:
             return self.get_moved_pos(pos, -1, 0)
 
-class SpanCompare(Enum):
-  smaller = 0
-  smaller_left = 1
-  overlap_end = 2
-  overlap_right = 3
-  cover = 4
-  left_inside = 5
-  equal = 6
-  left_overlap = 7
-  inside = 8
-  inside_right = 9
-  overlap_start = 10
-  right_larger = 11
-  larger = 12
-  one_smaller = 13
-  one_left = 14
-  one_inside = 15
-  one_right = 16
-  one_larger = 17
-  smaller_one = 18
-  smaller_match = 19
-  cover_one = 20
-  equal_one = 21
-  match_larger = 22
-  larger_one = 23
-  smaller_one_one = 24
-  larger_one_one = 25
-
+###class SpanCompare(Enum):
+###  smaller = 0
+###  smaller_left = 1
+###  overlap_end = 2
+###  overlap_right = 3
+###  cover = 4
+###  left_inside = 5
+###  equal = 6
+###  left_overlap = 7
+###  inside = 8
+###  inside_right = 9
+###  overlap_start = 10
+###  right_larger = 11
+###  larger = 12
+###  one_smaller = 13
+###  one_left = 14
+###  one_inside = 15
+###  one_right = 16
+###  one_larger = 17
+###  smaller_one = 18
+###  smaller_match = 19
+###  cover_one = 20
+###  equal_one = 21
+###  match_larger = 22
+###  larger_one = 23
+###  smaller_one_one = 24
+###  larger_one_one = 25
 
 value_from_comparisons = {
 #  s0s1 e0e1 s0e1 e0s1 s0e0 s1e1 SpanCompare                |-------|
-  (1, 1, 1, 1, 1, 1): SpanCompare.smaller,          # .--.                 
-  (1, 1, 1, 0, 1, 1): SpanCompare.smaller_left,     # .-----|              
-  (1, 1, 1, -1, 1, 1): SpanCompare.overlap_end,     # .---------.          
-  (1, 0, 1, -1, 1, 1): SpanCompare.overlap_right,   # .-------------|      
-  (1, -1, 1, -1, 1, 1): SpanCompare.cover,          # .-------------------.
-  (0, 1, 1, -1, 1, 1): SpanCompare.left_inside,     #       |---.          
-  (0, 0, 1, -1, 1, 1): SpanCompare.equal,           #       |-------|      
-  (0, -1, 1, -1, 1, 1): SpanCompare.left_overlap,   #       |-------------.
-  (-1, 1, 1, -1, 1, 1): SpanCompare.inside,         #          .-.         
-  (-1, 0, 1, -1, 1, 1): SpanCompare.inside_right,   #           .---|      
-  (-1, -1, 1, -1, 1, 1): SpanCompare.overlap_start, #           .---------.
-  (-1, -1, 0, -1, 1, 1): SpanCompare.right_larger,  #               |-----.
-  (-1, -1, -1, -1, 1, 1): SpanCompare.larger,       #                  .--.
-  (1, 1, 1, 1, 0, 1): SpanCompare.one_smaller,      # .                    
-  (0, 1, 1, 0, 0, 1): SpanCompare.one_left,         #       |              
-  (-1, 1, 1, -1, 0, 1): SpanCompare.one_inside,     #           .          
-  (-1, 0, 0, -1, 0, 1): SpanCompare.one_right,      #               |      
-  (-1, -1, -1, -1, 0, 1): SpanCompare.one_larger,   #                     .
+  (1, 1, 1, 1, 1, 1): "smaller",          # .--.                 
+  (1, 1, 1, 0, 1, 1): "smaller_left",     # .-----|              
+  (1, 1, 1, -1, 1, 1): "overlap_end",     # .---------.          
+  (1, 0, 1, -1, 1, 1): "overlap_right",   # .-------------|      
+  (1, -1, 1, -1, 1, 1): "cover",          # .-------------------.
+  (0, 1, 1, -1, 1, 1): "left_inside",     #       |---.          
+  (0, 0, 1, -1, 1, 1): "equal",           #       |-------|      
+  (0, -1, 1, -1, 1, 1): "left_overlap",   #       |-------------.
+  (-1, 1, 1, -1, 1, 1): "inside",         #          .-.         
+  (-1, 0, 1, -1, 1, 1): "inside_right",   #           .---|      
+  (-1, -1, 1, -1, 1, 1): "overlap_start", #           .---------.
+  (-1, -1, 0, -1, 1, 1): "right_larger",  #               |-----.
+  (-1, -1, -1, -1, 1, 1): "larger",       #                  .--.
+  (1, 1, 1, 1, 0, 1): "one_smaller",      # .                    
+  (0, 1, 1, 0, 0, 1): "one_left",         #       |              
+  (-1, 1, 1, -1, 0, 1): "one_inside",     #           .          
+  (-1, 0, 0, -1, 0, 1): "one_right",      #               |      
+  (-1, -1, -1, -1, 0, 1): "one_larger",   #                     .
   # Now consider cases where the second has width 0
   #                                                             |          
-  (1, 1, 1, 1, 1, 0): SpanCompare.smaller_one,      #     .--.             
-  (1, 0, 1, 0, 1, 0): SpanCompare.smaller_match,    #     .-----|          
-  (1, -1, 1, -1, 1, 0): SpanCompare.cover_one,      #     .-----------.    
-  (0, 0, 0, 0, 0, 0): SpanCompare.equal_one,        #           |          
-  (0, -1, 0, -1, 1, 0): SpanCompare.match_larger,   #           |-----.    
-  (-1, -1, -1, -1, 1, 0): SpanCompare.larger_one,   #              .--.    
-  (1, 1, 1, 1, 0, 0): SpanCompare.smaller_one_one,  #     .                
-  (-1, -1, -1, -1, 0, 0): SpanCompare.larger_one_one, #               .    
+  (1, 1, 1, 1, 1, 0): "smaller_one",      #     .--.             
+  (1, 0, 1, 0, 1, 0): "smaller_match",    #     .-----|          
+  (1, -1, 1, -1, 1, 0): "cover_one",      #     .-----------.    
+  (0, 0, 0, 0, 0, 0): "equal_one",        #           |          
+  (0, -1, 0, -1, 1, 0): "match_larger",   #           |-----.    
+  (-1, -1, -1, -1, 1, 0): "larger_one",   #              .--.    
+  (1, 1, 1, 1, 0, 0): "smaller_one_one",  #     .                
+  (-1, -1, -1, -1, 0, 0): "larger_one_one", #               .    
 }
 
 span_compare_ge = {
-    SpanCompare.left_inside, SpanCompare.equal, SpanCompare.left_overlap,
-    SpanCompare.inside, SpanCompare.inside_right, SpanCompare.overlap_start,
-    SpanCompare.right_larger, SpanCompare.larger, SpanCompare.one_left,
-    SpanCompare.one_inside, SpanCompare.one_right, SpanCompare.one_larger,
-    SpanCompare.equal_one, SpanCompare.match_larger, SpanCompare.larger_one,
-    SpanCompare.larger_one_one
+    "left_inside", "equal", "left_overlap",
+    "inside", "inside_right", "overlap_start",
+    "right_larger", "larger", "one_left",
+    "one_inside", "one_right", "one_larger",
+    "equal_one", "match_larger", "larger_one",
+    "larger_one_one"
 }
 span_compare_le = {
-    SpanCompare.smaller, SpanCompare.smaller_left, SpanCompare.overlap_end,
-    SpanCompare.overlap_right, SpanCompare.left_inside, SpanCompare.equal,
-    SpanCompare.inside, SpanCompare.inside_right, SpanCompare.one_smaller,
-    SpanCompare.one_left, SpanCompare.one_inside, SpanCompare.one_right,
-    SpanCompare.smaller_one, SpanCompare.smaller_match, SpanCompare.equal_one,
-    SpanCompare.smaller_one_one
+    "smaller", "smaller_left", "overlap_end",
+    "overlap_right", "left_inside", "equal",
+    "inside", "inside_right", "one_smaller",
+    "one_left", "one_inside", "one_right",
+    "smaller_one", "smaller_match", "equal_one",
+    "smaller_one_one"
 }
 
 class Span(object):
