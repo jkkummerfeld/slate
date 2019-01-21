@@ -1,5 +1,4 @@
-.
-## Why use this tool?
+Why use this tool?
 
 - Fast
 - Trivial installation
