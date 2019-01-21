@@ -513,7 +513,7 @@ class Span(object):
 
     def search(self, query, direction=None, count=1, maxjump=False):
         options = self.doc.matches(query)
-        logging.info(options)
+        logging.debug(options)
         ans = None
         for option in options:
             comp = self._compare_tuples(self.start, option)
@@ -535,7 +535,7 @@ class Span(object):
         change is move, expand, or contract
         distance is an integer, with negative numbers meaning max
         """
-###        logging.info("{} {} {} {}".format(self, direction, change, distance))
+###        logging.debug("{} {} {} {}".format(self, direction, change, distance))
         new_start = self.start
         new_end = self.end
 
@@ -566,13 +566,13 @@ class Span(object):
         if change == "move":
             nstart = self.doc.get_moved_pos(new_start, right, down, maxjump)
             nend = self.doc.get_moved_pos(new_end, right, down, maxjump)
-###            logging.info("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
+###            logging.debug("From {} and {} to {} and {}".format(self.start, self.end, nstart, nend))
             # Only move if it will change both (otherwise it is a shift).
             if nstart != self.start and nend != self.end:
                 new_start = nstart
                 new_end = nend
         else:
-###            logging.info("From {} do {} {} {} {} {} {}".format(self, direction, change, distance, maxjump, right, down))
+###            logging.debug("From {} do {} {} {} {} {} {}".format(self, direction, change, distance, maxjump, right, down))
             move_start = direction == "left" or direction == "up"
 
             to_move = new_end
@@ -590,7 +590,7 @@ class Span(object):
                 new_end = nend
 
         ans = Span(self.scope, self.doc, (new_start, new_end))
-###        logging.info("Returning {}".format(ans))
+###        logging.debug("Returning {}".format(ans))
         return ans
     
     # How to do coreference resolution annotation:

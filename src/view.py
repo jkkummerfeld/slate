@@ -38,13 +38,11 @@ class View(object):
         shared = [
             "Misc      | ] [                   | save and go to next ] / previous [ file",
             "          | q Q                   | quit with or without saving            ",
-            "          | h                     | toggle help info (default on)          ",
             "          | s                     | save the current file                  ",
-            "          | #                     | toggle line numbers                    ",
         ]
         if self.config.annotation_type == 'link':
             return [
-                "Keybindings - to hide this, type 'h'",
+                "Keybindings - to hide/show this, type 'h'",
                 "Colours are underline:selected, green:linking, blue:linked, yellow:has_link",
                 "Type      | Key                   | Affect                             ",
                 "----------|-----------------------|------------------------------------",
@@ -62,7 +60,7 @@ class View(object):
             ] + shared
         else:
             return [
-                "Keybindings - to hide this, type 'h'",
+                "Keybindings - to hide/show this, type 'h'",
                 "Underline is current item, colours are labels",
                 "Type      | Key                   | Affect                           ",
                 "----------|-----------------------|----------------------------------",
@@ -74,10 +72,8 @@ class View(object):
                 "          | O or [SHIFT + DWON]   | go to last line                  ",
                 "          | ; or RIGHT            | move to the right                ",
                 "          | : or [SHIFT + RIGHT]  | go to the end of the line        ",
-                "Span Edit | m                     | extend left                      ",
-                "          | k                     | contract left side               ",
-                "          | /                     | extend right                     ",
-                "          | l                     | contract right side              ",
+                "Span Edit | m   /                 | extend left or right             ",
+                "          | k   l                 | contract left or right           ",
                 "Annotate  | SPACE then a, s, or d | [un]mark this item as a, s, ord d",
                 "          | u                     | undo annotation on this item     ",
             ] + shared
@@ -115,10 +111,10 @@ class View(object):
         mover = self.cursor
         if move_link:
             mover = self.linking_pos
-###            logging.info("Moving linking pos")
-###        logging.info("Move {} {} {}".format(self.cursor, direction, distance))
+###            logging.debug("Moving linking pos")
+###        logging.debug("Move {} {} {}".format(self.cursor, direction, distance))
         new_pos = mover.edited(direction, 'move', distance, maxjump)
-###        logging.info("Moving {} to {}".format(self.cursor, new_pos))
+###        logging.debug("Moving {} to {}".format(self.cursor, new_pos))
         if self._check_move_allowed(move_link, new_pos):
             if move_link:
                 self.linking_pos = new_pos
@@ -142,7 +138,7 @@ class View(object):
                 self.last_moved_pos = self.cursor
 
     def search(self, query, direction, count, maxjump=False, move_link=False):
-        logging.info("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
+        logging.debug("Search {} {} {} {} {}".format(query, direction, count, maxjump, move_link))
         new_pos = None
         if query is None:
             if len(self.datum.disagreements) == 0:
@@ -339,12 +335,14 @@ class View(object):
 
 
     def render(self, current_search, current_typing):
-###        logging.info("Render with '{}' and '{}'".format(current_search, current_typing))
+        height, width = self.window.getmaxyx()
+
+###        logging.debug("Render with '{}' and '{}'".format(current_search, current_typing))
         if self.show_help:
+            if height < 20 or width < 80:
+                raise Exception("Window too small - must be at least 80x20")
             self.render_help()
             return
-
-        height, width = self.window.getmaxyx()
 
         # Get content for extra lines
         extra_text_lines = []
@@ -355,9 +353,9 @@ class View(object):
 
         # Get colors for content
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
-###        logging.info("markings: {}".format(markings))
+###        logging.debug("markings: {}".format(markings))
         for key in markings:
-            logging.info("marking: {}: {}".format(key, markings[key]))
+            logging.debug("marking: {}: {}".format(key, markings[key]))
             marks = markings[key]
             if 'cursor' in marks:
                 for mark in marks:

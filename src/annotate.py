@@ -376,7 +376,7 @@ def annotate(window_in, config, filenames):
         # Get input
         ch = window.getch()
         next_user_input = input_to_symbol(ch)
-        logging.info("Input {} converted to {} in mode {}".format(ch, next_user_input, current_mode))
+        logging.debug("Input {} converted to {} in mode {}".format(ch, next_user_input, current_mode))
         user_input.append(next_user_input)
         tuser_input = tuple(user_input)
         if (current_mode[-1], tuser_input) not in config.valid_prefixes:
@@ -400,7 +400,7 @@ def annotate(window_in, config, filenames):
             action = config.input_to_action[None, tuser_input]
             if action in action_to_function:
                 function = action_to_function[action]
-        logging.info("{} {} -> {} {}".format(current_mode, tuser_input, action, function))
+        logging.debug("{} {} -> {} {}".format(current_mode, tuser_input, action, function))
 
         # Do it!
         if function is not None:
@@ -437,7 +437,8 @@ if __name__ == '__main__':
             help='Files containing lists of files to be annotated')
 
     parser.add_argument('-t', '--ann-type',
-            choices=['categorical', 'link'], default='categorical',
+            choices=['categorical', 'link'],
+            default='categorical',
             help='The type of annotation being done.')
     parser.add_argument('-s', '--ann-scope',
             choices=['character', 'token', 'line', 'document'],
@@ -445,38 +446,55 @@ if __name__ == '__main__':
             help='The scope of annotation being done.')
     parser.add_argument('-c', '--config-file',
             help='A file containing configuration information.')
-    parser.add_argument('-l', '--log-prefix', default="annotation_log."+ stime,
-            help='Prefix for logging files (otherwise none)')
+    parser.add_argument('-l', '--log-prefix',
+            default="annotation_log."+ stime,
+            help='Prefix for logging files')
+    parser.add_argument('-ld', '--log-debug',
+            action='store_true',
+            help='Provide detailed logging.')
 
-    parser.add_argument('-hh', '--hide-help', action='store_true',
+    parser.add_argument('-hh', '--hide-help',
+            action='store_true',
             help='Do not show help on startup.')
-    parser.add_argument('-r', '--readonly', action='store_true',
+    parser.add_argument('-r', '--readonly',
+            action='store_true',
             help='Do not allow changes or save annotations.')
-    parser.add_argument('-o', '--overwrite', default=False, action='store_true',
+    parser.add_argument('-o', '--overwrite',
+            default=False,
+            action='store_true',
             help='If they exist already, read abd overwrite output files.')
 
-    parser.add_argument('-ps', '--prevent-self-links', default=False,
+    parser.add_argument('-ps', '--prevent-self-links',
+            default=False,
             action='store_true',
             help='Prevent an item from being linked to itself.')
-    parser.add_argument('-pf', '--prevent-forward-links', default=False,
+    parser.add_argument('-pf', '--prevent-forward-links',
+            default=False,
             action='store_true',
             help='Prevent a link from an item to one after it.')
 
-    parser.add_argument('--do-not-show-linked', default=False, action='store_true',
-            help='Do not have a special color to indicate any linked token.')
-    parser.add_argument('--alternate-comparisons', default=False,
+    parser.add_argument('--do-not-show-linked',
+            default=False,
             action='store_true',
-            help='Activate alternative way of showing different annotations (one colour per set of markings, rather than counts).')
+            help='Do not have a special color to indicate any linked token.')
+    parser.add_argument('--alternate-comparisons',
+            default=False,
+            action='store_true',
+            help='Activate alternative way of showing different annotations '
+            '(one colour per set of markings, rather than counts).')
 
     args = parser.parse_args()
 
     if len(args.data) == 0 and args.data_list is None:
-        parser.error("Either provide filenames to annotate (data), or use --data-list")
+        parser.error("No filenames or data lists provided")
 
     # Set up logging
-    logging.basicConfig(filename=args.log_prefix + '.log', level=logging.DEBUG)
+    logging_level = logging.DEBUG if args.log_debug else logging.INFO
+    logging.basicConfig(filename=args.log_prefix + '.log', level=logging_level)
     logging.info("Executed with: {}".format(' '.join(sys.argv)))
     logging.info("Arguments interpreted as: {}".format(args))
+    if logging_level == logging.INFO:
+        sys.tracebacklimit = 1
 
     ### Process configuration
     # Set the current mode
