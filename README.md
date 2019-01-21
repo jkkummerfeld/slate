@@ -36,6 +36,7 @@ With command line arguments you can vary properties such as the type of annotati
 
 The input file should be plain text, organised however you like.
 Prepare the data with your favourite sentence splitting and/or tokenisation software (e.g., [SpaCy](https://spacy.io)).
+If you use Python 3 then unicode should be supported, but the code has not been tested extensively with non-English text (please share any issues!).
 
 When you start the tool it displays a set of core commands by default.
 These are also specified below, along with additional commands.
