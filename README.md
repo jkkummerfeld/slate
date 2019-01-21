@@ -26,11 +26,16 @@ git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
 
+Your terminal must be at least 80 characters wide and 20 tall to use the tool.
+
 ## Getting Started
 
 Run `python src/annotate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
 The entire interface is contained in your terminal, there is no GUI.
 With command line arguments you can vary properties such as the type of annotation (labels or links) and scope of annotation (characters, tokens, lines, documents).
+
+The input file should be plain text, organised however you like.
+Prepare the data with your favourite sentence splitting and/or tokenisation software (e.g., [SpaCy](https://spacy.io)).
 
 When you start the tool it displays a set of core commands by default.
 These are also specified below, along with additional commands.
@@ -75,11 +80,13 @@ Comparing annotations | Coming soon!
 ### Invocation options
 
 ```
-python src/annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-l LOG_PREFIX] [-r]
-                        [-hh] [-o] [-t {categorical,link}]
-                        [-s {character,token,line,document}] [-c CONFIG_FILE] [-ps]
-                        [-pf] [--do-not-show-linked] [--alternate-comparisons]
-                        [data [data ...]]
+usage: annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-t {categorical,link}]
+                   [-s {character,token,line,document}] [-c CONFIG_FILE]
+                   [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
+                   [--do-not-show-linked] [--alternate-comparisons]
+                   [data [data ...]]
+
+A tool for annotating text data.
 
 positional arguments:
   data                  Files to be annotated
@@ -95,10 +102,11 @@ optional arguments:
   -c CONFIG_FILE, --config-file CONFIG_FILE
                         A file containing configuration information.
   -l LOG_PREFIX, --log-prefix LOG_PREFIX
-                        Prefix for logging files (otherwise none)
+                        Prefix for logging files
+  -ld, --log-debug      Provide detailed logging.
   -hh, --hide-help      Do not show help on startup.
   -r, --readonly        Do not allow changes or save annotations.
-  -o, --overwrite       If they exist already, read and overwrite output
+  -o, --overwrite       If they exist already, read abd overwrite output
                         files.
   -ps, --prevent-self-links
                         Prevent an item from being linked to itself.
