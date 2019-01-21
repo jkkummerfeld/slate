@@ -76,6 +76,15 @@ Labelling spans of text in a document | `python src/annotate.py tutorial/label.m
 Linking lines in a document | `python src/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
 Comparing annotations | Coming soon!
 
+### Example Workflow
+
+This tool has already been used for two annotation efforts involving multiple annotators ([Durrett et al., 2017](http://jkk.name/publication/emnlp17forums/) and [Kummerfeld et al., 2018](http://jkk.name/publication/arxiv18disentangle/)).
+Our workflow was as follows:
+
+- Create a repository containing (1) the annotation guide, (2) the data to be annotated divided into user-specific folders.
+- Each annotator downloaded slate and used it to do their annotations and commit the files to the repository.
+- Either the whole group or the project leader went through files that were annotated by multiple people, using the adjudication mode in the tool.
+
 ## Detailed Usage Instructions
 
 ### Invocation options
@@ -205,6 +214,13 @@ $ ./slate/src/annotate.py -d filenames_todo -l do_later
 ... do some work, then quit, go away, come back...
 $ ./slate/src/annotate.py -d do_later.todo -l do_even_later
 ```
+
+When the `additional_annotation_files` are included it activates an adjudication mode.
+By default, all annotations that appear in all additional files are added to the current annotations.
+Disagreements are coloured in the text, but will disappear once a decision is made (using the normal annotation commands).
+
+Note - adjudication has not been as thoroughly tested.
+Please share any issues you come across!
 
 ## Customisation
 
