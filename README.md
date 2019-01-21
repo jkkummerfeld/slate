@@ -4,7 +4,7 @@
 - Trivial installation
 - Focuses all of the screen space on annotation (good for large fonts)
 - Terminal based, so it works in constrained environments (e.g. only allowed ssh access to a machine)
-- Not difficult to configurable and modifiable
+- Not difficult to configure and modify
 
 ## Installation
 
