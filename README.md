@@ -14,7 +14,7 @@ The code requires only Python (2 or 3) and can be run out of the box.
 Step by step, in a terminal, you can either download a zip file:
 
 ```bash
-wget -O slate.zip https://github.com/jkkummerfeld/slate/archive/master.zip
+curl https://codeload.github.com/jkkummerfeld/slate/zip/master -o "slate.zip"
 unzip slate.zip
 cd slate-master
 ```
