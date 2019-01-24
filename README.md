@@ -140,61 +140,61 @@ python src/annotate.py @arguments.txt
 
 The tool shows files one at a time in plain text. Commands are:
 
-Type                        | Key                         | Labelling Affect                 | Linking Affect
---------------------------- | --------------------------- | -------------------------------- | ---------------------
-Movement                    | `j` or `LEFT`               | move to the left                 | move selected item to the left
-&nbsp;                      | `i` or `UP`                 | move up a line                   | move selected item up a line
-&nbsp;                      | `o` or `DOWN`               | move down a line                 | move selected item down a line
-&nbsp;                      | `;` or `RIGHT`              | move to the right                | move selected item to the right
-&nbsp;                      | `J` or [`SHIFT` + `LEFT`]   | go to the start of the line      | move linking item to the left
-&nbsp;                      | `I` or [`SHIFT` + `UP`]     | go to first line                 | move linking item up a line
-&nbsp;                      | `O` or [`SHIFT` + `DWON`]   | go to last line                  | move linking item down a line
-&nbsp;                      | `:` or [`SHIFT` + `RIGHT`]  | go to the end of the line        | move linking item to the right
-Edit Span                   | `m`                         | extend left                      | extend selected item left
-&nbsp;                      | `k`                         | contract left side               | contract selected item left
-&nbsp;                      | `/`                         | extend right                     | extend selected item right
-&nbsp;                      | `l`                         | contract right side              | contract selected item right
-&nbsp;                      | `M`                         | -                                | extend linking item left
-&nbsp;                      | `K`                         | -                                | contract linking item left
-&nbsp;                      | `?`                         | -                                | extend linking item right
-&nbsp;                      | `L`                         | -                                | contract linking item right
-Label Annotation (default)  | `SPACE` then `a`            | [un]mark this item as a          | -
-&nbsp;                      | `SPACE` then `s`            | [un]mark this item as s          | -
-&nbsp;                      | `SPACE` then `d`            | [un]mark this item as d          | -
-&nbsp;                      | `SPACE` then `v`            | [un]mark this item as v          | -
-Link Annotation             | `d`                         | -                                | create a link and move right / down
-&nbsp;                      | `D`                         | -                                | create a link
-Either Annotation mode      | `u`                         | undo annotation on this item     | undo all annotations for the current item
+Type                        | Key                                                       | Labelling Affect                 | Linking Affect
+--------------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------
+Movement                    | <kbd>j</kbd> or <kbd>&larr;</kbd>                         | move to the left                 | move selected item to the left
+&nbsp;                      | <kbd>i</kbd> or <kbd>&uarr;</kbd>                         | move up a line                   | move selected item up a line
+&nbsp;                      | <kbd>o</kbd> or <kbd>&darr;</kbd>                         | move down a line                 | move selected item down a line
+&nbsp;                      | <kbd>;</kbd> or <kbd>&rarr;</kbd>                         | move to the right                | move selected item to the right
+&nbsp;                      | <kbd>J</kbd> or [<kbd>⇧</kbd> + <kbd>&larr;</kbd>]        | go to the start of the line      | move linking item to the left
+&nbsp;                      | <kbd>I</kbd> or [<kbd>⇧</kbd> + <kbd>&uarr;</kbd>]        | go to first line                 | move linking item up a line
+&nbsp;                      | <kbd>O</kbd> or [<kbd>⇧</kbd> + <kbd>&darr;</kbd>]        | go to last line                  | move linking item down a line
+&nbsp;                      | <kbd>:</kbd> or [<kbd>⇧</kbd> + <kbd>&rarr;</kbd>]        | go to the end of the line        | move linking item to the right
+Edit Span                   | <kbd>m</kbd>                                              | extend left                      | extend selected item left
+&nbsp;                      | <kbd>k</kbd>                                              | contract left side               | contract selected item left
+&nbsp;                      | <kbd>/</kbd>                                              | extend right                     | extend selected item right
+&nbsp;                      | <kbd>l</kbd>                                              | contract right side              | contract selected item right
+&nbsp;                      | <kbd>M</kbd>                                              | -                                | extend linking item left
+&nbsp;                      | <kbd>K</kbd>                                              | -                                | contract linking item left
+&nbsp;                      | <kbd>?</kbd>                                              | -                                | extend linking item right
+&nbsp;                      | <kbd>L</kbd>                                              | -                                | contract linking item right
+Label Annotation (default)  | <kbd>Space</kbd> then <kbd>a</kbd>                        | [un]mark this item as a          | -
+&nbsp;                      | <kbd>Space</kbd> then <kbd>s</kbd>                        | [un]mark this item as s          | -
+&nbsp;                      | <kbd>Space</kbd> then <kbd>d</kbd>                        | [un]mark this item as d          | -
+&nbsp;                      | <kbd>Space</kbd> then <kbd>v</kbd>                        | [un]mark this item as v          | -
+Link Annotation             | <kbd>d</kbd>                                              | -                                | create a link and move right / down
+&nbsp;                      | <kbd>D</kbd>                                              | -                                | create a link
+Either Annotation mode      | <kbd>u</kbd>                                              | undo annotation on this item     | undo all annotations for the current item
 
 Shared commands:
 
-Type                        | Mode   | Key                           | Affect               
---------------------------- | ------ | ----------------------------- | ----------------------------
-Searching                   | Normal | `\`                           | enter query editing mode
-&nbsp;                      | Query  | `?` or `ENTER`                | exit query editing mode
-&nbsp;                      | Query  | `!` or `BACKSPACE`            | delete last character in query
-&nbsp;                      | Query  | characters except `?` and `!` | add character to query
-&nbsp;                      | Normal | `p`                           | go to previous match
-&nbsp;                      | Normal | `n`                           | go to next match
-&nbsp;                      | Normal | `P`                           | go to previous match for linking line
-&nbsp;                      | Normal | `N`                           | go to next match for linking line
-Assigning text labels       | Normal | `t`                           | enter label editing mode
-&nbsp;                      | Label  | `?` or `ENTER`                | exit label editing mode and assign the label
-&nbsp;                      | Label  | `!` or `BACKSPACE`            | delete last character in label
-&nbsp;                      | Label  | characters except `?` and `!` | add character to label
-Saving, exiting, etc        | Normal | `]`                           | save and go to next file         
-&nbsp;                      | Normal | `[`                           | save and go to previous file     
-&nbsp;                      | Normal | `q`                           | save and quit                    
-&nbsp;                      | Normal | `s`                           | save                             
-&nbsp;                      | Normal | `Q`                           | quit                             
-Misc                        | Normal | `#`                           | toggle line numbers
-&nbsp;                      | Normal | `h`                           | toggle help info (default on)    
-&nbsp;                      | Normal | `{` or `PAGE-UP`              | shift view up 5 lines
-&nbsp;                      | Normal | `}` or `PAGE-DOWN`            | shift view down 5 lines
-&nbsp;                      | Normal | `>` then `p`                  | toggle showing progress through files
-&nbsp;                      | Normal | `>` then `l`                  | toggle showing legend for labels [TODO]
+Type                        | Mode   | Key                                             | Affect               
+--------------------------- | ------ | ----------------------------------------------- | ----------------------------
+Searching                   | Normal | <kbd>\\</kbd>                                    | enter query editing mode
+&nbsp;                      | Query  | <kbd>?</kbd> or <kbd>↵</kbd>                    | exit query editing mode
+&nbsp;                      | Query  | <kbd>!</kbd> or <kbd>&larr; Backspace</kbd>                    | delete last character in query
+&nbsp;                      | Query  | characters except <kbd>?</kbd> and <kbd>!</kbd> | add character to query
+&nbsp;                      | Normal | <kbd>p</kbd>                                    | go to previous match
+&nbsp;                      | Normal | <kbd>n</kbd>                                    | go to next match
+&nbsp;                      | Normal | <kbd>P</kbd>                                    | go to previous match for linking line
+&nbsp;                      | Normal | <kbd>N</kbd>                                    | go to next match for linking line
+Assigning text labels       | Normal | <kbd>t</kbd>                                    | enter label editing mode
+&nbsp;                      | Label  | <kbd>?</kbd> or <kbd>↵</kbd>                    | exit label editing mode and assign the label
+&nbsp;                      | Label  | <kbd>!</kbd> or <kbd>⌫</kbd>                    | delete last character in label
+&nbsp;                      | Label  | characters except <kbd>?</kbd> and <kbd>!</kbd> | add character to label
+Saving, exiting, etc        | Normal | <kbd>]</kbd>                                    | save and go to next file         
+&nbsp;                      | Normal | <kbd>[</kbd>                                    | save and go to previous file     
+&nbsp;                      | Normal | <kbd>q</kbd>                                    | save and quit                    
+&nbsp;                      | Normal | <kbd>s</kbd>                                    | save                             
+&nbsp;                      | Normal | <kbd>Q</kbd>                                    | quit                             
+Misc                        | Normal | <kbd>#</kbd>                                    | toggle line numbers
+&nbsp;                      | Normal | <kbd>h</kbd>                                    | toggle help info (default on)    
+&nbsp;                      | Normal | <kbd>{</kbd> or <kbd>PAGE-UP</kbd>              | shift view up 5 lines
+&nbsp;                      | Normal | <kbd>}</kbd> or <kbd>PAGE-DOWN</kbd>            | shift view down 5 lines
+&nbsp;                      | Normal | <kbd>></kbd> then <kbd>p</kbd>                  | toggle showing progress through files
+&nbsp;                      | Normal | <kbd>></kbd> then <kbd>l</kbd>                  | toggle showing legend for labels [TODO]
 
-Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OSX operating systems. That is why in all places where they are used we have an alternative as well.
+Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OS-X operating systems. That is why in all places where they are used we have an alternative as well.
 
 ### Misc
 
@@ -209,10 +209,10 @@ raw_file [annotation_file [starting_position [additional_annotation_files]]]
 For example, these commands will create a file list, use it, then return to it later:
 
 ```bash
-$ find . -name *txt > filenames_todo
-$ ./slate/src/annotate.py -d filenames_todo -l do_later
-... do some work, then quit, go away, come back...
-$ ./slate/src/annotate.py -d do_later.todo -l do_even_later
+find . -name *txt > filenames_todo
+./slate/src/annotate.py -d filenames_todo -l do_later
+# ... do some work, then quit, go away, come back...
+./slate/src/annotate.py -d do_later.todo -l do_even_later
 ```
 
 When the `additional_annotation_files` are included it activates an adjudication mode.
