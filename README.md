@@ -146,10 +146,10 @@ Movement                    | <kbd>j</kbd> or <kbd>&larr;</kbd>                 
 &nbsp;                      | <kbd>i</kbd> or <kbd>&uarr;</kbd>                         | move up a line                   | move selected item up a line
 &nbsp;                      | <kbd>o</kbd> or <kbd>&darr;</kbd>                         | move down a line                 | move selected item down a line
 &nbsp;                      | <kbd>;</kbd> or <kbd>&rarr;</kbd>                         | move to the right                | move selected item to the right
-&nbsp;                      | <kbd>J</kbd> or [<kbd>SHIFT</kbd> + <kbd>&larr;</kbd>]        | go to the start of the line      | move linking item to the left
-&nbsp;                      | <kbd>I</kbd> or [<kbd>SHIFT</kbd> + <kbd>&uarr;</kbd>]        | go to first line                 | move linking item up a line
-&nbsp;                      | <kbd>O</kbd> or [<kbd>SHIFT</kbd> + <kbd>&darr;</kbd>]        | go to last line                  | move linking item down a line
-&nbsp;                      | <kbd>:</kbd> or [<kbd>SHIFT</kbd> + <kbd>&rarr;</kbd>]        | go to the end of the line        | move linking item to the right
+&nbsp;                      | <kbd>J</kbd> or [<kbd>Shift</kbd> + <kbd>&larr;</kbd>]        | go to the start of the line      | move linking item to the left
+&nbsp;                      | <kbd>I</kbd> or [<kbd>Shift</kbd> + <kbd>&uarr;</kbd>]        | go to first line                 | move linking item up a line
+&nbsp;                      | <kbd>O</kbd> or [<kbd>Shift</kbd> + <kbd>&darr;</kbd>]        | go to last line                  | move linking item down a line
+&nbsp;                      | <kbd>:</kbd> or [<kbd>Shift</kbd> + <kbd>&rarr;</kbd>]        | go to the end of the line        | move linking item to the right
 Edit Span                   | <kbd>m</kbd>                                              | extend left                      | extend selected item left
 &nbsp;                      | <kbd>k</kbd>                                              | contract left side               | contract selected item left
 &nbsp;                      | <kbd>/</kbd>                                              | extend right                     | extend selected item right
