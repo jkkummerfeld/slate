@@ -69,7 +69,7 @@ class View(object):
                 "          | i or UP               | move up a line                   ",
                 "          | I or [SHIFT + UP]     | go to first line                 ",
                 "          | o or DOWN             | move down a line                 ",
-                "          | O or [SHIFT + DWON]   | go to last line                  ",
+                "          | O or [SHIFT + DOWN]   | go to last line                  ",
                 "          | ; or RIGHT            | move to the right                ",
                 "          | : or [SHIFT + RIGHT]  | go to the end of the line        ",
                 "Span Edit | m   /                 | extend left or right             ",
