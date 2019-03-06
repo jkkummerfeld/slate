@@ -5,25 +5,31 @@ import logging
 
 import curses # Needed for colours
 
+back = curses.COLOR_WHITE
+front = curses.COLOR_BLACK
+# Switch for white backgrounds
+###back = curses.COLOR_BLACK
+###front = curses.COLOR_WHITE
+
 COLORS = [
     # Color combinations, (ID#, foreground, background)
-    (1, curses.COLOR_BLACK, curses.COLOR_WHITE),
-    (2, curses.COLOR_GREEN, curses.COLOR_BLACK),
-    (3, curses.COLOR_BLUE, curses.COLOR_BLACK),
-    (4, curses.COLOR_WHITE, curses.COLOR_BLACK),
-    (5, curses.COLOR_BLACK, curses.COLOR_WHITE),
-    (6, curses.COLOR_CYAN, curses.COLOR_BLACK),
-    (7, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
-    (8, curses.COLOR_BLUE, curses.COLOR_WHITE),
-    (9, curses.COLOR_GREEN, curses.COLOR_WHITE),
-    (10, curses.COLOR_RED, curses.COLOR_BLACK),
-    (11, curses.COLOR_RED, curses.COLOR_WHITE),
-    (12, curses.COLOR_CYAN, curses.COLOR_BLACK),
-    (13, curses.COLOR_MAGENTA, curses.COLOR_BLACK),
-    (14, curses.COLOR_CYAN, curses.COLOR_WHITE),
-    (15, curses.COLOR_MAGENTA, curses.COLOR_WHITE),
-    (16, curses.COLOR_YELLOW, curses.COLOR_BLACK),
-    (17, curses.COLOR_BLACK, curses.COLOR_WHITE),
+    (1, front, back),
+    (2, curses.COLOR_GREEN, -1),
+    (3, curses.COLOR_BLUE, -1),
+    (4, curses.COLOR_WHITE, -1),
+    (5, front, back),
+    (6, curses.COLOR_CYAN, -1),
+    (7, curses.COLOR_MAGENTA, -1),
+    (8, curses.COLOR_BLUE, back),
+    (9, curses.COLOR_GREEN, back),
+    (10, curses.COLOR_RED, -1),
+    (11, curses.COLOR_RED, back),
+    (12, curses.COLOR_CYAN, -1),
+    (13, curses.COLOR_MAGENTA, -1),
+    (14, curses.COLOR_CYAN, back),
+    (15, curses.COLOR_MAGENTA, back),
+    (16, curses.COLOR_YELLOW, -1),
+    (17, front, back),
 ]
 
 name_to_color = {

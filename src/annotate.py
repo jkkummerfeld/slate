@@ -343,6 +343,7 @@ def annotate(window_in, config, filenames):
     window = window_in
 
     # Set color combinations
+    curses.use_default_colors()
     for num, fore, back in COLORS:
         curses.init_pair(num, fore, back)
 

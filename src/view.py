@@ -74,7 +74,7 @@ class View(object):
                 "          | : or [SHIFT + RIGHT]  | go to the end of the line        ",
                 "Span Edit | m   /                 | extend left or right             ",
                 "          | k   l                 | contract left or right           ",
-                "Annotate  | SPACE then a, s, or d | [un]mark this item as a, s, ord d",
+                "Annotate  | SPACE then a, s, or d | [un]mark this item as a, s, or d ",
                 "          | u                     | undo annotation on this item     ",
             ] + shared
 
@@ -201,10 +201,13 @@ class View(object):
             elif mark.startswith("compare-"):
                 if 'ref' in mark:
                     count = int(mark.split("-")[-2])
-                    if 'True' in mark:
+                    if 'True' in mark and 'last' not in mark:
                         # First, cases where this is related to the current linking line
                         if name == DEFAULT_COLOR or name == COMPARE_DISAGREE_COLOR:
-                            name = COMPARE_REF_COLOR
+                            if count == 0:
+                                name = REF_COLOR
+                            else:
+                                name = COMPARE_REF_COLOR
                     elif count > 0 and 'last' in mark:
                         # If unrelated, but there is a disagreement, indicate it
                         if name == DEFAULT_COLOR:
