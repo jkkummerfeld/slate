@@ -16,7 +16,7 @@ COLORS = [
     (1, front, back),
     (2, curses.COLOR_GREEN, -1),
     (3, curses.COLOR_BLUE, -1),
-    (4, curses.COLOR_WHITE, -1),
+    (4, back, -1),
     (5, front, back),
     (6, curses.COLOR_CYAN, -1),
     (7, curses.COLOR_MAGENTA, -1),
