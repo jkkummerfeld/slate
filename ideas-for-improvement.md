@@ -60,3 +60,4 @@ Misc
 - Option to load all at start
 - Option to only save on exit (not when changing files)
 - Nicer argument, error, and logging handling
+- A 'new user' mode on startup that toggles a bunch of things
