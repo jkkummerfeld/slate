@@ -20,6 +20,7 @@ class View(object):
         self.show_progress = False
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.show_legend = False
+        self.show_current_mark = False
         self.legend = []
         self.config = my_config
         self.line_numbers = False
@@ -89,6 +90,8 @@ class View(object):
         self.show_progress = not self.show_progress
     def toggle_legend(self):
         self.show_legend = not self.show_legend
+    def toggle_current_mark(self):
+        self.show_current_mark = not self.show_current_mark
 
     def shift_view(self, down=False):
         self.last_moved_pos = None
@@ -377,18 +380,19 @@ class View(object):
         # Get colors for content
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
 ###        logging.debug("markings: {}".format(markings))
-        for key in markings:
-            logging.debug("marking: {}: {}".format(key, markings[key]))
-            marks = markings[key]
-            if 'cursor' in marks:
-                for mark in marks:
-                    if mark in self.config.labels:
-                        extra_text_lines.append("Current: "+ mark)
-                    elif 'compare-' in mark and 'ref' not in mark:
-                        parts = mark.split("-")
-                        count = len(self.datum.other_annotations) - int(parts[-2])
-                        label = parts[-1]
-                        extra_text_lines.append("{} marked as {}".format(count, label))
+        if self.show_current_mark:
+            for key in markings:
+                logging.debug("marking: {}: {}".format(key, markings[key]))
+                marks = markings[key]
+                if 'cursor' in marks:
+                    for mark in marks:
+                        if mark in self.config.labels:
+                            extra_text_lines.append("Current: "+ mark)
+                        elif 'compare-' in mark and 'ref' not in mark:
+                            parts = mark.split("-")
+                            count = len(self.datum.other_annotations) - int(parts[-2])
+                            label = parts[-1]
+                            extra_text_lines.append("{} marked as {}".format(count, label))
 
         # First, plan instructions
         main_height = height

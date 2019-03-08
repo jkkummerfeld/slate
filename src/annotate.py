@@ -160,6 +160,8 @@ def modify_display(user_input, action):
         view.toggle_progress()
     elif 'legend' in action:
         view.toggle_legend()
+    elif 'current-mark' in action:
+        view.toggle_current_mark()
 
 def shift_view(user_input, action):
     global view
@@ -312,6 +314,7 @@ action_to_function = {
     'toggle-help': modify_display,
     'toggle-progress': modify_display,
     'toggle-legend': modify_display,
+    'toggle-current-mark': modify_display,
     'next-file': change_file,
     'previous-file': change_file,
     'quit': save_or_quit,

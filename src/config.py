@@ -153,6 +153,8 @@ input_action_list = {
             ['>', 'p'], ],
     'toggle-legend': [
             ['>', 'l'], ],
+    'toggle-current-mark': [
+            ['>', 'm'], ],
     'search-previous': [
         'p', ],
     'search-next': [
@@ -278,8 +280,8 @@ class Config(object):
 
         self.valid_prefixes = set()
         for mode, symbol in self.input_to_action:
-            for i in range(len(symbol) - 1):
-                self.valid_prefixes.add((mode, symbol[:i+1]))
+            for i in range(1, len(symbol)):
+                self.valid_prefixes.add((mode, symbol[:i]))
         for mode, symbol in self.input_to_action:
             if (mode, symbol) in self.valid_prefixes:
                 raise Exception("input {} overlaps with a prefix".format(symbol))
