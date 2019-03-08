@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import _curses
 import logging
 import curses
 import re
@@ -19,7 +20,7 @@ class View(object):
         self.show_progress = False
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.show_legend = False
-        self.legend = "Legend (TBD)"
+        self.legend = []
         self.config = my_config
         self.line_numbers = False
         if prev_view is not None:
@@ -29,6 +30,10 @@ class View(object):
             self.line_numbers = prev_view.line_numbers
 
         self.last_moved_pos = cursor
+
+        if self.config.annotation_type == 'categorical':
+            for label, info in self.config.labels.items():
+                self.legend.append(("{} {}".format(label, "+".join(info[0])), label))
 
         if self.config.args.prevent_self_links and self.cursor == self.linking_pos:
             # TODO: In this case move the linking pos along one step
@@ -320,7 +325,10 @@ class View(object):
                         if (line_no, token_no, char_no) in markings:
                             mark = markings[line_no, token_no, char_no]
                         color = self.marking_to_color(mark)
-                        self.window.addstr(row, column, char, color)
+                        try:
+                            self.window.addstr(row, column, char, color)
+                        except _curses.error as e:
+                            logging.warn("Error caught in drawing extra lines 2")
                     column += 1
 
                 if row >= height:
@@ -350,7 +358,19 @@ class View(object):
         # Get content for extra lines
         extra_text_lines = []
         if self.show_progress: extra_text_lines.append(self.progress)
-        if self.show_legend: extra_text_lines.append(self.legend)
+        if self.show_legend:
+            cur = []
+            length = 0
+            for val, colour in self.legend:
+                if length + 3 + len(val) > width:
+                    extra_text_lines.append(cur)
+                    cur = []
+                    length = 0
+                if length > 0:
+                    length += 3
+                length += len(val)
+                cur.append((val, colour))
+            extra_text_lines.append(cur)
         if len(current_search) > 0: extra_text_lines.append(current_search)
         if len(current_typing) > 0: extra_text_lines.append(current_typing)
 
@@ -362,8 +382,8 @@ class View(object):
             marks = markings[key]
             if 'cursor' in marks:
                 for mark in marks:
-                    if mark.startswith("label:"):
-                        extra_text_lines.append(mark)
+                    if mark in self.config.labels:
+                        extra_text_lines.append("Current: "+ mark)
                     elif 'compare-' in mark and 'ref' not in mark:
                         parts = mark.split("-")
                         count = len(self.datum.other_annotations) - int(parts[-2])
@@ -371,13 +391,12 @@ class View(object):
                         extra_text_lines.append("{} marked as {}".format(count, label))
 
         # First, plan instructions
-        main_height = height - 1
+        main_height = height
         space_needed = len(extra_text_lines)
         if space_needed > 0:
             space_needed += 1
         elif len(self.datum.other_annotations) > 0:
-            extra_text_lines.append("")
-            space_needed = 2
+            pass
 
         if height >= space_needed:
             main_height = main_height - space_needed
@@ -419,10 +438,24 @@ class View(object):
 
                 # Last, draw the text being typed
                 for content in extra_text_lines:
-                    text = content
-                    fmt = "{:<"+ str(width) +"}"
-                    self.window.addstr(row, 0, fmt.format(text), color)
-                    row += 1
+                    try:
+                        if isinstance(content, list):
+                            position = 0
+                            for text, tcolor in content:
+                                if position != 0:
+                                    self.window.addstr(row, position, " | ", color)
+                                    position += 3
+                                name = self.config.get_color_for_label(tcolor)
+                                tcolor = curses.color_pair(name) + curses.A_BOLD
+                                self.window.addstr(row, position, text, tcolor)
+                                position += len(text)
+                        else:
+                            text = content
+                            fmt = "{:<"+ str(width) +"}"
+                            self.window.addstr(row, 0, fmt.format(text), color)
+                        row += 1
+                    except _curses.error as e:
+                        logging.warn("Error caught in drawing extra lines")
 
         self.window.refresh()
 
