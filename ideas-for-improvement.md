@@ -3,6 +3,7 @@
 - Colour in comparison mode (bad interaction with edits for self-link colour).
 - If self links are prevented, but forward links are allowed, then we get stuck when trying to jump over the cursor.
 - Add option to prevent annotations of labels when in linking mode + fix handling of reading them in when they are present.
+- Log all actions with times
 
 # Ideas
 

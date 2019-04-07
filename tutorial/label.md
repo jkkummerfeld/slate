@@ -5,12 +5,12 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python src/annotate.py tutorial/label.md -t categorical -s token -o -hh
+python slate/annotate.py tutorial/label.md -t categorical -s token -o -hh
 ```
 
 This command is also an example of how to run the code. It says to:
 
- - run the program with python (`python src/annotate.py`),
+ - run the program with python (`python slate/annotate.py`),
  - annotating this file (`tutorial/label.md`),
  - with categories (`-t categorical`),
  - applied to tokens (`-s token`),

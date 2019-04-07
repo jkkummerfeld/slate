@@ -5,12 +5,12 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python src/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt
+python slate/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt
 ```
 
 This command is also an example of how to run the code. It says to:
 
- - run the program with python (`python src/annotate.py`),
+ - run the program with python (`python slate/annotate.py`),
  - annotating this file (`tutorial/link.md`),
  - with links (`-t link`),
  - applied to lines (`-s line`),
@@ -31,7 +31,7 @@ Try moving the lines:
 If you do not find that the SHIFT commands work it is possible to add support
 by looking at the log file for "INFO:root:Input" and then either (1) modifying
 a config file to have an extra `Special_Key` line like those already present,
-or (2) by editing src/config.py to have the relevant number in `special_keys`
+or (2) by editing slate/config.py to have the relevant number in `special_keys`
 on line 202.
 
 Links can be created in two ways:

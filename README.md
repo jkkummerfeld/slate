@@ -30,7 +30,7 @@ Your terminal must be at least 80 characters wide and 20 tall to use the tool.
 
 ## Getting Started
 
-Run `python src/annotate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
+Run `python slate/annotate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
 The entire interface is contained in your terminal, there is no GUI.
 With command line arguments you can vary properties such as the type of annotation (labels or links) and scope of annotation (characters, tokens, lines, documents).
 
@@ -72,8 +72,8 @@ Included in this repository are a set of interactive tutorials that teach you ho
 
 Task | Command
 ---- | --------
-Labelling spans of text in a document | `python src/annotate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
-Linking lines in a document | `python src/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
+Labelling spans of text in a document | `python slate/annotate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
+Linking lines in a document | `python slate/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
 Comparing annotations | Coming soon!
 
 ### Example Workflow
@@ -133,7 +133,7 @@ optional arguments:
 You may also define arguments in a file and pass them in as follows:
 
 ```bash
-python src/annotate.py @arguments.txt
+python slate/annotate.py @arguments.txt
 ```
 
 ### Keybindings
@@ -211,9 +211,9 @@ For example, these commands will create a file list, use it, then return to it l
 
 ```bash
 find . -name *txt > filenames_todo
-./slate/src/annotate.py -d filenames_todo -l do_later
+./slate/annotate.py -d filenames_todo -l do_later
 # ... do some work, then quit, go away, come back...
-./slate/src/annotate.py -d do_later.todo -l do_even_later
+./slate/annotate.py -d do_later.todo -l do_even_later
 ```
 
 When the `additional_annotation_files` are included it activates an adjudication mode.
