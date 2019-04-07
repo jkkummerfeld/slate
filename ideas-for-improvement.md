@@ -7,6 +7,9 @@
 
 # Ideas
 
+Pip
+- See https://realpython.com/pypi-publish-python-package/
+
 Documentation
 - Note the use of 'n', 'p', 'shift-n', 'shift-p' in comparison mode
 - Nicer examples
