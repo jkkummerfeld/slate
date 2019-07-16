@@ -12,46 +12,41 @@ Why use this tool over the range of other text annotation tools out there?
 
 ## Installation
 
-Three options:
+Two options:
 
 ### 1. Install with pip
 ```bash
-pip install slate-jkk
+pip install slate-nlp
 ```
-Run with either of:
+
+Then run from any directory in one of two ways:
 ```
 slate
 python -m slate
 ```
 
-### 2. Download the repository
+### 2. Or download and run without installing
+Either download as a zip file:
 ```bash
 curl https://codeload.github.com/jkkummerfeld/slate/zip/master -o "slate.zip"
 unzip slate.zip
 cd slate-master
 ```
-Run with either of:
-```
-python slate.py
-./slate.py
-```
-Or from another directory:
-```
-python PATH_TO_SLATE/slate.py
-```
-
-### 3. Clone the repository
+Or clone the repository:
 ```bash
 git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
-Run with:
+
+Then run with either of:
 ```
 python slate.py
+./slate.py
 ```
-Or from another directory:
+To run from another directory, use:
 ```
 python PATH_TO_SLATE/slate.py
+PATH_TO_SLATE/slate.py
 ```
 
 ### Requirements
@@ -63,6 +58,7 @@ Your terminal must be at least 80 characters wide and 20 tall to use the tool.
 
 If you use this tool in your work, please cite:
 
+```
 @InProceedings{acl19slate,
   title     = {SLATE: A Super-Lightweight Annotation Tool for Experts},
   author    = {Jonathan K. Kummerfeld},
@@ -74,10 +70,13 @@ If you use this tool in your work, please cite:
   url       = {https://github.com/jkkummerfeld/slate/raw/master/paper/acl19slate.pdf},
   software  = {https://jkk.name/slate},
 }
+```
 
 ## Getting Started
 
-Run `python slate/annotate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
+Note: if you used pip to install, reaplce `python slate.py` with `slate` everywhere below.
+
+Run `python slate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
 The entire interface is contained in your terminal, there is no GUI.
 With command line arguments you can vary properties such as the type of annotation (labels or links) and scope of annotation (characters, tokens, lines, documents).
 
@@ -121,7 +120,7 @@ Task | Command
 ---- | --------
 Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
 Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
-Comparing annotations | Coming soon!
+Comparing annotations | To be created
 
 ### Example Workflow
 
@@ -138,10 +137,10 @@ Our workflow was as follows:
 
 ```
 usage: slate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-t {categorical,link}]
-                   [-s {character,token,line,document}] [-c CONFIG_FILE]
-                   [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
-                   [--do-not-show-linked] [--alternate-comparisons]
-                   [data [data ...]]
+                [-s {character,token,line,document}] [-c CONFIG_FILE]
+                [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
+                [--do-not-show-linked] [--alternate-comparisons]
+                [data [data ...]]
 
 A tool for annotating text data.
 

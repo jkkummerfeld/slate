@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="slate-jkk",
-    version="1.5.2",
+    name="slate-nlp",
+    version="1.0.0",
     author="Jonathan K. Kummerfeld",
     author_email="jkk@berkeley.edu",
     description="A terminal-based text annotation tool",
