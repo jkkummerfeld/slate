@@ -10,32 +10,44 @@ Why use this tool?
 
 Three options:
 
-1. Install with pip:
+### 1. Install with pip
 ```bash
 pip install slate-jkk
 ```
+Run with either of:
+```
+slate
+python -m slate
+```
 
-2. Download the repository:
+### 2. Download the repository
 ```bash
 curl https://codeload.github.com/jkkummerfeld/slate/zip/master -o "slate.zip"
 unzip slate.zip
 cd slate-master
 ```
+Run with either of:
+```
+python slate.py
+./slate.py
+```
+Or from another directory:
+```
+python PATH_TO_SLATE/slate.py
+```
 
-3. Clone the repository:
+### 3. Clone the repository
 ```bash
 git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
-
-Any all cases, run with:
+Run with:
 ```
-python -m slate
+python slate.py
 ```
-
-If installed with pip, you can also run with:
+Or from another directory:
 ```
-slate
+python PATH_TO_SLATE/slate.py
 ```
 
 ### Requirements
@@ -103,8 +115,8 @@ Included in this repository are a set of interactive tutorials that teach you ho
 
 Task | Command
 ---- | --------
-Labelling spans of text in a document | `python slate/annotate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
-Linking lines in a document | `python slate/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
+Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
+Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
 Comparing annotations | Coming soon!
 
 ### Example Workflow
@@ -121,7 +133,7 @@ Our workflow was as follows:
 ### Invocation options
 
 ```
-usage: annotate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-t {categorical,link}]
+usage: slate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-t {categorical,link}]
                    [-s {character,token,line,document}] [-c CONFIG_FILE]
                    [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
                    [--do-not-show-linked] [--alternate-comparisons]
@@ -164,7 +176,7 @@ optional arguments:
 You may also define arguments in a file and pass them in as follows:
 
 ```bash
-python slate/annotate.py @arguments.txt
+python slate.py @arguments.txt
 ```
 
 ### Keybindings
@@ -242,9 +254,9 @@ For example, these commands will create a file list, use it, then return to it l
 
 ```bash
 find . -name *txt > filenames_todo
-./slate/annotate.py -d filenames_todo -l do_later
+./slate.py -d filenames_todo -l do_later
 # ... do some work, then quit, go away, come back...
-./slate/annotate.py -d do_later.todo -l do_even_later
+./slate.py -d do_later.todo -l do_even_later
 ```
 
 When the `additional_annotation_files` are included it activates an adjudication mode.

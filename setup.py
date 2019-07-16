@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="slate-jkk",
-    version="1.4.2",
+    version="1.5.2",
     author="Jonathan K. Kummerfeld",
     author_email="jkk@berkeley.edu",
     description="A terminal-based text annotation tool",

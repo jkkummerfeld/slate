@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from __future__ import print_function
 
 import argparse
@@ -526,6 +524,3 @@ def main():
     ### Start interface
     annotator = Annotator(config, filenames, current_mode, args)
     curses.wrapper(ext_annotate, annotator)
-
-if __name__ == '__main__':
-    main()

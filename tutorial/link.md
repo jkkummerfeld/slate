@@ -5,12 +5,12 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python slate/annotate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt
+python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt
 ```
 
 This command is also an example of how to run the code. It says to:
 
- - run the program with python (`python slate/annotate.py`),
+ - run the program with python (`python slate.py`),
  - annotating this file (`tutorial/link.md`),
  - with links (`-t link`),
  - applied to lines (`-s line`),
