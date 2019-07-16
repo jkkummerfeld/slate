@@ -12,7 +12,7 @@ Two options:
 
 ### 1. Install with pip
 ```bash
-pip install slate-jkk
+pip install slate-nlp
 ```
 
 Then run from any directory in one of two ways:
