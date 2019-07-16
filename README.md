@@ -1,4 +1,8 @@
-Why use this tool?
+This is a tool for labeling text documents.
+Slate supports annotation at different scales (spans of characters, tokens, and lines, or a document) and of different types (free text, labels, and links).
+This covers a range of tasks, such as Part-of-Speech tagging, Named Entity Recognition, Text Classification (including Sentiment Analysis), Discourse Structure, and more.
+
+Why use this tool over the range of other text annotation tools out there?
 
 - Fast
 - Trivial installation
@@ -304,4 +308,20 @@ Adding a new command involves:
  - Adding a mapping from the name to a function in `action_to_function` in `annotate.py`
  - Adding or modifying a function in `annotate.py`
  - Modifying `data.py` or `view.py` to apply the action
+
+# Questions
+
+If you have a question please either:
+
+- Open an issue on [github](https://github.com/jkkummerfeld/slate/issues).
+- Mail me at [jkummerf@umich.edu](mailto:jkummerf@umich.edu).
+
+# Contributions
+
+If you find a bug in the code, please submit an issue, or even better, a pull request with a fix.
+
+# Acknowledgments
+
+This tool is based in part upon work supported by IBM under contract 4915012629, and by ONR under MURI grant N000140911081.
+Any opinions, findings, conclusions or recommendations expressed are those of the authors and do not necessarily reflect the views of IBM.
 
