@@ -15,13 +15,13 @@ Two options:
 pip install slate-jkk
 ```
 
-Then run with either of:
+Then run from any directory in one of two ways:
 ```
 slate
 python -m slate
 ```
 
-### 2. Download and run without installing
+### 2. Or download and run without installing
 Either download as a zip file:
 ```bash
 curl https://codeload.github.com/jkkummerfeld/slate/zip/master -o "slate.zip"
@@ -39,7 +39,7 @@ Then run with either of:
 python slate.py
 ./slate.py
 ```
-Or from another directory:
+To run from another directory, use:
 ```
 python PATH_TO_SLATE/slate.py
 PATH_TO_SLATE/slate.py
@@ -54,6 +54,7 @@ Your terminal must be at least 80 characters wide and 20 tall to use the tool.
 
 If you use this tool in your work, please cite:
 
+```
 @InProceedings{acl19slate,
   title     = {SLATE: A Super-Lightweight Annotation Tool for Experts},
   author    = {Jonathan K. Kummerfeld},
@@ -65,10 +66,11 @@ If you use this tool in your work, please cite:
   url       = {https://github.com/jkkummerfeld/slate/raw/master/paper/acl19slate.pdf},
   software  = {https://jkk.name/slate},
 }
+```
 
 ## Getting Started
 
-Run `python slate/annotate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
+Run either `slate <filename>` (for PIP) or `python slate.py <filename>` (for download) to start annotating `<filename>` with labels over spans of tokens.
 The entire interface is contained in your terminal, there is no GUI.
 With command line arguments you can vary properties such as the type of annotation (labels or links) and scope of annotation (characters, tokens, lines, documents).
 
