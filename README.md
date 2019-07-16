@@ -8,25 +8,33 @@ Why use this tool?
 
 ## Installation
 
-Three options:
+Two options:
 
 ### 1. Install with pip
 ```bash
 pip install slate-jkk
 ```
-Run with either of:
+
+Then run with either of:
 ```
 slate
 python -m slate
 ```
 
-### 2. Download the repository
+### 2. Download and run without installing
+Either download as a zip file:
 ```bash
 curl https://codeload.github.com/jkkummerfeld/slate/zip/master -o "slate.zip"
 unzip slate.zip
 cd slate-master
 ```
-Run with either of:
+Or clone the repository:
+```bash
+git clone https://github.com/jkkummerfeld/slate
+cd slate
+```
+
+Then run with either of:
 ```
 python slate.py
 ./slate.py
@@ -34,20 +42,7 @@ python slate.py
 Or from another directory:
 ```
 python PATH_TO_SLATE/slate.py
-```
-
-### 3. Clone the repository
-```bash
-git clone https://github.com/jkkummerfeld/slate
-cd slate
-```
-Run with:
-```
-python slate.py
-```
-Or from another directory:
-```
-python PATH_TO_SLATE/slate.py
+PATH_TO_SLATE/slate.py
 ```
 
 ### Requirements
