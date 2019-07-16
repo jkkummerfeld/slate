@@ -70,7 +70,9 @@ If you use this tool in your work, please cite:
 
 ## Getting Started
 
-Run either `slate <filename>` (for PIP) or `python slate.py <filename>` (for download) to start annotating `<filename>` with labels over spans of tokens.
+Note: if you used pip to install, reaplce `python slate.py` with `slate` everywhere below.
+
+Run `python slate.py <filename>` to start annotating `<filename>` with labels over spans of tokens.
 The entire interface is contained in your terminal, there is no GUI.
 With command line arguments you can vary properties such as the type of annotation (labels or links) and scope of annotation (characters, tokens, lines, documents).
 
@@ -114,7 +116,7 @@ Task | Command
 ---- | --------
 Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
 Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
-Comparing annotations | Coming soon!
+Comparing annotations | To be created
 
 ### Example Workflow
 
@@ -131,10 +133,10 @@ Our workflow was as follows:
 
 ```
 usage: slate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-t {categorical,link}]
-                   [-s {character,token,line,document}] [-c CONFIG_FILE]
-                   [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
-                   [--do-not-show-linked] [--alternate-comparisons]
-                   [data [data ...]]
+                [-s {character,token,line,document}] [-c CONFIG_FILE]
+                [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
+                [--do-not-show-linked] [--alternate-comparisons]
+                [data [data ...]]
 
 A tool for annotating text data.
 
