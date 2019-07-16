@@ -105,7 +105,7 @@ pdfpagelayout=OneColumn}
 \begin{abstract}
 
   Many annotation tools have been developed, covering a wide variety of tasks and providing features like user management, pre-processing, and automatic labeling.
-  However, all of these tools use a Graphical User Interface, and often require substantial effort for installation and configuration.
+  However, all of these tools use Graphical User Interfaces, and often require substantial effort to install and configure.
   This paper presents a new annotation tool that is designed to fill the niche of a lightweight interface for users with a terminal-based workflow.
   \Slate supports annotation at different scales (spans of characters, tokens, and lines, or a document) and of different types (free text, labels, and links), with easily customisable keybindings, and unicode support.
   In a user study comparing with other tools it was consistently the easiest to install and use.
@@ -127,7 +127,7 @@ Second, we minimise the time cost of installation by implementing the entire sys
 Third, we follow the Unix Tools Philosophy \citep{unix} to write programs that do one thing well, with flat text formats.
 In our case,
 (1) the tool only does annotation, not tokenisation, automatic labeling, file management, etc, which are covered by other tools, and
-(2) data is stored in a format that both people and command line tools like grep can easily read.
+(2) data is stored in a format that both people and command line tools like \texttt{grep} can easily read.
 
 \Slate supports annotation of items that are continuous spans of either characters, tokens, lines, or documents.
 For all item types there are three forms of annotation: labeling items with categories, writing free-text labels, or linking pairs of items.
@@ -187,7 +187,7 @@ For each post, we labeled tokens that expressed what was being offered, what was
 Three annotators labeled a set of 600 posts containing 25,624 tokens.
 200 of the posts were triple annotated and disagreements were adjudicated using the tool.
 
-(2) \citet{acl19disentangle} developed a new conversational disentanglement dataset an order of magnitude larger than all previously released datasets combined.
+(2) \citet{acl19disentangle} developed a new conversation disentanglement dataset an order of magnitude larger than all previously released datasets combined.
 77,563 messages were annotated with links indicating the message(s) they were a response to.
 For 11,100 messages, multiple annotations were collected and adjudicated using the tool.
 Annotations took 7 to 11 seconds per message depending on the complexity of the discussion, and adjudication took 5 seconds per message (lower because many messages did not have a disagreement, but not extremely low because those that did were the difficult cases).
@@ -232,7 +232,7 @@ For example, at one point in the disentanglement project we wanted to go back an
 This involved adding 21 lines of code, extending the existing search commands to jump to the next line that started a conversation.
 
 \tightparagraph{Internal Architecture}
-The system is written in 2,300 lines of Python, with extensive use of the standard built-in \emph{curses} library for input and display handling.
+The system is written in 2,300 lines of Python, with extensive use of the standard built-in curses library for input and display handling.
 Setting up the tool involves downloading and unzipping the code.
 The tool can then be run from anywhere, does not require administrator privileges, and will only make modifications to the local directory it is being run from.
 
@@ -243,9 +243,10 @@ On Windows, Python (either 2 or 3) and the curses library need to be installed.
 \section{Related Work}
 
 Table~\ref{tab:comparison} presents a comparison of a range of annotation tools.\footnote{
-  Other open source (\href{https://github.com/chakki-works/doccano}{DocAnno}, \href{https://github.com/proycon/flat}{Flat}), and industry 
-    (\href{https://www.tagtog.net/}{TagTog}, \href{https://prodi.gy/}{Prodigy}, \href{http://mat-annotation.sourceforge.net/}{MAT}, \href{https://www.lighttag.io/}{LightTag}, \href{https://dataturks.com/}{DataTurks})
-    tools also focus on GUIs.
+  Non-academic tools also focus on GUIs, including open source tools
+  (\myeg \href{https://github.com/chakki-works/doccano}{DocAnno}, \href{https://github.com/proycon/flat}{Flat}), and  
+  commercial tools
+  (\myeg \href{https://www.tagtog.net/}{TagTog}, \href{https://prodi.gy/}{Prodigy}, \href{http://mat-annotation.sourceforge.net/}{MAT}, \href{https://www.lighttag.io/}{LightTag}, \href{https://dataturks.com/}{DataTurks}).
 }
 Note that all prior work has focused on graphical user interfaces.
 The top section shows the tools we consider in our user study, chosen because they are widely used (brat and GATE) or have a similar design motivation (YEDDA).
@@ -263,7 +264,7 @@ The system has been used in a range of projects in both academic and commercial 
 \tightparagraph{YEDDA} \citep{yedda}, is a desktop application that supports annotation of character spans with up to 8 categories using a GUI.
 It is designed to be lightweight, with no external dependencies, though it only supports Python 2.
 It has a built-in recommendation system that automatically proposes labels based on annotations so far, which \citet{yedda} found decreased named entity recognition annotation time by 16\%.
-For input, the tool supports both the mouse for selection or specifying a sequence of character-level annotations, \myeg \texttt{2c3b} to assign the label \texttt{c} to the next two characters and \texttt{b} to the three after that.
+For input, the tool supports both selection with the mouse and specifying a sequence of character-level annotations with the keyboard, \myeg \texttt{2c3b} to assign the label \texttt{c} to the next two characters and \texttt{b} to the three after that.
 The tool also has an analysis component that produces a LaTeX document comparing a pair of annotations of a document, or F-scores for all pairs of annotations.
 It does not support annotation of links or adjudication of disagreements.
 
@@ -301,7 +302,7 @@ To reduce bias due to fatigue (which could make later tools appear slower) and f
   \caption{\label{tab:study}
   Average time for users to set up the tool and identify verbs in a 623 word news article.
   Only one participant managed to install and use brat, taking 18 minutes on Ubuntu.
-  The differences between GATE either \slate or YEDDA are significant at the 0.01 level according to a t-test.
+  The differences between GATE and either \slate or YEDDA are significant at the 0.01 level according to a t-test.
   }
 \end{table}
 
@@ -354,7 +355,7 @@ For example, changing the direction of script writing would involve adjusting th
 \tightparagraph{Accessibility}
 For users who require large fonts (or prefer small ones) the tool is extremely flexible and convenient.
 However, the extensive use of colour could be a problem for colour-blind users.
-The colours could be modified by editing a simple configuration file, or colour could be avoided entirely by modifying the display code to display inline labels.
+The colours can be modified by editing a simple configuration file, or colour could be avoided entirely by modifying the display code to display inline labels.
 
 \tightparagraph{Data Formats}
 Support for additional data formats, such as CoNLL-U, and \citet{data-iso}.
@@ -374,7 +375,7 @@ The tool has already been used in two research projects, including one that invo
 
 Thank you to Will Radford and the anonymous reviewers for helpful suggestions.
 Also thanks to the study participants, and to the annotators who have used the tool.
-This material is based in part on work supported by IBM under contract 4915012629 and by ONR under MURI grant N000140911081.
+This material is based in part on work supported by IBM as part of the Sapphire Project at the University of Michigan, and by ONR under MURI grant N000140911081.
 Any opinions, findings, conclusions or recommendations expressed above are those of the author and do not necessarily reflect the views of the sponsors.
 
 \bibliography{acl19slate}
