@@ -4,7 +4,7 @@ import logging
 import glob
 import sys
 
-from config import *
+from .config import *
 
 def process_fileinfo(file_info, config):
     filenames = []

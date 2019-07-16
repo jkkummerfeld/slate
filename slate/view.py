@@ -6,8 +6,8 @@ import curses
 import re
 import sys
 
-from config import *
-from data import Span, span_compare_ge, span_compare_le
+from .config import *
+from .data import Span, span_compare_ge, span_compare_le
 
 class View(object):
     def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, prev_view=None):

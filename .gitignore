@@ -1,6 +1,9 @@
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+build
+dist
+*.egg-info/
 
 .DS_Store
+*.swp

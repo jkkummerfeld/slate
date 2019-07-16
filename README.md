@@ -8,25 +8,56 @@ Why use this tool?
 
 ## Installation
 
-Simply clone or download this repository.
-The code requires only Python (2 or 3) and can be run out of the box.
+Three options:
 
-Step by step, in a terminal, you can either download a zip file:
+1. Install with pip:
+```bash
+pip install slate-jkk
+```
 
+2. Download the repository:
 ```bash
 curl https://codeload.github.com/jkkummerfeld/slate/zip/master -o "slate.zip"
 unzip slate.zip
 cd slate-master
 ```
 
-Or clone the repository:
-
+3. Clone the repository:
 ```bash
 git clone https://github.com/jkkummerfeld/slate
 cd slate
 ```
 
+Any all cases, run with:
+```
+python -m slate
+```
+
+If installed with pip, you can also run with:
+```
+slate
+```
+
+### Requirements
+
+The code requires only Python (2 or 3) and can be run out of the box.
 Your terminal must be at least 80 characters wide and 20 tall to use the tool.
+
+## Citing
+
+If you use this tool in your work, please cite:
+
+@InProceedings{acl19slate,
+  title     = {SLATE: A Super-Lightweight Annotation Tool for Experts},
+  author    = {Jonathan K. Kummerfeld},
+  booktitle = {Proceedings of {ACL} 2019, System Demonstrations},
+  location  = {Florence, Italy},
+  month     = {July},
+  year      = {2019},
+  pages     = {},
+  url       = {https://github.com/jkkummerfeld/slate/raw/master/paper/acl19slate.pdf},
+  software  = {https://jkk.name/slate},
+}
 
 ## Getting Started
 
