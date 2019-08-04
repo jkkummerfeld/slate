@@ -10,6 +10,9 @@ Why use this tool over the range of other text annotation tools out there?
 - Terminal based, so it works in constrained environments (e.g. only allowed ssh access to a machine)
 - Not difficult to configure and modify
 
+Note - this repository is **not** for the "Segment and Link-based Annotation Tool, Enhanced", which can be found [here](https://bitbucket.org/dainkaplan/slate/wiki/Home) and was first presented at [LREC 2010](http://www.lrec-conf.org/proceedings/lrec2010/pdf/129_Paper.pdf).
+See 'Citing' below for additional notes on that work.
+
 ## Installation
 
 Two options:
@@ -71,6 +74,11 @@ If you use this tool in your work, please cite:
   software  = {https://jkk.name/slate},
 }
 ```
+
+While presenting this work at ACL I was tol about another annotation tool called SLATE.
+That tool was first described in "Annotation Process Management Revisited", [Kaplan et al. (LREC 2010)](http://www.lrec-conf.org/proceedings/lrec2010/pdf/129_Paper.pdf) and then in "Slate - A Tool for Creating and Maintaining Annotated Corpora", [Kaplan et al. (JLCL 2011)](https://jlcl.org/content/2-allissues/12-Heft2-2011/11.pdf).
+It takes a very different approach, using a web based interface that includes a suite of project management tools as well as annotation.
+The code it available at [https://bitbucket.org/dainkaplan/slate/wiki/Home](https://bitbucket.org/dainkaplan/slate/wiki/Home).
 
 ## Getting Started
 
