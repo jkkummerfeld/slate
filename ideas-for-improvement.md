@@ -7,9 +7,6 @@
 
 # Ideas
 
-Pip
-- See https://realpython.com/pypi-publish-python-package/
-
 Documentation
 - Note the use of 'n', 'p', 'shift-n', 'shift-p' in comparison mode
 - Nicer examples
@@ -17,6 +14,7 @@ Documentation
 - How to change configurations
 
 Visual
+- Show filename at the bottom of the screen when the info section is visible, on the division line
 - Option for 'next' and 'prev' to cycle (ie if it hits the top, search from the bottom)
 - Legend/key giving keys and their labels + colors
 - Rather than highlighting text, use columns on the left (block of colour), for line mode at least. Not sure about tokens

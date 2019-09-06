@@ -92,7 +92,7 @@ class Document(object):
                     self.first_char = (len(self.tokens) - 1, 0, 0)
                 self.last_char = (len(self.tokens) - 1, len(cur), len(token) - 1)
                 cur.append(token)
-        assert self.first_char is not None, "Empty document"
+        assert self.first_char is not None, "Empty document: {}".format(filename)
 
     def get_3tuple(self, partial, start):
         if len(partial) == 3:

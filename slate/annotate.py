@@ -195,7 +195,7 @@ class Annotator(object):
             self.filename, start_pos, output_file, annotation_files = \
                     self.filenames[self.cfilename]
             self.datum = Datum(self.filename, self.config, output_file, annotation_files)
-            self.get_view(self.datum, self.config, self.cfilename, len(self.filenames), start_pos, self.view)
+            self.get_view(self.config, self.cfilename, len(self.filenames), start_pos, self.view)
         elif self.current_mode != 'no_file':
             self.cfilename += direction
             self.current_mode.append('no_file')

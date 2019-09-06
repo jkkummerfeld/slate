@@ -11,18 +11,20 @@ from .data import Span, span_compare_ge, span_compare_le
 
 class View(object):
     def __init__(self, window, cursor, linking_pos, datum, my_config, cnum, total_num, prev_view=None):
+        self.config = my_config
         self.window = window
         self.cursor = cursor
         self.linking_pos = linking_pos
         self.datum = datum
-        self.top = max(0, cursor.start[0] - self.window.getmaxyx()[0] - 10)
+        self.top = 0
+        if self.config.annotation != 'document':
+            self.top = max(0, cursor.start[0] - self.window.getmaxyx()[0] - 10)
         self.show_help = False
         self.show_progress = False
         self.progress = "file {} / {}".format(cnum + 1, total_num)
         self.show_legend = False
         self.show_current_mark = False
         self.legend = []
-        self.config = my_config
         self.line_numbers = False
         if prev_view is not None:
             self.show_help = prev_view.show_help
@@ -338,6 +340,8 @@ class View(object):
                     break
 
         # Tracks if we can see where we moved to
+        if self.config.annotation == 'document':
+            return True
         seen_last_moved_pos = True
         if first_span is not None and last_span is not None:
             if self.last_moved_pos is not None:

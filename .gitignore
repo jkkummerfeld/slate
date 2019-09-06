@@ -7,3 +7,11 @@ dist
 
 .DS_Store
 *.swp
+
+*.aux
+*.bbl
+*.blg
+*.bst
+*.log
+*.out
+*.tex.bak

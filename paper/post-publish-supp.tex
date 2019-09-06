@@ -1,0 +1,119 @@
+% Author: Jonathan K. Kummerfeld
+% File: acl19slate.tex
+
+% Reviewer - Would it make sense to design some experiments to understand the learning curve? Terminal based tools usually take longer time for users to learn?
+% Will     - Some commentary around how active learning might work would be welcome.
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl19slate}
+\usepackage{times}
+\usepackage{latexsym}
+
+\usepackage{url}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{xcolor,colortbl}
+\usepackage{multicol}
+\usepackage{subcaption}
+
+% For printing, set hidelinks=true 
+\hypersetup{pdftitle={Supplementary Note on "SLATE: A Super-Lightweight Annotation Tool for Experts"}
+pdfauthor={Jonathan K. Kummerfeld},
+pdfsubject={Natural Language Processing},
+%%%colorlinks=true,
+%%%plainpages=false,
+%%%linktocpage=true,
+%%%linkcolor=blue,% normal internal document links
+%%%menucolor=blue,% colour for 'menu' links (not sure what these are, it matched linkcolor before)
+%%%anchorcolor=black,% text of the anchor
+%%%citecolor=gray,% bib refs
+%%%urlcolor=gray,% URLs
+pdfpagelayout=OneColumn}
+
+% Set subref captions to have parentheses, e.g. (a) rather than a
+\captionsetup{subrefformat=parens}
+
+\newcommand{\myeg}{e.g.\@\xspace}
+\newcommand{\myie}{i.e.\@\xspace}
+\newcommand{\myvs}{vs.\@\xspace}
+\newcommand{\tightparagraph}[1]{\noindent\textbf{#1}}
+\newcommand{\slatecmd}[1]{\texttt{#1}}
+\newcommand{\unixcmd}[1]{\texttt{#1}}
+
+% To get URL breaking in bib working always
+\def\UrlBreaks{\do\/\do-\do.}
+%%%\setcounter{biburllcpenalty}{7000}
+%%%\setcounter{biburlucpenalty}{8000}
+%%%\setlength{\bibnamesep}{1.5\itemsep}
+
+% Spacing beneath floats
+\setlength{\dbltextfloatsep}{10pt}
+\setlength{\textfloatsep}{10pt}
+\setlength{\floatsep}{10pt plus 2pt minus 4pt}
+\setlength{\textfloatsep}{10pt plus 2pt minus 4pt}
+\setlength{\dblfloatsep}{\floatsep}
+\setlength{\dbltextfloatsep}{10pt plus 2pt minus 4pt}
+\setlength{\intextsep}{\floatsep}
+\setlength{\abovecaptionskip}{8pt plus 3pt minus 2pt}
+
+\setcounter{totalnumber}{500}
+\setcounter{topnumber}{500}
+\setcounter{bottomnumber}{500}
+\renewcommand\floatpagefraction{.95}
+\renewcommand\dblfloatpagefraction{.95} % for two column documents
+\renewcommand\topfraction{.95}
+\renewcommand\dbltopfraction{.95} % for two column documents
+\renewcommand\bottomfraction{.95}
+\renewcommand\textfraction{.05}
+
+\aclfinalcopy % Uncomment this line for the final submission
+\def\aclpaperid{12} %  Enter the acl Paper ID here
+
+\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+\newcommand\Slate{\textsc{slate}\xspace}
+\newcommand\slate{\textsc{slate}\xspace}
+
+% Change description environments to use italics
+\renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\textit{#1}}
+
+\title{Supplementary Note on "\slate: A Super-Lightweight Annotation Tool for Experts"}
+
+\author{
+  Jonathan K. Kummerfeld \\
+  Computer Science \& Engineering \\
+  University of Michigan \\
+  Ann Arbor, MI, USA \\
+  {\tt jkummerf@umich.edu}
+}
+
+\date{}
+
+\begin{document}
+\maketitle
+
+After publishing the paper another tool named SLATE was brought to our attention.
+This supplementary note is intended to recognise that work and clarify the different between the two tools.
+
+The previous tool, "Segment and Link-based Annotation Tool, Enhanced", is a GUI web-based system that supports project management as well as annotation.
+Implemented in Java, with a Flash-based front-end, it depends on Tomcat (a web server) and MySQL (a database management system).
+It was first mentioned in \citet{prior-slate0} and then fully presented by \citet{prior-slate1}.
+Code is available at \url{https://bitbucket.org/dainkaplan/slate/wiki/Home}.
+Compared to our tool, the motivation and results are quite different.
+They focus on providing an easy-to-use interface for non-expert computer users, while we focus on users comfortable in a terminal.
+As a result, their tool involves more effort to set up, but then users can interact with it entirely through a web browser.
+
+\bibliography{acl19slate}
+\bibliographystyle{acl19slate}
+
+\end{document}
