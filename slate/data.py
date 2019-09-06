@@ -62,11 +62,11 @@ def process_fileinfo(file_info, config):
             if len(glob.glob(annotation)) == 0:
                 missing.append(annotation)
     if len(missing) > 0 or len(extra) > 0:
-        error = "Input Filename List Has Errors"
+        error = "Input filename list has the following errors:"
         if len(missing) > 0:
-            error += "\n\nUnable to open:\n" + '\n'.join(missing)
+            error += "\nUnable to open:\n" + '\n'.join(missing)
         if len(extra) > 0:
-            error += "\n\nOutput file already exists:\n" + '\n'.join(extra)
+            error += "\nAnnotation file already exists (use '-o' to ignore):\n" + '\n'.join(extra)
         raise Exception(error)
     return filenames
 

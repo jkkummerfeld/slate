@@ -267,8 +267,11 @@ For example, these commands will create a file list, use it, then return to it l
 find . -name *txt > filenames_todo
 ./slate.py -d filenames_todo -l do_later
 # ... do some work, then quit, go away, come back...
-./slate.py -d do_later.todo -l do_even_later
+./slate.py -d do_later.todo -l do_even_later -o
 ```
+
+Note, the `-o` flag is added so it will allow you to edit the annotations you have already created.
+Otherwise the system will complain that you are overwriting existing annotation files.
 
 When the `additional_annotation_files` are included it activates an adjudication mode.
 By default, all annotations that appear in all additional files are added to the current annotations.
