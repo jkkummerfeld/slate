@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="slate-nlp",
-    version="1.0.2",
+    version="1.0.3",
     author="Jonathan K. Kummerfeld",
     author_email="jkk@berkeley.edu",
     description="A terminal-based text annotation tool",
