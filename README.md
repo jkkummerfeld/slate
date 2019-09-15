@@ -65,12 +65,13 @@ If you use this tool in your work, please cite:
 @InProceedings{acl19slate,
   title     = {SLATE: A Super-Lightweight Annotation Tool for Experts},
   author    = {Jonathan K. Kummerfeld},
-  booktitle = {Proceedings of {ACL} 2019, System Demonstrations},
+  booktitle = {Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics: System Demonstrations},
   location  = {Florence, Italy},
   month     = {July},
   year      = {2019},
-  pages     = {},
-  url       = {https://github.com/jkkummerfeld/slate/raw/master/paper/acl19slate.pdf},
+  pages     = {7--12},
+  doi       = {10.18653/v1/P19-3002},
+  url       = {https://aclweb.org/anthology/papers/P/P19/P19-3002/},
   software  = {https://jkk.name/slate},
 }
 ```
