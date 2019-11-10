@@ -271,7 +271,8 @@ class View(object):
             row += 1
             column = number_width
             if (not trial) and column > 0:
-                self.window.addstr(row, 0, str(line_no), curses.color_pair(LINE_NUMBER_COLOR))
+                if row < height:
+                    self.window.addstr(row, 0, str(line_no), curses.color_pair(LINE_NUMBER_COLOR))
             for token_no, token in enumerate(line):
                 # Check if we are going on to the next line and adjust
                 # accordingly.
@@ -426,7 +427,7 @@ class View(object):
             while lines > 1:
                 count += 1
                 lines /= 10
-            number_width = count
+            number_width = count + 1
             main_width -= number_width
 
         # Do dry runs, shifting top down until the position is visible
