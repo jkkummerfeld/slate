@@ -129,7 +129,6 @@ Task | Command
 ---- | --------
 Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
 Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
-Comparing annotations | To be created
 
 ### Example Workflow
 
@@ -139,6 +138,31 @@ Our workflow was as follows:
 - Create a repository containing (1) the annotation guide, (2) the data to be annotated divided into user-specific folders.
 - Each annotator downloaded slate and used it to do their annotations and commit the files to the repository.
 - Either the whole group or the project leader went through files that were annotated by multiple people, using the adjudication mode in the tool.
+
+### Comparing Annotations
+
+To use adjudication mode, create a file, `example.txt`, similar to the following (you can have as many annotators as you like):
+
+```
+raw-text0 adjudicated-anno0 ((1000,),(1000,)) anno0.1 anno0.2 anno0.3
+raw-text1 adjudicated-anno1 ((1000,),(1000,)) anno1.1 anno1.2
+raw-text2 adjudicated-anno2 ((1000,),(1000,)) anno2.1 anno2.2 anno2.3 anno2.4
+```
+
+To save time, it is best to initialise `adjudicated-annoN` with the lines everyone agreed on:
+
+```
+for i in 0 1 2 ; do
+  count=`ls anno${i}.* | wc -l`
+  cat anno${i}.* | sort | uniq -c | awk -v count=$count '$1 == count' | sed 's/^ *[0-9]* *//' > matching
+done
+```
+
+Then run the tool as if you are annotating, for example for linking lines:
+
+```
+python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -hh -l log.adj.txt --do-not-show-linked
+```
 
 ## Detailed Usage Instructions
 
