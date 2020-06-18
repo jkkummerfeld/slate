@@ -447,7 +447,7 @@ def main():
     parser.add_argument('-o', '--overwrite',
             default=False,
             action='store_true',
-            help='If they exist already, read abd overwrite output files.')
+            help='If they exist already, read and overwrite output files.')
 
     parser.add_argument('-ps', '--prevent-self-links',
             default=False,
