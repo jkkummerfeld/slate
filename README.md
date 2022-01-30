@@ -344,6 +344,38 @@ Adding a new command involves:
  - Adding or modifying a function in `annotate.py`
  - Modifying `data.py` or `view.py` to apply the action
 
+#### Changing the label set / Adding labels
+
+The label set is defined in your config file (see an example config [here](https://github.com/jkkummerfeld/slate/blob/master/tutorial/config-example.txt)).
+
+See lines like this for label definitions:
+
+```
+Label:          a                         SPACE_a green
+```
+
+The format is:
+```
+Label:        <label>                    <command> <colour>
+```
+
+You can add / edit / remove these lines to define your own label scheme. For example, for NER you may want to do:
+
+```
+Label:          O                         SPACE_a green
+Label:          LOC                       SPACE_s blue
+Label:          PER                       SPACE_d red
+Label:          ORG                       SPACE_f yellow
+Label:          MISC                      SPACE_v magenta
+```
+
+The current set of available colours is: [green, blue, white, cyan, magenta, red, yellow].
+Note that by default white is used for regular text and cyan is used for cases where multiple labels apply to the same content.
+
+To define more colours, edit the top of `slate/config.py`.
+By varying both the text colour (foreground) and background colour you can achieve quite a range of variations.
+You can also define any RGB colour you want using the curses [init_color](https://docs.python.org/3/library/curses.html#curses.init_color) function and the [init_pair](https://docs.python.org/3/library/curses.html#curses.init_pair) function.
+
 # Questions
 
 If you have a question please either:
