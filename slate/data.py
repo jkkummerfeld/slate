@@ -797,6 +797,34 @@ class Datum(object):
                 best = last
         return best
 
+    def get_overlapping_spans(self, cursor):
+        ans = []
+
+        # Set colors for cursor and linking pos
+        for item in self.annotations:
+            matched = False
+            cpos = cursor.start
+            while True:
+                for span in item.spans:
+                    pos = span.start
+                    while True:
+                        if pos == cpos:
+                            matched = True
+                            break
+                        if pos == span.end:
+                            break
+                        pos = self.doc.get_next_pos(pos)
+                    if matched:
+                        break
+                if matched:
+                    break
+                if cpos == cursor.end:
+                    break
+                cpos = self.doc.get_next_pos(cpos)
+            if matched:
+                ans.append(item)
+        return ans
+
     def get_all_markings(self, cursor, linking_pos):
         ans = {}
 

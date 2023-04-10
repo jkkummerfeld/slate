@@ -5,7 +5,7 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python slate.py tutorial/label.md -t categorical -s token -o -hh
+python slate.py tutorial/label.md -t categorical -s token -o
 ```
 
 This command is also an example of how to run the code. It says to:
@@ -15,7 +15,6 @@ This command is also an example of how to run the code. It says to:
  - with categories (`-t categorical`),
  - applied to tokens (`-s token`),
  - reading and overwriting any existing annotation file (`-o`),
- - hiding help information (`-hh`),
  - and logging to a specified file (`-l log.tutorial.label.txt`)
 
 For the full range of command line arguments, see the README.md file.

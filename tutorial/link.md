@@ -5,7 +5,7 @@ intended to be read and followed from within slate. If you are in the directory
 containing slate, run it like so:
 
 ```shell
-python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt
+python slate.py tutorial/link.md -t link -s line -o -l log.tutorial.link.txt
 ```
 
 This command is also an example of how to run the code. It says to:
@@ -15,7 +15,6 @@ This command is also an example of how to run the code. It says to:
  - with links (`-t link`),
  - applied to lines (`-s line`),
  - reading and overwriting any existing annotation file (`-o`),
- - hiding help information (`-hh`),
  - and logging to a specified file (`-l log.tutorial.link.txt`)
 
 When linking, one item is marked with an underline, and another is marked with
