@@ -684,7 +684,6 @@ def read_annotation_file(config, filename, doc):
             spans = get_spans(line.split('-')[0], doc, config)
             labels = get_labels('-'.join(line.split('-')[1:]), config)
             items.append(Item(doc, spans, labels))
-        logging.info("Read {}".format(filename))
 
     return items
 
@@ -698,7 +697,6 @@ class Datum(object):
         self.config = config
         self.output_file = output_file
         self.doc = Document(filename)
-        logging.info("Reading data from "+ self.output_file)
         self.annotations = read_annotation_file(config, self.output_file, self.doc)
 
         self.other_annotation_files = other_annotation_files
@@ -796,6 +794,34 @@ class Datum(object):
             else:
                 best = last
         return best
+
+    def get_overlapping_spans(self, cursor):
+        ans = []
+
+        # Set colors for cursor and linking pos
+        for item in self.annotations:
+            matched = False
+            cpos = cursor.start
+            while True:
+                for span in item.spans:
+                    pos = span.start
+                    while True:
+                        if pos == cpos:
+                            matched = True
+                            break
+                        if pos == span.end:
+                            break
+                        pos = self.doc.get_next_pos(pos)
+                    if matched:
+                        break
+                if matched:
+                    break
+                if cpos == cursor.end:
+                    break
+                cpos = self.doc.get_next_pos(cpos)
+            if matched:
+                ans.append(item)
+        return ans
 
     def get_all_markings(self, cursor, linking_pos):
         ans = {}

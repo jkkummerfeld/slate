@@ -324,8 +324,15 @@ class Annotator(object):
         self.window = window_in
 
         # Set color combinations
+        #curses.start_color()
         curses.use_default_colors()
         for num, fore, back in COLORS:
+            #if isinstance(fore, tuple):
+            #    curses.init_color(*fore)
+            #    fore = fore[0]
+            #if isinstance(back, tuple):
+            #    curses.init_color(*back)
+            #    back = back[0]
             curses.init_pair(num, fore, back)
 
         # No blinking cursor
@@ -335,8 +342,14 @@ class Annotator(object):
         self.filename, start_pos, output_file, annotation_files = self.filenames[self.cfilename]
         self.datum = Datum(self.filename, self.config, output_file, annotation_files)
         self.get_view(self.config, self.cfilename, len(self.filenames), start_pos)
-        if not self.args.hide_help:
+        if self.args.show_help:
             self.view.toggle_help()
+        if self.args.show_progress:
+            self.view.toggle_progress()
+        if self.args.show_legend:
+            self.view.toggle_legend()
+        if self.args.show_mark:
+            self.view.toggle_current_mark()
 
         last_num = None
         at_end = None
@@ -438,32 +451,37 @@ def main():
             action='store_true',
             help='Provide detailed logging.')
 
-    parser.add_argument('-hh', '--hide-help',
+    parser.add_argument('-sh', '--show-help',
             action='store_true',
-            help='Do not show help on startup.')
+            help='Show help on startup.')
+    parser.add_argument('-sl', '--show-legend',
+            action='store_true',
+            help='Start with legend showing.')
+    parser.add_argument('-sp', '--show-progress',
+            action='store_true',
+            help='Start with progress showing.')
+    parser.add_argument('-sm', '--show-mark',
+            action='store_true',
+            help='Start with mark showing.')
+
     parser.add_argument('-r', '--readonly',
             action='store_true',
             help='Do not allow changes or save annotations.')
     parser.add_argument('-o', '--overwrite',
-            default=False,
             action='store_true',
             help='If they exist already, read and overwrite output files.')
 
     parser.add_argument('-ps', '--prevent-self-links',
-            default=False,
             action='store_true',
             help='Prevent an item from being linked to itself.')
     parser.add_argument('-pf', '--prevent-forward-links',
-            default=False,
             action='store_true',
             help='Prevent a link from an item to one after it.')
 
     parser.add_argument('--do-not-show-linked',
-            default=False,
             action='store_true',
             help='Do not have a special color to indicate any linked token.')
     parser.add_argument('--alternate-comparisons',
-            default=False,
             action='store_true',
             help='Activate alternative way of showing different annotations '
             '(one colour per set of markings, rather than counts).')
