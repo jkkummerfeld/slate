@@ -684,6 +684,7 @@ def read_annotation_file(config, filename, doc):
             spans = get_spans(line.split('-')[0], doc, config)
             labels = get_labels('-'.join(line.split('-')[1:]), config)
             items.append(Item(doc, spans, labels))
+        logging.info("Read {}".format(filename))
 
     return items
 
@@ -697,6 +698,7 @@ class Datum(object):
         self.config = config
         self.output_file = output_file
         self.doc = Document(filename)
+        logging.info("Reading data from "+ self.output_file)
         self.annotations = read_annotation_file(config, self.output_file, self.doc)
 
         self.other_annotation_files = other_annotation_files
