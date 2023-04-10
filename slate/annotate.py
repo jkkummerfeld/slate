@@ -324,15 +324,8 @@ class Annotator(object):
         self.window = window_in
 
         # Set color combinations
-        #curses.start_color()
         curses.use_default_colors()
         for num, fore, back in COLORS:
-            #if isinstance(fore, tuple):
-            #    curses.init_color(*fore)
-            #    fore = fore[0]
-            #if isinstance(back, tuple):
-            #    curses.init_color(*back)
-            #    back = back[0]
             curses.init_pair(num, fore, back)
 
         # No blinking cursor

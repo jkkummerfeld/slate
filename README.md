@@ -128,8 +128,8 @@ Included in this repository are a set of interactive tutorials that teach you ho
 Task | Command
 ---- | --------
 Named Entity Recognition annotation |  `python slate.py tutorial/ner.md -t categorical -s token -o -c ner-book.config -l log.tutorial.ner.txt -sl -sm`
-Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
-Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
+Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -l log.tutorial.label.txt`
+Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -l log.tutorial.link.txt`
 
 ### Example Workflow
 
@@ -162,7 +162,7 @@ done
 Then run the tool as if you are annotating, for example for linking lines:
 
 ```
-python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -hh -l log.adj.txt --do-not-show-linked
+python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -l log.adj.txt --do-not-show-linked
 ```
 
 ## Detailed Usage Instructions
