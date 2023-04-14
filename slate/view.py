@@ -5,6 +5,7 @@ import logging
 import curses
 import re
 import sys
+import textwrap
 
 from .config import *
 from .data import Span, span_compare_ge, span_compare_le
@@ -43,6 +44,7 @@ class View(object):
             pass
 
     def instructions(self):
+        # TODO: Have this based on the config file
         shared = [
             "Misc      | ] [                   | save and go to next ] / previous [ file",
             "          | q Q                   | quit with or without saving            ",
@@ -386,18 +388,11 @@ class View(object):
         markings = self.datum.get_all_markings(self.cursor, self.linking_pos)
 ###        logging.debug("markings: {}".format(markings))
         if self.show_current_mark:
-            for key in markings:
-                logging.debug("marking: {}: {}".format(key, markings[key]))
-                marks = markings[key]
-                if 'cursor' in marks:
-                    for mark in marks:
-                        if mark in self.config.labels:
-                            extra_text_lines.append("Current: "+ mark)
-                        elif 'compare-' in mark and 'ref' not in mark:
-                            parts = mark.split("-")
-                            count = len(self.datum.other_annotations) - int(parts[-2])
-                            label = parts[-1]
-                            extra_text_lines.append("{} marked as {}".format(count, label))
+            matched = self.datum.get_overlapping_spans(self.cursor)
+            matched = ["Current:"] + [str(v) for v in matched]
+            matched = textwrap.wrap(' '.join(matched), width - 1)
+            for line in matched:
+                extra_text_lines.append(line)
 
         # First, plan instructions
         main_height = height

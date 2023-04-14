@@ -127,8 +127,9 @@ Included in this repository are a set of interactive tutorials that teach you ho
 
 Task | Command
 ---- | --------
-Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -hh -l log.tutorial.label.txt`
-Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -hh -l log.tutorial.link.txt`
+Named Entity Recognition annotation |  `python slate.py tutorial/ner.md -t categorical -s token -o -c ner-book.config -l log.tutorial.ner.txt -sl -sm`
+Labelling spans of text in a document | `python slate.py tutorial/label.md -t categorical -s token -o -l log.tutorial.label.txt`
+Linking lines in a document | `python slate.py tutorial/link.md -t link -s line -o -l log.tutorial.link.txt`
 
 ### Example Workflow
 
@@ -161,7 +162,7 @@ done
 Then run the tool as if you are annotating, for example for linking lines:
 
 ```
-python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -hh -l log.adj.txt --do-not-show-linked
+python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -l log.adj.txt --do-not-show-linked
 ```
 
 ## Detailed Usage Instructions
@@ -170,10 +171,10 @@ python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -hh -l
 
 ```
 usage: slate.py [-h] [-d DATA_LIST [DATA_LIST ...]] [-t {categorical,link}]
-                [-s {character,token,line,document}] [-c CONFIG_FILE]
-                [-l LOG_PREFIX] [-ld] [-hh] [-r] [-o] [-ps] [-pf]
-                [--do-not-show-linked] [--alternate-comparisons]
-                [data [data ...]]
+                [-s {character,token,line,document}] [-c CONFIG_FILE] [-l LOG_PREFIX] [-ld]
+                [-sh] [-sl] [-sp] [-sm] [-r] [-o] [-ps] [-pf] [--do-not-show-linked]
+                [--alternate-comparisons]
+                [data ...]
 
 A tool for annotating text data.
 
@@ -193,20 +194,20 @@ optional arguments:
   -l LOG_PREFIX, --log-prefix LOG_PREFIX
                         Prefix for logging files
   -ld, --log-debug      Provide detailed logging.
-  -hh, --hide-help      Do not show help on startup.
+  -sh, --show-help      Show help on startup.
+  -sl, --show-legend    Start with legend showing.
+  -sp, --show-progress  Start with progress showing.
+  -sm, --show-mark      Start with mark showing.
   -r, --readonly        Do not allow changes or save annotations.
-  -o, --overwrite       If they exist already, read abd overwrite output
-                        files.
+  -o, --overwrite       If they exist already, read and overwrite output files.
   -ps, --prevent-self-links
                         Prevent an item from being linked to itself.
   -pf, --prevent-forward-links
                         Prevent a link from an item to one after it.
-  --do-not-show-linked  Do not have a special color to indicate any linked
-                        token.
+  --do-not-show-linked  Do not have a special color to indicate any linked token.
   --alternate-comparisons
-                        Activate alternative way of showing different
-                        annotations (one colour per set of markings, rather
-                        than counts).
+                        Activate alternative way of showing different annotations (one colour
+                        per set of markings, rather than counts).
 ```
 
 You may also define arguments in a file and pass them in as follows:
@@ -217,7 +218,7 @@ python slate.py @arguments.txt
 
 ### Keybindings
 
-The tool shows files one at a time in plain text. Commands are:
+The tool shows files one at a time in plain text. Default commands are:
 
 Type                        | Key                                                       | Labelling Affect                 | Linking Affect
 --------------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------
@@ -279,7 +280,7 @@ Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OS-X oper
 ### Misc
 
 To annotate multiple files, specify more than one as an argument.
-For greater control, provide a list of files in a file specified with `--data-list`.
+For greater control, provide a list of files in a file specified with `--data-list` / `-d`.
 The list should be formatted as follows, where [] indicate optional values:
 
 ```
@@ -301,9 +302,6 @@ Otherwise the system will complain that you are overwriting existing annotation 
 When the `additional_annotation_files` are included it activates an adjudication mode.
 By default, all annotations that appear in all additional files are added to the current annotations.
 Disagreements are coloured in the text, but will disappear once a decision is made (using the normal annotation commands).
-
-Note - adjudication has not been as thoroughly tested.
-Please share any issues you come across!
 
 ## Customisation
 
@@ -381,7 +379,7 @@ You can also define any RGB colour you want using the curses [init_color](https:
 If you have a question please either:
 
 - Open an issue on [github](https://github.com/jkkummerfeld/slate/issues).
-- Mail me at [jkummerf@umich.edu](mailto:jkummerf@umich.edu).
+- Mail me at [jonathan.kummerfeld@sydney.edu.au](mailto:jonathan.kummerfeld@sydney.edu.au).
 
 # Contributions
 
