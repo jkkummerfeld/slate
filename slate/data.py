@@ -628,9 +628,9 @@ class Item(object):
         if len(self.spans) == 1:
             spans = str(self.spans[0])
             if self.spans[0].start == self.spans[0].end:
-                spans = str(self.spans[0].start)
+                spans = f"({str(self.spans[0].start)}, {str(self.spans[0].start)})"
                 if len(self.spans[0].start) == 1:
-                    spans = str(self.spans[0].start[0])
+                    spans = f"({str(self.spans[0].start[0])}, {str(self.spans[0].start[0])})"
         elif len(self.spans) > 1:
             all_single = True
             for s in self.spans:
