@@ -142,28 +142,65 @@ Our workflow was as follows:
 
 ### Comparing Annotations
 
-To use adjudication mode, create a file, `example.txt`, similar to the following (you can have as many annotators as you like):
+The tool supports displaying annotations for the purpose of adjudicating disagreements.
+There are two steps involved.
+Specifically, you can request that a set of other annotation files be read.
+Then, whenever one of those annotation files includes something that your current adjudication does not, the text is shown in red.
+
+#### Data list file creation
+A  data list file contains a series of lines in the format:
 
 ```
-raw-text0 adjudicated-anno0 ((1000,),(1000,)) anno0.1 anno0.2 anno0.3
-raw-text1 adjudicated-anno1 ((1000,),(1000,)) anno1.1 anno1.2
-raw-text2 adjudicated-anno2 ((1000,),(1000,)) anno2.1 anno2.2 anno2.3 anno2.4
+raw_file [output_file [cur_line cur_token [other_annotations]]]
 ```
 
-To save time, it is best to initialise `adjudicated-annoN` with the lines everyone agreed on:
+For example, this line says there is a raw text file `my-book.txt`, that the adjudications should be saved in `annotations-adjudicated.txt`, that annotation should start at the very start of `my-book.txt` and that there are three existing annotations to be compared:
 
 ```
-for i in 0 1 2 ; do
-  count=`ls anno${i}.* | wc -l`
-  cat anno${i}.* | sort | uniq -c | awk -v count=$count '$1 == count' | sed 's/^ *[0-9]* *//' > matching
-done
+my-book.txt annotations-adjudicated.txt ((0, 0), (0, 0)) my-book.txt.annotations1,my-book.txt.annotations2,my-book.txt.annotations3
 ```
 
-Then run the tool as if you are annotating, for example for linking lines:
+Note: you can have as many "other_annotation" files as you want.
+
+#### Run slate with the data list file
+Now run slate as follows:
 
 ```
-python ../learn-anno/slate/slate.py -d example.txt -pf -t link -s line -o -l log.adj.txt --do-not-show-linked
+python slate.py -d data-list-file [any other arguments]
 ```
+
+#### Example
+
+The tutorial folder contains two example data list files:
+
+- `tutorial/data/list_with_disagreements.category.txt`
+- `tutorial/data/list_with_disagreements.link.txt`
+
+You can use them as follows:
+
+```
+cd tutorial/data
+python ../../slate.py -d list_with_disagreements.category.txt -t categorical -s token
+```
+
+#### Efficiency Tip
+
+You can save time by putting annotations that all annotators agreed on into the `annotations-adjudicated.txt` file.
+This bash pipeline will do that if you replace:
+
+- `ANNOTATION_FILES` with the names of all of your annotation files, separated by spaces
+- `N_FILES` with the number of annotation files you have
+
+```
+cat ANNOTATION_FILES | sort | uniq -c | awk -v count=N_FILES '$1 == count' | sed 's/^ *[0-9]* *//' > annotations-adjudicated.txt
+```
+
+Breaking this down, it does the following:
+- `cat ANNOTATION_FILES `, print the annotation files in the terminal
+- `sort `, sort their contents together
+- `uniq -c `, where there are consecutive lines that are the same, only keep one, and also indicate how many times each line occurred
+- `awk -v count=N_FILES '$1 == count' `, only keep lines where the number at the start matches `N_FILES`
+- `sed 's/^ *[0-9]* *//' > annotations-adjudicated.txt`, remove the number at the start of the line (placed there by the `uniq` command)
 
 ## Detailed Usage Instructions
 
