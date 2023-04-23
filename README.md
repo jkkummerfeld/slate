@@ -157,7 +157,7 @@ raw_file [output_file [cur_line cur_token [other_annotations]]]
 For example, this line says there is a raw text file `my-book.txt`, that the adjudications should be saved in `annotations-adjudicated.txt`, that annotation should start at the very start of `my-book.txt` and that there are three existing annotations to be compared:
 
 ```
-my-book.txt annotations-adjudicated.txt ((0, 0), (0, 0)) my-book.txt.annotations1,my-book.txt.annotations2,my-book.txt.annotations3
+my-book.txt annotations-adjudicated.txt ((0, 0), (0, 0)) my-book.txt.annotations1 my-book.txt.annotations2 my-book.txt.annotations3
 ```
 
 Note: you can have as many "other_annotation" files as you want.
