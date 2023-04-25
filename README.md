@@ -255,7 +255,9 @@ python slate.py @arguments.txt
 
 ### Keybindings
 
-The tool shows files one at a time in plain text. Default commands are:
+The tool shows files one at a time in plain text. Default commands are shown below.
+
+Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OS-X operating systems. That is why in all places where they are used we have an alternative as well.
 
 Type                        | Key                                                       | Labelling Affect                 | Linking Affect
 --------------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------
@@ -311,8 +313,6 @@ Misc                        | Normal | <kbd>#</kbd>                             
 &nbsp;                      | Normal | <kbd>></kbd> then <kbd>p</kbd>                  | toggle showing progress through files
 &nbsp;                      | Normal | <kbd>></kbd> then <kbd>l</kbd>                  | toggle showing legend for labels
 &nbsp;                      | Normal | <kbd>></kbd> then <kbd>m</kbd>                  | toggle showing the mark on the current item
-
-Note: special keys such as `ENTER` and `BACKSPACE` may not work on non-OS-X operating systems. That is why in all places where they are used we have an alternative as well.
 
 ### Misc
 
@@ -403,6 +403,8 @@ Label:          PER                       SPACE_d red
 Label:          ORG                       SPACE_f yellow
 Label:          MISC                      SPACE_v magenta
 ```
+
+For an example of a custom config file, see [ner-book.config](ner-book.config)
 
 The current set of available colours is: [green, blue, white, cyan, magenta, red, yellow].
 Note that by default white is used for regular text and cyan is used for cases where multiple labels apply to the same content.
