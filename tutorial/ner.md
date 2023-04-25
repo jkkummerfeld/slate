@@ -95,6 +95,8 @@ Run this command to start annotating, now with information about the existing an
 python slate.py -d anno-file-list.txt -t categorical -s token -o -c ner-book.config -l log.tutorial.ner.txt -sl -sm
 ```
 
+Note - if this crashes with a `list index out of range` error then you need to change the `(1,0)` part of the line above because your data has a blank second line. Change the first number to be a line that does exist.
+
 You will see that:
 
  - Any annotation in `example.annotations.adjudicated.txt` appears as a normal annotation.
