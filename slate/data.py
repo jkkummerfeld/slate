@@ -42,6 +42,8 @@ def process_fileinfo(file_info, config):
 
             span = eval(position_text)
             position = Span(config.annotation, d, span)
+            if (not position.doc.valid_pos(position.start)) or (not position.doc.valid_pos(position.end)):
+                raise Exception("Invalid starting location in data list file.")
 
         # Additional annotations (used when comparing annotations)
         annotations = []
@@ -94,6 +96,27 @@ class Document(object):
                 cur.append(token)
         assert self.first_char is not None, "Empty document: {}".format(filename)
 
+    def valid_pos(self, pos):
+        if len(pos) == 0:
+            return True
+        # Check line
+        line = pos[0]
+        if line < 0 or line >= len(self.tokens):
+            return False
+        if len(self.tokens[line]) == 0:
+            return False
+        # Check token
+        if len(pos) >= 2:
+            tok = pos[1]
+            if tok < 0 or tok >= len(self.tokens[line]):
+                return False
+            # Check character
+            if len(pos) == 3:
+                char = pos[2]
+                if char < 0 or char >= len(self.tokens[line][tok]):
+                    return False
+        return True
+
     def get_3tuple(self, partial, start):
         if len(partial) == 3:
             return partial
@@ -142,7 +165,7 @@ class Document(object):
         return self.search_cache[text]
 
     def get_moved_pos(self, pos, right=0, down=0, maxjump=False, skip_blank=True):
-        """Calculate a shifted version of  a given a position in this document.
+        """Calculate a shifted version of a given position in this document.
 
         Co-ordinates are (line number, token number, character number), with
         (0,0, 0) as the top left, tokens increasing left to right and lines
@@ -155,6 +178,7 @@ class Document(object):
             # Interpret left/right as also being up/down for lines
             if down == 0 and right != 0:
                 down = right
+
             if maxjump:
                 if down < 0: npos = self.first_char[0]
                 elif down > 0: npos = self.last_char[0]

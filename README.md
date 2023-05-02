@@ -340,6 +340,21 @@ When the `additional_annotation_files` are included it activates an adjudication
 By default, all annotations that appear in all additional files are added to the current annotations.
 Disagreements are coloured in the text, but will disappear once a decision is made (using the normal annotation commands).
 
+### Running in Windows
+
+Users have reported a range of issues when trying to run slate:
+
+- Underlining, which is used to show the currently selected text, does not work.
+- Shift keys do not work
+
+Here are a few things to try that others have found helpful:
+
+- Use the Windows Subsystem for Linux (WSL) with Ubuntu
+- Reinstall ncurses, or install windows-curses
+- If you hit an encoding issue, try converting your raw text file to ASCII
+- Try powershell
+- Use a config file with different keybindings, to avoid needing shift
+
 ## Customisation
 
 Colours and keys are customisable. For labelling, the default is:
