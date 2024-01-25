@@ -640,7 +640,19 @@ class Item(object):
             self.labels.add(init_label)
 
     def __eq__(self, other):
-        return self.spans == other.spans and self.labels == other.labels and self.doc == other.doc
+        if self.doc != other.doc:
+            return False
+
+        if self.labels != other.labels:
+            return False
+
+        if len(self.spans) != len(other.spans):
+            return False
+        else:
+            for span in self.spans:
+                if span not in other.spans:
+                    return False
+        return True
 
     def __str__(self):
         labels = []
