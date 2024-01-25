@@ -416,6 +416,15 @@ class Annotator(object):
 def ext_annotate(window_in, annotator):
     annotator.annotate(window_in)
 
+def check_consistency(args):
+    if args.data_detail != "match":
+        levels = ['character', 'token', 'line', 'document']
+        apos = levels.index(args.ann_scope)
+        dpos = levels.index(args.data_detail)
+        if apos < dpos:
+            print(f"Specified annotation scope ({args.ann_scope}) and data detail ({args.data_detail}) are incompatible")
+            sys.exit(1)
+
 def main():
     stime = datetime.datetime.now().strftime('%Y-%m-%d.%H-%M-%S')
 
@@ -435,6 +444,14 @@ def main():
             choices=['character', 'token', 'line', 'document'],
             default='token',
             help='The scope of annotation being done.')
+    parser.add_argument('-dd', '--data-detail',
+            choices=['match', 'character', 'token', 'line', 'document'],
+            default='match',
+            help='The specificity of the output format for annotations.')
+    parser.add_argument('-ds', '--data-shape',
+            choices=['variable', 'single', 'pair'],
+            default='variable',
+            help='The specificity of the output format for annotations.')
     parser.add_argument('-c', '--config-file',
             help='A file containing configuration information.')
     parser.add_argument('-l', '--log-prefix',
@@ -480,6 +497,7 @@ def main():
             '(one colour per set of markings, rather than counts).')
 
     args = parser.parse_args()
+    check_consistency(args)
 
     if len(args.data) == 0 and args.data_list is None:
         parser.error("No filenames or data lists provided")
