@@ -352,6 +352,8 @@ class View(object):
                 cmp_last = self.last_moved_pos.compare(last_span)
                 seen_last_moved_pos = cmp_first in span_compare_ge and \
                         cmp_last in span_compare_le
+                if cmp_last == 'cover_one':
+                    seen_last_moved_pos = True
         return seen_last_moved_pos
 
 

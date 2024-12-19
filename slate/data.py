@@ -43,7 +43,7 @@ def process_fileinfo(file_info, config):
             span = eval(position_text)
             position = Span(config.annotation, d, span)
             if (not position.doc.valid_pos(position.start)) or (not position.doc.valid_pos(position.end)):
-                raise Exception("Invalid starting location in data list file.")
+                raise Exception("The starting location in data list file is not the location of a token in the document.")
 
         # Additional annotations (used when comparing annotations)
         annotations = []

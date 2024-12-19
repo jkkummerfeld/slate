@@ -439,6 +439,14 @@ If you have a question please either:
 
 If you find a bug in the code, please submit an issue, or even better, a pull request with a fix.
 
+Here are some possible improvements:
+- Improve adjudication mode for NER
+- Make a tool to help create data list files
+- Allow mouse input, e.g., with "getmouse()" and some sort of event loop to get both mouse and keyboard
+- Check keys with "has_key()" so that we can do modifier keys more cleaning
+- Change how ncurses is used to be more idiomatic and clean
+- Expand the range of colours that can be used
+
 # Acknowledgments
 
 This tool is based in part upon work supported by IBM under contract 4915012629, and by ONR under MURI grant N000140911081.
