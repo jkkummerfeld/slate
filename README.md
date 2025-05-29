@@ -10,7 +10,7 @@ Why use this tool over the range of other text annotation tools out there?
 - Terminal based, so it works in constrained environments (e.g. only allowed ssh access to a machine)
 - Not difficult to configure and modify
 
-Note - this repository is **not** for the "Segment and Link-based Annotation Tool, Enhanced", which can be found [here](https://bitbucket.org/dainkaplan/slate/wiki/Home) and was first presented at [LREC 2010](http://www.lrec-conf.org/proceedings/lrec2010/pdf/129_Paper.pdf).
+Note - this repository is **not** for the "Segment and Link-based Annotation Tool, Enhanced", which was first presented at [LREC 2010](http://www.lrec-conf.org/proceedings/lrec2010/pdf/129_Paper.pdf).
 See 'Citing' below for additional notes on that work.
 
 ## Installation
@@ -77,9 +77,8 @@ If you use this tool in your work, please cite:
 ```
 
 While presenting this work at ACL I learned of another annotation tool called SLATE.
-That tool was first described in "Annotation Process Management Revisited", [Kaplan et al. (LREC 2010)](http://www.lrec-conf.org/proceedings/lrec2010/pdf/129_Paper.pdf) and then in "Slate - A Tool for Creating and Maintaining Annotated Corpora", [Kaplan et al. (JLCL 2011)](https://jlcl.org/content/2-allissues/12-Heft2-2011/11.pdf).
+That tool was first described in "Annotation Process Management Revisited", [Kaplan et al. (LREC 2010)](http://www.lrec-conf.org/proceedings/lrec2010/pdf/129_Paper.pdf) and then in "Slate - A Tool for Creating and Maintaining Annotated Corpora", [Kaplan et al. (JLCL 2011)](https://jlcl.org/article/view/149).
 It takes a very different approach, using a web based interface that includes a suite of project management tools as well as annotation.
-The code it available at [https://bitbucket.org/dainkaplan/slate/wiki/Home](https://bitbucket.org/dainkaplan/slate/wiki/Home).
 
 ## Getting Started
 
@@ -133,7 +132,7 @@ Linking lines in a document | `python slate.py tutorial/link.md -t link -s line 
 
 ### Example Workflow
 
-This tool has already been used for two annotation efforts involving multiple annotators ([Durrett et al., 2017](http://jkk.name/publication/emnlp17forums/) and [Kummerfeld et al., 2018](http://jkk.name/publication/arxiv18disentangle/)).
+This tool has already been used for two annotation efforts involving multiple annotators ([Durrett et al., 2017](https://aclanthology.org/D17-1275/) and [Kummerfeld et al., 2018](https://aclanthology.org/P19-1374/)).
 Our workflow was as follows:
 
 - Create a repository containing (1) the annotation guide, (2) the data to be annotated divided into user-specific folders.
