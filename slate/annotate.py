@@ -508,7 +508,7 @@ def main():
     if args.data_list is not None:
         for filename in args.data_list:
             if len(glob.glob(filename)) == 0:
-                raise Exception("Cannot open / find '{}'".format(filename))
+                parser.error("Cannot open / find '{}'".format(filename))
             for line in open(filename):
                 file_info.append(line.strip())
 
